@@ -1,0 +1,108 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --surface: #fafafa;
+    --surface-card: #ffffff;
+    --surface-ground: #f1f5f9;
+    --border-color: #e2e8f0;
+    --text-primary: #0b0d10;
+    --text-secondary: #475569;
+    --text-muted: #64748b;
+
+    --brand-sky-blue: #0284c7;
+    --brand-sky-blue-hover: #0369a1;
+
+    --trust-light-green-bg: #dcfce7;
+    --trust-light-green-text: #15803d;
+    --trust-light-green-border: #86efac;
+  }
+
+  html.dark {
+    --surface: #0b0d10;
+    --surface-card: #12151c;
+    --surface-ground: #1a1e29;
+    --border-color: #27272a;
+    --text-primary: #ffffff;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+
+    --brand-sky-blue: #38bdf8;
+    --brand-sky-blue-hover: #0ea5e9;
+
+    --trust-light-green-bg: #052e16;
+    --trust-light-green-text: #4ade80;
+    --trust-light-green-border: rgba(74, 222, 128, 0.3);
+  }
+
+  body {
+    background-color: var(--surface);
+    color: var(--text-primary);
+    font-family: 'Inter', 'Noto Sans Devanagari', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
+
+  h1, h2, h3, .font-serif-heading {
+    font-family: 'Lora', 'Noto Serif Devanagari', Georgia, serif;
+  }
+}
+
+.bg-surface-card {
+  background-color: var(--surface-card);
+}
+
+.bg-surface-ground {
+  background-color: var(--surface-ground);
+}
+
+.text-main {
+  color: var(--text-primary);
+}
+
+.text-sub {
+  color: var(--text-secondary);
+}
+
+.border-main {
+  border-color: var(--border-color);
+}
+
+.bg-sky-blue {
+  background-color: var(--brand-sky-blue);
+}
+
+.bg-sky-blue:hover {
+  background-color: var(--brand-sky-blue-hover);
+}
+
+.text-sky-blue {
+  color: var(--brand-sky-blue);
+}
+
+.border-sky-blue {
+  border-color: var(--brand-sky-blue);
+}
+
+.badge-trust-lightgreen {
+  background-color: var(--trust-light-green-bg);
+  color: var(--trust-light-green-text);
+  border: 1px solid var(--trust-light-green-border);
+}
+
+.radius-card {
+  border-radius: 8px;
+}
+
+.radius-btn {
+  border-radius: 6px;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
