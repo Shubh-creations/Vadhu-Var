@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldCheck, User, Briefcase, GraduationCap, FileText, CheckCircle2, ArrowRight, ArrowLeft, Camera, IndianRupee, Award } from 'lucide-react';
+import { ShieldCheck, User, Briefcase, GraduationCap, FileText, CheckCircle2, ArrowRight, ArrowLeft, Camera, IndianRupee, Crop } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import { useLanguage } from '../context/LanguageContext';
 import BadgeVerified from '../components/BadgeVerified';
+import ImageCropperModal from '../components/ImageCropperModal';
 import { compressImage } from '../lib/imageCompressor';
 
 export const ProfileWizardPage = ({ onComplete }) => {
@@ -14,6 +15,10 @@ export const ProfileWizardPage = ({ onComplete }) => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [successBanner, setSuccessBanner] = useState(false);
+
+  // Image Cropper State
+  const [cropperOpen, setCropperOpen] = useState(false);
+  const [rawPhotoSrc, setRawPhotoSrc] = useState(null);
 
   const [formData, setFormData] = useState({
     full_name: '',
@@ -62,15 +67,25 @@ export const ProfileWizardPage = ({ onComplete }) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handlePhotoUpload = async (e) => {
+  // Open Cropper on file pick
+  const handlePhotoFileSelect = (e) => {
     const file = e.target.files?.[0];
     if (file) {
-      try {
-        const compressedDataUrl = await compressImage(file, 800, 800, 0.8);
-        setFormData(prev => ({ ...prev, photo_url: compressedDataUrl }));
-      } catch (err) {
-        alert('Could not process photo upload');
-      }
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setRawPhotoSrc(event.target.result);
+        setCropperOpen(true);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleCropComplete = async (croppedDataUrl) => {
+    try {
+      const compressed = await compressImage(croppedDataUrl, 600, 600, 0.85);
+      setFormData(prev => ({ ...prev, photo_url: compressed }));
+    } catch (err) {
+      setFormData(prev => ({ ...prev, photo_url: croppedDataUrl }));
     }
   };
 
@@ -126,7 +141,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
       setSuccessBanner(true);
       setTimeout(() => {
         if (onComplete) onComplete();
-      }, 1500);
+      }, 1200);
     } catch (err) {
       alert(err.message || 'Error saving profile');
     } finally {
@@ -138,6 +153,14 @@ export const ProfileWizardPage = ({ onComplete }) => {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
+      {/* Photo Cropper Modal */}
+      <ImageCropperModal
+        isOpen={cropperOpen}
+        imageSrc={rawPhotoSrc}
+        onCropComplete={handleCropComplete}
+        onClose={() => setCropperOpen(false)}
+      />
+
       {/* Header */}
       <div className="text-center mb-8">
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 radius-btn bg-surface-ground text-main text-xs font-medium mb-2 border border-main">
@@ -164,11 +187,11 @@ export const ProfileWizardPage = ({ onComplete }) => {
 
       {successBanner && (
         <div className="mb-6 p-4 radius-card bg-surface-ground border border-main text-main text-sm font-medium flex items-center gap-3">
-          <CheckCircle2 className="w-5 h-5 text-sub flex-shrink-0" />
+          <CheckCircle2 className="w-5 h-5 text-sky-blue flex-shrink-0" />
           <div>
             <p className="font-bold">Profile Submitted!</p>
             <p className="text-xs text-sub mt-0.5">
-              Your profile has been saved.
+              Your profile has been saved successfully.
             </p>
           </div>
         </div>
@@ -180,7 +203,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
         {[
           { number: 1, title: 'Basic Details' },
           { number: 2, title: 'Career & Lifestyle' },
-          { number: 3, title: 'Culture & Bio' },
+          { number: 3, title: 'Culture & Photo' },
           { number: 4, title: 'Verification' }
         ].map((s) => (
           <div key={s.number} className="relative z-10 flex flex-col items-center">
@@ -404,7 +427,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
                 onClick={() => setStep(3)}
                 className="px-6 py-2.5 radius-btn bg-sky-blue hover:bg-sky-blue/90 text-white font-medium text-xs sm:text-sm flex items-center gap-2 shadow-xs"
               >
-                <span>Next: Caste & Bio</span>
+                <span>Next: Culture & Photo</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
@@ -415,7 +438,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
           <div className="space-y-4">
             <h2 className="font-serif text-lg font-bold text-main pb-2 border-b border-main flex items-center gap-2">
               <FileText className="w-5 h-5 text-sub" />
-              <span>Step 3: Cultural Background & Bio</span>
+              <span>Step 3: Cultural Background & Profile Photo</span>
             </h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -445,36 +468,52 @@ export const ProfileWizardPage = ({ onComplete }) => {
             <div>
               <label className="block text-xs font-medium text-sub mb-1">Bio (About Me)</label>
               <textarea
-                rows="4"
+                rows="3"
                 maxLength="500"
                 value={formData.bio}
                 onChange={(e) => handleChange('bio', e.target.value)}
-                placeholder="Describe your personality and expectations..."
+                placeholder="Describe your personality and partner expectations..."
                 className="w-full px-3.5 py-2.5 border border-main radius-btn text-sm bg-surface-ground text-main outline-none focus:ring-1 focus:ring-sky-blue"
               />
             </div>
 
-            <div>
-              <label className="block text-xs font-medium text-sub mb-1">Profile Photo</label>
+            {/* Profile Photo Uploader with Integrated Cropper */}
+            <div className="p-4 border border-main radius-card bg-surface-ground space-y-3">
+              <label className="block text-xs font-semibold text-main">Profile Photo & Cropper</label>
               <div className="flex items-center gap-4">
                 {formData.photo_url ? (
-                  <img
-                    src={formData.photo_url}
-                    alt="Preview"
-                    className="w-16 h-16 radius-card object-cover border border-main"
-                  />
+                  <div className="relative group">
+                    <img
+                      src={formData.photo_url}
+                      alt="Cropped Preview"
+                      className="w-20 h-20 rounded-full object-cover border-2 border-sky-blue shadow-xs"
+                    />
+                  </div>
                 ) : (
-                  <div className="w-16 h-16 radius-card bg-surface-ground flex items-center justify-center text-sub border border-main">
-                    <Camera className="w-6 h-6" />
+                  <div className="w-20 h-20 rounded-full bg-surface-card flex items-center justify-center text-sub border border-main">
+                    <Camera className="w-8 h-8 text-sub" />
                   </div>
                 )}
 
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handlePhotoUpload}
-                  className="block w-full text-xs text-sub file:py-2 file:px-3 file:radius-btn file:border-0 file:text-xs file:font-medium file:bg-surface-ground file:text-main"
-                />
+                <div className="space-y-1.5 flex-1">
+                  <input
+                    type="file"
+                    id="profile-photo-input"
+                    accept="image/*"
+                    onChange={handlePhotoFileSelect}
+                    className="hidden"
+                  />
+                  <label
+                    htmlFor="profile-photo-input"
+                    className="inline-flex items-center gap-2 px-4 py-2 radius-btn bg-sky-blue text-white text-xs font-bold hover:bg-sky-blue/90 cursor-pointer shadow-xs transition-colors"
+                  >
+                    <Crop className="w-4 h-4" />
+                    <span>{formData.photo_url ? 'Re-crop / Change Photo' : 'Upload & Crop Photo'}</span>
+                  </label>
+                  <p className="text-[11px] text-sub">
+                    Upload an image to open the crop, zoom, and rotate editor.
+                  </p>
+                </div>
               </div>
             </div>
 
@@ -504,7 +543,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
           <form onSubmit={handleSubmitProfile} className="space-y-6">
             <div className="p-4 bg-surface-ground border border-main radius-card">
               <div className="flex items-start gap-3">
-                <ShieldCheck className="w-5 h-5 text-sub flex-shrink-0 mt-0.5" />
+                <ShieldCheck className="w-5 h-5 text-sky-blue flex-shrink-0 mt-0.5" />
                 <div>
                   <h3 className="font-serif font-bold text-main text-sm">Verification Documents</h3>
                   <p className="text-xs text-sub mt-0.5">
