@@ -5,7 +5,8 @@ const AuthContext = createContext();
 
 // Admin User IDs authorized for verification review and platform management
 export const ADMIN_UIDS = [
-  '7505771e-35af-4b12-818a-d2e0396a096f'
+  '7505771e-35af-4b12-818a-d2e0396a096f',
+  '277135f2-36c1-4baf-a4c5-a0c850c16500'
 ];
 
 export const AuthProvider = ({ children }) => {
