@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import calculateCompatibilityEstimate from '../lib/compatibilityCalculator';
 
-export const ProfileCard = ({ profile, onViewDetails, onAuthRequired }) => {
+export const ProfileCard = ({ profile, onViewDetails, onOpenCompatibility, onAuthRequired }) => {
   const { user, profile: myProfile, partnerPreferences } = useAuth();
   const { interests, sendInterest, toggleShortlist, isShortlisted } = useData();
   const { t } = useLanguage();
@@ -114,13 +114,28 @@ export const ProfileCard = ({ profile, onViewDetails, onAuthRequired }) => {
           </div>
         </div>
 
-        {/* Compatibility Progress Line */}
+        {/* Compatibility Progress Line with Breakdown Link */}
         <div className="mb-5 space-y-1">
           <div className="flex items-center justify-between text-xs text-sub">
-            <span>{t('matchCompatibility')}</span>
-            <span className="font-bold text-main">{matchScore}%</span>
+            <span className="font-medium text-main">{t('matchCompatibility')}</span>
+            <div className="flex items-center gap-2">
+              <span className="font-extrabold text-sky-blue">{matchScore}%</span>
+              {onOpenCompatibility && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onOpenCompatibility(profile);
+                  }}
+                  className="text-[11px] font-semibold text-sky-blue hover:underline hover:opacity-80 transition-opacity"
+                  title="View detailed factor breakdown"
+                >
+                  Breakdown →
+                </button>
+              )}
+            </div>
           </div>
-          <div className="w-full h-1 bg-surface-ground rounded-full overflow-hidden">
+          <div className="w-full h-1.5 bg-surface-ground rounded-full overflow-hidden border border-main/40">
             <div
               className="h-full bg-sky-blue rounded-full transition-all duration-300"
               style={{ width: `${matchScore}%` }}

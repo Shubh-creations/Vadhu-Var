@@ -1,11 +1,12 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Search, Filter, ShieldCheck, X, Sparkles, LayoutGrid, Layers, UserPlus, ArrowRight } from 'lucide-react';
+import { Search, SlidersHorizontal, Grid, Layers, Sparkles, Filter, ShieldCheck, Heart, UserPlus, ArrowRight, X, ArrowUpDown } from 'lucide-react';
 import ProfileCard from '../components/ProfileCard';
 import FilterPanel from '../components/FilterPanel';
-import HingeCardDeck from '../components/HingeCardDeck';
+import CompatibilityModal from '../components/CompatibilityModal';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
+import calculateCompatibilityEstimate from '../lib/compatibilityCalculator';
 
 export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToProfile, onAuthRequired, showShortlistedOnly = false }) => {
   const { profiles, shortlistedIds } = useData();
@@ -16,6 +17,7 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
   const [discoveryView, setDiscoveryView] = useState('grid');
   const [isLoadingFeed, setIsLoadingFeed] = useState(false);
+  const [sortBy, setSortBy] = useState('best_match');
 
   const [filters, setFilters] = useState({
     ageMin: partnerPreferences?.age_min || 18,
@@ -56,6 +58,7 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
       verifiedOnly: false
     });
     setSearchQuery('');
+    setSortBy('best_match');
   };
 
   const handleSwitchView = (newView) => {
@@ -64,10 +67,12 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
     setTimeout(() => setIsLoadingFeed(false), 200);
   };
 
+  // Filter and Score Sorting Engine
   const filteredProfiles = useMemo(() => {
     const currentUserId = myProfile?.id || user?.id;
 
-    return profiles.filter((p) => {
+    // 1. Hard Filtering
+    const matching = profiles.filter((p) => {
       // Exclude hidden or deactivated profiles
       if (p.is_active === false) return false;
       if (p.is_search_visible === false && p.id !== currentUserId) return false;
@@ -106,7 +111,43 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
 
       return true;
     });
-  }, [profiles, filters, searchQuery, myProfile, user, showShortlistedOnly, shortlistedIds]);
+
+    // 2. Score Calculation & Sorting
+    const scoredList = matching.map(p => ({
+      ...p,
+      computedMatchScore: calculateCompatibilityEstimate(myProfile, p, partnerPreferences)
+    }));
+
+    return scoredList.sort((a, b) => {
+      if (sortBy === 'best_match') {
+        // Primary: Match Score descending
+        const scoreDiff = b.computedMatchScore - a.computedMatchScore;
+        if (scoreDiff !== 0) return scoreDiff;
+
+        // Tie-breaker 1: Verification Tier (100% Verified > ID Verified > Unverified)
+        const getTier = (item) => item.is_fully_verified ? 3 : item.is_id_verified ? 2 : 1;
+        const tierDiff = getTier(b) - getTier(a);
+        if (tierDiff !== 0) return tierDiff;
+
+        // Tie-breaker 2: Recency
+        return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+      }
+
+      if (sortBy === 'newest') {
+        return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+      }
+
+      if (sortBy === 'age_asc') {
+        return (a.age || 0) - (b.age || 0);
+      }
+
+      if (sortBy === 'age_desc') {
+        return (b.age || 0) - (a.age || 0);
+      }
+
+      return 0;
+    });
+  }, [profiles, filters, searchQuery, myProfile, partnerPreferences, user, showShortlistedOnly, shortlistedIds, sortBy]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-8">
@@ -126,8 +167,24 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
           </p>
         </div>
 
-        {/* View Switcher, Search Bar & Mobile Filters */}
-        <div className="flex items-center gap-2 w-full md:w-auto">
+        {/* View Switcher, Sort Dropdown & Search Controls */}
+        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+          {/* Sort By Dropdown */}
+          <div className="flex items-center gap-1.5 bg-surface-card border border-main radius-btn px-2.5 py-1.5 shadow-xs">
+            <ArrowUpDown className="w-3.5 h-3.5 text-sky-blue" />
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="bg-transparent text-xs font-semibold text-main outline-none cursor-pointer"
+              aria-label="Sort Candidates"
+            >
+              <option value="best_match">Best Match (100-Pt Score)</option>
+              <option value="newest">Recently Joined</option>
+              <option value="age_asc">Age: Low to High</option>
+              <option value="age_desc">Age: High to Low</option>
+            </select>
+          </div>
+
           <div className="flex bg-surface-ground p-0.5 sm:p-1 radius-btn border border-main flex-shrink-0">
             <button
               onClick={() => handleSwitchView('grid')}
@@ -138,10 +195,9 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
               }`}
               title="Grid View"
             >
-              <LayoutGrid className="w-3.5 h-3.5" />
+              <Grid className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Grid</span>
             </button>
-
             <button
               onClick={() => handleSwitchView('deck')}
               className={`flex items-center gap-1 px-2.5 sm:px-3 py-1.5 radius-btn text-xs font-medium transition-all ${
@@ -149,54 +205,66 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
                   ? 'bg-surface-card text-main shadow-xs font-bold'
                   : 'text-sub hover:text-main'
               }`}
-              title="Prompt Deck"
+              title="Deck View"
             >
               <Layers className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Deck</span>
             </button>
           </div>
 
-          <div className="relative flex-1">
-            <Search className="w-4 h-4 text-sub absolute left-3 top-2.5" />
-            <input
-              type="text"
-              placeholder={t('searchPlaceholder')}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-7 py-1.5 bg-surface-card border border-main radius-btn text-xs text-main outline-none focus:ring-1 focus:ring-sky-blue"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 top-2.5 text-sub hover:text-main"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
-
           <button
-            onClick={() => setFilterDrawerOpen(!filterDrawerOpen)}
-            className="md:hidden flex items-center gap-1.5 px-3 py-1.5 bg-sky-blue text-white radius-btn text-xs font-bold flex-shrink-0 shadow-xs"
+            onClick={() => setFilterDrawerOpen(true)}
+            className="md:hidden flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2 radius-btn bg-sky-blue text-white text-xs font-bold shadow-xs active:scale-95 transition-transform"
           >
-            <Filter className="w-3.5 h-3.5" />
+            <SlidersHorizontal className="w-3.5 h-3.5" />
             <span>Filters</span>
           </button>
         </div>
       </div>
 
-      {/* Main Content Layout */}
+      {/* Full-Width Search Input */}
+      <div className="mb-6 relative">
+        <Search className="w-4 h-4 text-sub absolute left-3.5 top-1/2 -translate-y-1/2" />
+        <input
+          type="text"
+          placeholder={t('searchPlaceholder')}
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full pl-10 pr-4 py-2.5 radius-btn text-xs sm:text-sm bg-surface-card text-main border border-main outline-none focus:border-sky-blue focus:ring-1 focus:ring-sky-blue shadow-xs transition-colors"
+        />
+        {searchQuery && (
+          <button
+            onClick={() => setSearchQuery('')}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-sub hover:text-main"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
+      </div>
+
+      {/* Main Discover Layout */}
       {discoveryView === 'deck' ? (
-        <div className="py-4">
-          <HingeCardDeck
-            profiles={filteredProfiles}
-            onViewDetails={onViewProfile}
-            onOpenCompatibility={onOpenCompatibility}
-            onAuthRequired={onAuthRequired}
-          />
+        /* Deck Mode */
+        <div className="max-w-md mx-auto py-4">
+          {filteredProfiles.length > 0 ? (
+            <div className="relative">
+              <ProfileCard
+                profile={filteredProfiles[0]}
+                onViewDetails={onViewProfile}
+                onOpenCompatibility={onOpenCompatibility}
+                onAuthRequired={onAuthRequired}
+              />
+            </div>
+          ) : (
+            <div className="bg-surface-card radius-card border border-main p-8 text-center text-sub text-xs">
+              No matching candidate found in deck view.
+            </div>
+          )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-start">
+        /* Grid Mode with Sidebar Filter */
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          {/* Desktop Filter Panel */}
           <div className="hidden md:block md:col-span-1 sticky top-20">
             <FilterPanel
               filters={filters}
@@ -206,6 +274,7 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
             />
           </div>
 
+          {/* Mobile Filter Drawer */}
           {filterDrawerOpen && (
             <div className="md:hidden fixed inset-0 z-50 bg-black/60 p-4 overflow-y-auto">
               <div className="bg-surface-card radius-card max-w-lg mx-auto p-4 border border-main shadow-2xl">

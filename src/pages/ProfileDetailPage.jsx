@@ -5,8 +5,8 @@ import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import calculateCompatibilityEstimate from '../lib/compatibilityCalculator';
 
-export const ProfileDetailPage = ({ profile, onBack, onAuthRequired }) => {
-  const { user, profile: myProfile } = useAuth();
+export const ProfileDetailPage = ({ profile, onBack, onOpenCompatibility, onAuthRequired }) => {
+  const { user, profile: myProfile, partnerPreferences } = useAuth();
   const { interests, sendInterest } = useData();
   const [loading, setLoading] = useState(false);
   const [interestSent, setInterestSent] = useState(false);
@@ -19,7 +19,7 @@ export const ProfileDetailPage = ({ profile, onBack, onAuthRequired }) => {
     i => i.sender_id === currentUserId && i.receiver_id === profile.id
   );
   const hasExpressedInterest = interestSent || Boolean(existingInterest);
-  const matchScore = calculateCompatibilityEstimate(myProfile, profile);
+  const matchScore = calculateCompatibilityEstimate(myProfile, profile, partnerPreferences);
 
   const handleExpressInterest = async () => {
     if (!user && !myProfile) {
@@ -101,10 +101,21 @@ export const ProfileDetailPage = ({ profile, onBack, onAuthRequired }) => {
             </div>
 
             {/* Match Compatibility */}
-            <div className="inline-flex items-center gap-2 bg-surface-ground border border-main px-3.5 py-1.5 radius-btn text-xs mb-5">
-              <Sparkles className="w-4 h-4 text-sky-blue" />
-              <span className="font-medium text-main">Match Compatibility:</span>
-              <span className="font-bold text-sky-blue text-sm">{matchScore}%</span>
+            <div className="inline-flex items-center gap-3 bg-surface-ground border border-main px-4 py-2 radius-btn text-xs mb-5">
+              <div className="flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-sky-blue" />
+                <span className="font-medium text-main">Match Compatibility:</span>
+                <span className="font-bold text-sky-blue text-sm">{matchScore}%</span>
+              </div>
+              {onOpenCompatibility && (
+                <button
+                  type="button"
+                  onClick={() => onOpenCompatibility(profile)}
+                  className="font-bold text-sky-blue hover:underline pl-2 border-l border-main"
+                >
+                  View Breakdown →
+                </button>
+              )}
             </div>
 
             {/* Express Interest Button (Sky Blue) */}
