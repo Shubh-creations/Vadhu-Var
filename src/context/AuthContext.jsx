@@ -25,9 +25,9 @@ export const AuthProvider = ({ children }) => {
           console.warn('Supabase auth fetch error, using local state:', err);
         }
       } else {
-        // Demo Mode / Local Auth check
-        const storedUser = localStorage.getItem('mh_matrimony_user');
-        const storedProfile = localStorage.getItem('mh_matrimony_profile');
+        // Local persistence check
+        const storedUser = localStorage.getItem('vadhu_var_user');
+        const storedProfile = localStorage.getItem('vadhu_var_profile');
         if (storedUser) {
           setUser(JSON.parse(storedUser));
         }
@@ -67,7 +67,7 @@ export const AuthProvider = ({ children }) => {
 
       if (!error && data) {
         setProfile(data);
-        localStorage.setItem('mh_matrimony_profile', JSON.stringify(data));
+        localStorage.setItem('vadhu_var_profile', JSON.stringify(data));
       }
     } catch (err) {
       console.error('Error fetching user profile:', err);
@@ -75,7 +75,11 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Sign up user
-  const signUp = async (email, password, fullName) => {
+  const signUp = async (email, password, fullNameOrOptions) => {
+    const fullName = typeof fullNameOrOptions === 'object' 
+      ? fullNameOrOptions?.full_name || fullNameFromEmail(email)
+      : fullNameOrOptions || fullNameFromEmail(email);
+
     if (isSupabaseConfigured() && !isDemoMode) {
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -88,14 +92,14 @@ export const AuthProvider = ({ children }) => {
       setUser(data.user);
       return data;
     } else {
-      // Local Demo Sign Up
+      // Local Sign Up
       const mockUser = {
         id: `user-${Date.now()}`,
         email,
         user_metadata: { full_name: fullName }
       };
       setUser(mockUser);
-      localStorage.setItem('mh_matrimony_user', JSON.stringify(mockUser));
+      localStorage.setItem('vadhu_var_user', JSON.stringify(mockUser));
       return { user: mockUser };
     }
   };
@@ -112,14 +116,20 @@ export const AuthProvider = ({ children }) => {
       await fetchUserProfile(data.user.id);
       return data;
     } else {
-      // Demo Mode login check
-      const mockUser = {
-        id: 'demo-user-me',
-        email: email || 'demo@example.com',
-        user_metadata: { full_name: fullNameFromEmail(email) }
-      };
+      // Demo / Local Login
+      const storedUser = localStorage.getItem('vadhu_var_user');
+      let mockUser = storedUser ? JSON.parse(storedUser) : null;
+
+      if (!mockUser || mockUser.email !== email) {
+        mockUser = {
+          id: `user-${Date.now()}`,
+          email: email || 'user@example.com',
+          user_metadata: { full_name: fullNameFromEmail(email) }
+        };
+      }
+
       setUser(mockUser);
-      localStorage.setItem('mh_matrimony_user', JSON.stringify(mockUser));
+      localStorage.setItem('vadhu_var_user', JSON.stringify(mockUser));
       return { user: mockUser };
     }
   };
@@ -131,13 +141,13 @@ export const AuthProvider = ({ children }) => {
     }
     setUser(null);
     setProfile(null);
-    localStorage.removeItem('mh_matrimony_user');
-    localStorage.removeItem('mh_matrimony_profile');
+    localStorage.removeItem('vadhu_var_user');
+    localStorage.removeItem('vadhu_var_profile');
   };
 
   // Helper function
   function fullNameFromEmail(email) {
-    if (!email) return 'User';
+    if (!email) return 'Candidate';
     const namePart = email.split('@')[0];
     return namePart.charAt(0).toUpperCase() + namePart.slice(1);
   }
@@ -151,7 +161,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     setProfile(fullProfile);
-    localStorage.setItem('mh_matrimony_profile', JSON.stringify(fullProfile));
+    localStorage.setItem('vadhu_var_profile', JSON.stringify(fullProfile));
 
     if (isSupabaseConfigured() && !isDemoMode && user) {
       try {
@@ -163,7 +173,7 @@ export const AuthProvider = ({ children }) => {
 
         if (error) throw error;
         setProfile(data);
-        localStorage.setItem('mh_matrimony_profile', JSON.stringify(data));
+        localStorage.setItem('vadhu_var_profile', JSON.stringify(data));
       } catch (err) {
         console.error('Supabase profile save error:', err);
       }
@@ -180,6 +190,7 @@ export const AuthProvider = ({ children }) => {
         isDemoMode,
         setIsDemoMode,
         signUp,
+        signup: signUp, // Alias for backward compatibility
         login,
         logout,
         saveProfile,

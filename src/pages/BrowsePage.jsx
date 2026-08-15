@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { Search, Filter, ShieldCheck, X, Sparkles, LayoutGrid, Layers } from 'lucide-react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { Search, Filter, ShieldCheck, X, Sparkles, LayoutGrid, Layers, UserPlus } from 'lucide-react';
 import ProfileCard from '../components/ProfileCard';
 import FilterPanel from '../components/FilterPanel';
 import HingeCardDeck from '../components/HingeCardDeck';
@@ -29,6 +29,14 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onAuthRequired,
     incomeBracket: 'all',
     verifiedOnly: false
   });
+
+  // Auto-set opposite gender match preference if user is logged in
+  useEffect(() => {
+    if (myProfile?.gender) {
+      const preferredGender = myProfile.gender === 'female' ? 'male' : 'female';
+      setFilters(prev => ({ ...prev, gender: preferredGender }));
+    }
+  }, [myProfile?.gender]);
 
   const handleFilterChange = (key, value) => {
     setFilters(prev => ({ ...prev, [key]: value }));
@@ -65,7 +73,7 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onAuthRequired,
       if (filters.verifiedOnly && !p.is_id_verified && !p.is_fully_verified) return false;
       if (filters.gender !== 'all' && p.gender !== filters.gender) return false;
       if (p.age < filters.ageMin || p.age > filters.ageMax) return false;
-      if (filters.city && !p.city.toLowerCase().includes(filters.city.toLowerCase())) return false;
+      if (filters.city && !p.city?.toLowerCase().includes(filters.city.toLowerCase())) return false;
       if (filters.state && p.state && p.state.toLowerCase() !== filters.state.toLowerCase()) return false;
       if (filters.education && p.education_level?.toLowerCase() !== filters.education.toLowerCase()) return false;
       if (filters.diet && p.diet !== filters.diet) return false;
@@ -239,20 +247,26 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onAuthRequired,
                 ))}
               </div>
             ) : (
-              <div className="bg-surface-card radius-card border border-main p-12 text-center my-4">
-                <ShieldCheck className="w-12 h-12 text-sub mx-auto mb-3" />
-                <h3 className="font-serif font-bold text-main text-lg mb-1">
-                  No Matching Candidates Found
-                </h3>
-                <p className="text-xs text-sub max-w-md mx-auto mb-6">
-                  Try adjusting your filter criteria to view more candidates.
-                </p>
-                <button
-                  onClick={handleResetFilters}
-                  className="px-5 py-2.5 radius-btn bg-sky-blue text-white text-xs font-medium hover:bg-sky-blue/90 transition-colors"
-                >
-                  {t('reset')}
-                </button>
+              <div className="bg-surface-card radius-card border border-main p-12 text-center my-4 space-y-4">
+                <div className="w-12 h-12 radius-btn bg-sky-blue/10 text-sky-blue flex items-center justify-center mx-auto">
+                  <UserPlus className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="font-serif font-bold text-main text-lg mb-1">
+                    No Matching Candidates Found
+                  </h3>
+                  <p className="text-xs text-sub max-w-md mx-auto">
+                    Be among the first verified profiles in your area or try resetting your filter preferences.
+                  </p>
+                </div>
+                <div className="flex justify-center gap-3">
+                  <button
+                    onClick={handleResetFilters}
+                    className="px-5 py-2.5 radius-btn bg-sky-blue text-white text-xs font-medium hover:bg-sky-blue/90 transition-colors"
+                  >
+                    {t('reset')}
+                  </button>
+                </div>
               </div>
             )}
           </div>

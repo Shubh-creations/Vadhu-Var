@@ -65,20 +65,20 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
   return (
     <header className="sticky top-0 z-40 bg-surface-card border-b border-main transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo Mark: Vadhu Var */}
+        <div className="flex items-center justify-between h-16 gap-2">
+          {/* Logo Mark: Vadhu Var (Flex shrink 0 to avoid mobile squeeze) */}
           <div 
             onClick={() => setActiveTab('landing')}
-            className="flex items-center gap-2.5 cursor-pointer group"
+            className="flex items-center gap-2 cursor-pointer group flex-shrink-0"
           >
-            <div className="w-8 h-8 radius-btn bg-sky-blue text-white flex items-center justify-center font-extrabold shadow-xs transition-colors">
+            <div className="w-8 h-8 radius-btn bg-sky-blue text-white flex items-center justify-center font-extrabold shadow-xs flex-shrink-0">
               <ShieldCheck className="w-5 h-5" />
             </div>
-            <div>
-              <span className="font-serif font-bold text-main text-base sm:text-lg tracking-tight block leading-none">
+            <div className="flex flex-col">
+              <span className="font-serif font-bold text-main text-base sm:text-lg tracking-tight leading-none">
                 {t('brandName')}
               </span>
-              <span className="text-[10px] font-medium text-sub uppercase tracking-widest block mt-0.5">
+              <span className="text-[9px] sm:text-[10px] font-semibold text-sub uppercase tracking-wider block mt-0.5 leading-none">
                 {t('brandSubtitle')}
               </span>
             </div>
@@ -112,13 +112,13 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
           </nav>
 
           {/* Right Section: Trilingual Language Switcher (EN / HI / MR), Theme Toggle & Auth */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3">
             {/* Trilingual Language Selector */}
             <div className="flex items-center bg-surface-ground radius-btn border border-main p-0.5 text-xs font-bold text-sub">
-              <Globe className="w-3.5 h-3.5 mx-1.5 text-sub hidden sm:block" />
+              <Globe className="w-3.5 h-3.5 mx-1 text-sub hidden sm:block" />
               <button
                 onClick={() => setLang('en')}
-                className={`px-2 py-1 radius-btn transition-colors ${
+                className={`px-1.5 sm:px-2 py-0.5 sm:py-1 radius-btn transition-colors ${
                   lang === 'en' ? 'bg-surface-card text-main shadow-xs' : 'hover:text-main'
                 }`}
                 title="English"
@@ -127,7 +127,7 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
               </button>
               <button
                 onClick={() => setLang('hi')}
-                className={`px-2 py-1 radius-btn transition-colors ${
+                className={`px-1.5 sm:px-2 py-0.5 sm:py-1 radius-btn transition-colors ${
                   lang === 'hi' ? 'bg-surface-card text-main shadow-xs' : 'hover:text-main'
                 }`}
                 title="हिंदी (Hindi)"
@@ -136,7 +136,7 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
               </button>
               <button
                 onClick={() => setLang('mr')}
-                className={`px-2 py-1 radius-btn transition-colors ${
+                className={`px-1.5 sm:px-2 py-0.5 sm:py-1 radius-btn transition-colors ${
                   lang === 'mr' ? 'bg-surface-card text-main shadow-xs' : 'hover:text-main'
                 }`}
                 title="मराठी (Marathi)"
@@ -148,7 +148,7 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
             {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
-              className="p-2 radius-btn text-sub hover:text-main hover:bg-surface-ground transition-colors"
+              className="p-1.5 sm:p-2 radius-btn text-sub hover:text-main hover:bg-surface-ground transition-colors"
               title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
               aria-label="Toggle Theme"
             >
@@ -158,7 +158,7 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
             {/* Privacy Controls Modal Button */}
             <button
               onClick={onOpenPrivacyModal}
-              className="p-2 radius-btn text-sub hover:text-main hover:bg-surface-ground transition-colors"
+              className="hidden sm:block p-2 radius-btn text-sub hover:text-main hover:bg-surface-ground transition-colors"
               title={t('privacyControls')}
               aria-label="Privacy Controls"
             >
@@ -168,7 +168,7 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
             {/* Messaging */}
             <button
               onClick={onOpenChatModal}
-              className="p-2 radius-btn text-sub hover:text-main hover:bg-surface-ground transition-colors"
+              className="p-1.5 sm:p-2 radius-btn text-sub hover:text-main hover:bg-surface-ground transition-colors"
               title={t('messaging')}
               aria-label="Messaging"
             >
@@ -187,22 +187,22 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
             )}
 
             {user || profile ? (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 sm:gap-2">
                 <button
                   onClick={() => setActiveTab('profile')}
-                  className="hidden sm:flex items-center gap-2 p-1 pr-3 rounded-full border border-main hover:border-sky-blue transition-colors"
+                  className="flex items-center gap-1.5 p-1 sm:pr-3 rounded-full border border-main hover:border-sky-blue transition-colors"
                 >
                   <div className="w-7 h-7 rounded-full bg-sky-blue text-white font-bold text-xs flex items-center justify-center">
                     {(profile?.full_name || user?.email || 'U')[0].toUpperCase()}
                   </div>
-                  <span className="text-xs font-medium text-main max-w-[90px] truncate">
+                  <span className="hidden sm:inline text-xs font-medium text-main max-w-[90px] truncate">
                     {profile?.full_name || user?.email}
                   </span>
                 </button>
 
                 <button
                   onClick={logout}
-                  className="p-2 radius-btn text-sub hover:text-main hover:bg-surface-ground transition-colors"
+                  className="p-1.5 sm:p-2 radius-btn text-sub hover:text-main hover:bg-surface-ground transition-colors"
                   title={t('signOut')}
                   aria-label="Sign Out"
                 >
@@ -212,7 +212,7 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
             ) : (
               <button
                 onClick={onOpenAuth}
-                className="px-4 py-2 radius-btn bg-sky-blue hover:bg-sky-blue/90 text-white text-xs sm:text-sm font-medium transition-colors shadow-xs"
+                className="px-3 py-1.5 sm:px-4 sm:py-2 radius-btn bg-sky-blue hover:bg-sky-blue/90 text-white text-xs sm:text-sm font-medium transition-colors shadow-xs"
               >
                 {t('signIn')}
               </button>
@@ -221,7 +221,7 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
             {/* Mobile Menu Toggle */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 radius-btn text-sub hover:bg-surface-ground"
+              className="lg:hidden p-1.5 radius-btn text-sub hover:bg-surface-ground"
               aria-label="Toggle Navigation Menu"
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
