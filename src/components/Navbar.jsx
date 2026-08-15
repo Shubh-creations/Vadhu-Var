@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Heart, Search, User, Download, Menu, X, LogOut, Star, MessageSquare, Shield, Sun, Moon, Globe } from 'lucide-react';
+import { Heart, Search, User, Download, LogOut, Star, MessageSquare, Shield, Sun, Moon, Globe } from 'lucide-react';
 import { Logo } from './Logo';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
@@ -12,11 +12,10 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
   const { isDark, toggleTheme } = useTheme();
   const { lang, setLang, t } = useLanguage();
 
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [isInstallable, setIsInstallable] = useState(false);
 
-  const userId = profile?.id || user?.id || 'demo-user-me';
+  const userId = profile?.id || user?.id;
   const receivedInterestsCount = interests.filter(
     i => i.receiver_id === userId && i.status === 'pending'
   ).length;
@@ -65,8 +64,8 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
 
   return (
     <header className="sticky top-0 z-40 bg-surface-card border-b border-main transition-colors">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 gap-2">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-14 sm:h-16 gap-2">
           {/* Logo Mark: 1st Website Icon emblem + "वधू - वर" */}
           <div 
             onClick={() => setActiveTab('landing')}
@@ -76,7 +75,7 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
           </div>
 
           {/* Desktop Primary Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-6 h-full">
+          <nav className="hidden md:flex items-center gap-6 h-full">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
@@ -102,14 +101,13 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
             })}
           </nav>
 
-          {/* Right Section: Trilingual Language Switcher (EN / HI / MR), Theme Toggle & Auth */}
-          <div className="flex items-center gap-1.5 sm:gap-3">
+          {/* Right Action Tools: Language (EN/HI/MR), Dark Mode, Privacy & Auth */}
+          <div className="flex items-center gap-1 sm:gap-2.5">
             {/* Trilingual Language Selector */}
-            <div className="flex items-center bg-surface-ground radius-btn border border-main p-0.5 text-xs font-bold text-sub">
-              <Globe className="w-3.5 h-3.5 mx-1 text-sub hidden sm:block" />
+            <div className="flex items-center bg-surface-ground radius-btn border border-main p-0.5 text-[11px] font-bold text-sub">
               <button
                 onClick={() => setLang('en')}
-                className={`px-1.5 sm:px-2 py-0.5 sm:py-1 radius-btn transition-colors ${
+                className={`px-1.5 py-0.5 radius-btn transition-colors ${
                   lang === 'en' ? 'bg-surface-card text-main shadow-xs font-bold' : 'hover:text-main'
                 }`}
                 title="English"
@@ -118,7 +116,7 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
               </button>
               <button
                 onClick={() => setLang('hi')}
-                className={`px-1.5 sm:px-2 py-0.5 sm:py-1 radius-btn transition-colors ${
+                className={`px-1.5 py-0.5 radius-btn transition-colors ${
                   lang === 'hi' ? 'bg-surface-card text-main shadow-xs font-bold' : 'hover:text-main'
                 }`}
                 title="हिंदी (Hindi)"
@@ -127,7 +125,7 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
               </button>
               <button
                 onClick={() => setLang('mr')}
-                className={`px-1.5 sm:px-2 py-0.5 sm:py-1 radius-btn transition-colors ${
+                className={`px-1.5 py-0.5 radius-btn transition-colors ${
                   lang === 'mr' ? 'bg-surface-card text-main shadow-xs font-bold' : 'hover:text-main'
                 }`}
                 title="मराठी (Marathi)"
@@ -139,27 +137,26 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
             {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
-              className="p-1.5 sm:p-2 radius-btn text-sub hover:text-main hover:bg-surface-ground transition-colors"
+              className="p-1.5 radius-btn text-sub hover:text-main hover:bg-surface-ground transition-colors"
               title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
               aria-label="Toggle Theme"
             >
               {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
 
-            {/* Privacy Controls */}
+            {/* Desktop Privacy & Messaging Icons */}
             <button
               onClick={onOpenPrivacyModal}
-              className="hidden sm:block p-2 radius-btn text-sub hover:text-main hover:bg-surface-ground transition-colors"
+              className="hidden sm:block p-1.5 radius-btn text-sub hover:text-main hover:bg-surface-ground transition-colors"
               title={t('privacyControls')}
               aria-label="Privacy Controls"
             >
               <Shield className="w-4 h-4" />
             </button>
 
-            {/* Messaging */}
             <button
               onClick={onOpenChatModal}
-              className="p-1.5 sm:p-2 radius-btn text-sub hover:text-main hover:bg-surface-ground transition-colors"
+              className="hidden sm:block p-1.5 radius-btn text-sub hover:text-main hover:bg-surface-ground transition-colors"
               title={t('messaging')}
               aria-label="Messaging"
             >
@@ -169,7 +166,7 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
             {isInstallable && (
               <button
                 onClick={handleInstallPWA}
-                className="hidden sm:flex items-center gap-1 px-3 py-1.5 radius-btn bg-surface-ground text-main text-xs font-medium hover:opacity-80 transition-opacity border border-main"
+                className="hidden lg:flex items-center gap-1 px-2.5 py-1 radius-btn bg-surface-ground text-main text-xs font-medium hover:opacity-80 transition-opacity border border-main"
                 title="Install app"
               >
                 <Download className="w-3.5 h-3.5" />
@@ -178,81 +175,40 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
             )}
 
             {user || profile ? (
-              <div className="flex items-center gap-1.5 sm:gap-2">
+              <div className="flex items-center gap-1 sm:gap-2">
                 <button
                   onClick={() => setActiveTab('profile')}
-                  className="flex items-center gap-1.5 p-1 sm:pr-3 rounded-full border border-main hover:border-sky-blue transition-colors"
+                  className="flex items-center gap-1.5 p-0.5 sm:pr-2.5 rounded-full border border-main hover:border-sky-blue transition-colors"
+                  title="My Profile"
                 >
                   <div className="w-7 h-7 rounded-full bg-sky-blue text-white font-bold text-xs flex items-center justify-center">
                     {(profile?.full_name || user?.email || 'U')[0].toUpperCase()}
                   </div>
-                  <span className="hidden sm:inline text-xs font-medium text-main max-w-[90px] truncate">
-                    {profile?.full_name || user?.email}
+                  <span className="hidden sm:inline text-xs font-medium text-main max-w-[85px] truncate">
+                    {profile?.full_name || user?.email?.split('@')[0]}
                   </span>
                 </button>
 
                 <button
                   onClick={logout}
-                  className="p-1.5 sm:p-2 radius-btn text-sub hover:text-main hover:bg-surface-ground transition-colors"
+                  className="p-1.5 radius-btn text-sub hover:text-main hover:bg-surface-ground transition-colors"
                   title={t('signOut')}
                   aria-label="Sign Out"
                 >
-                  <LogOut className="w-4 h-4" />
+                  <LogOut className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </button>
               </div>
             ) : (
               <button
                 onClick={onOpenAuth}
-                className="px-3 py-1.5 sm:px-4 sm:py-2 radius-btn bg-sky-blue hover:bg-sky-blue/90 text-white text-xs sm:text-sm font-medium transition-colors shadow-xs"
+                className="px-3 py-1 sm:px-4 sm:py-1.5 radius-btn bg-sky-blue hover:bg-sky-blue/90 text-white text-xs sm:text-sm font-bold transition-colors shadow-xs"
               >
                 {t('signIn')}
               </button>
             )}
-
-            {/* Mobile Menu Toggle */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-1.5 radius-btn text-sub hover:bg-surface-ground"
-              aria-label="Toggle Navigation Menu"
-            >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
           </div>
         </div>
       </div>
-
-      {mobileMenuOpen && (
-        <div className="lg:hidden border-t border-main bg-surface-card px-4 pt-2 pb-4 space-y-1">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeTab === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => {
-                  setActiveTab(item.id);
-                  setMobileMenuOpen(false);
-                }}
-                className={`w-full flex items-center justify-between px-4 py-3 radius-btn text-sm font-medium transition-colors ${
-                  isActive
-                    ? 'bg-surface-ground text-main border-l-2 border-sky-blue'
-                    : 'text-sub hover:bg-surface-ground'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <Icon className="w-5 h-5 text-sub" />
-                  <span>{item.label}</span>
-                </div>
-                {item.badge && (
-                  <span className="px-2 py-0.5 text-xs font-semibold text-sub bg-surface-ground rounded-full border border-main">
-                    {item.badge}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-      )}
     </header>
   );
 };

@@ -7,7 +7,7 @@ import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 
-export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onAuthRequired, showShortlistedOnly = false }) => {
+export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToProfile, onAuthRequired, showShortlistedOnly = false }) => {
   const { profiles, shortlistedIds } = useData();
   const { profile: myProfile, user } = useAuth();
   const { t } = useLanguage();
@@ -105,7 +105,7 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onAuthRequired,
   }, [profiles, filters, searchQuery, myProfile, user, showShortlistedOnly, shortlistedIds]);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-8">
       {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
@@ -122,47 +122,49 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onAuthRequired,
           </p>
         </div>
 
-        {/* View Switcher & Search Bar */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <div className="flex bg-surface-ground p-1 radius-btn border border-main">
+        {/* View Switcher, Search Bar & Mobile Filters */}
+        <div className="flex items-center gap-2 w-full md:w-auto">
+          <div className="flex bg-surface-ground p-0.5 sm:p-1 radius-btn border border-main flex-shrink-0">
             <button
               onClick={() => handleSwitchView('grid')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 radius-btn text-xs font-medium transition-all ${
+              className={`flex items-center gap-1 px-2.5 sm:px-3 py-1.5 radius-btn text-xs font-medium transition-all ${
                 discoveryView === 'grid'
-                  ? 'bg-surface-card text-main shadow-xs'
+                  ? 'bg-surface-card text-main shadow-xs font-bold'
                   : 'text-sub hover:text-main'
               }`}
+              title="Grid View"
             >
               <LayoutGrid className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Grid View</span>
+              <span className="hidden sm:inline">Grid</span>
             </button>
 
             <button
               onClick={() => handleSwitchView('deck')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 radius-btn text-xs font-medium transition-all ${
+              className={`flex items-center gap-1 px-2.5 sm:px-3 py-1.5 radius-btn text-xs font-medium transition-all ${
                 discoveryView === 'deck'
-                  ? 'bg-surface-card text-main shadow-xs'
+                  ? 'bg-surface-card text-main shadow-xs font-bold'
                   : 'text-sub hover:text-main'
               }`}
+              title="Prompt Deck"
             >
               <Layers className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Prompt Deck</span>
+              <span className="hidden sm:inline">Deck</span>
             </button>
           </div>
 
-          <div className="relative flex-1 sm:w-60">
+          <div className="relative flex-1">
             <Search className="w-4 h-4 text-sub absolute left-3 top-2.5" />
             <input
               type="text"
               placeholder={t('searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-1.5 bg-surface-card border border-main radius-btn text-xs text-main outline-none focus:ring-1 focus:ring-sky-blue"
+              className="w-full pl-9 pr-7 py-1.5 bg-surface-card border border-main radius-btn text-xs text-main outline-none focus:ring-1 focus:ring-sky-blue"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-2.5 text-sub hover:text-main"
+                className="absolute right-2.5 top-2.5 text-sub hover:text-main"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -171,7 +173,7 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onAuthRequired,
 
           <button
             onClick={() => setFilterDrawerOpen(!filterDrawerOpen)}
-            className="md:hidden flex items-center gap-1.5 px-3 py-1.5 bg-sky-blue text-white radius-btn text-xs font-medium"
+            className="md:hidden flex items-center gap-1.5 px-3 py-1.5 bg-sky-blue text-white radius-btn text-xs font-bold flex-shrink-0 shadow-xs"
           >
             <Filter className="w-3.5 h-3.5" />
             <span>Filters</span>
@@ -202,9 +204,10 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onAuthRequired,
 
           {filterDrawerOpen && (
             <div className="md:hidden fixed inset-0 z-50 bg-black/60 p-4 overflow-y-auto">
-              <div className="bg-surface-card radius-card max-w-lg mx-auto p-4 border border-main">
-                <div className="flex justify-end mb-2">
-                  <button onClick={() => setFilterDrawerOpen(false)} className="p-1 text-sub">
+              <div className="bg-surface-card radius-card max-w-lg mx-auto p-4 border border-main shadow-2xl">
+                <div className="flex items-center justify-between pb-3 mb-3 border-b border-main">
+                  <h3 className="font-serif font-bold text-main text-base">Filter Profiles</h3>
+                  <button onClick={() => setFilterDrawerOpen(false)} className="p-1 text-sub hover:text-main">
                     <X className="w-5 h-5" />
                   </button>
                 </div>
@@ -247,7 +250,7 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onAuthRequired,
                 ))}
               </div>
             ) : (
-              <div className="bg-surface-card radius-card border border-main p-8 sm:p-12 text-center my-4 space-y-4 shadow-sm">
+              <div className="bg-surface-card radius-card border border-main p-8 sm:p-12 text-center my-2 space-y-4 shadow-sm">
                 <div className="w-14 h-14 radius-btn bg-sky-blue/10 text-sky-blue flex items-center justify-center mx-auto">
                   <UserPlus className="w-7 h-7" />
                 </div>
@@ -261,7 +264,7 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onAuthRequired,
                 </div>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
                   <button
-                    onClick={onAuthRequired}
+                    onClick={user || myProfile ? onNavigateToProfile : onAuthRequired}
                     className="w-full sm:w-auto px-6 py-2.5 radius-btn bg-sky-blue text-white text-xs font-bold hover:bg-sky-blue/90 transition-colors flex items-center justify-center gap-1.5 shadow-xs"
                   >
                     <span>{myProfile ? 'Update Profile' : 'Create Your Profile'}</span>

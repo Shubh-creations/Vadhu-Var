@@ -83,6 +83,7 @@ function AppContent() {
           <BrowsePage
             onViewProfile={handleViewProfileDetail}
             onOpenCompatibility={(p) => setCompatibilityCandidate(p)}
+            onNavigateToProfile={() => setActiveTab('profile')}
             onAuthRequired={() => setActiveTab('auth')}
             showShortlistedOnly={false}
           />
@@ -92,6 +93,7 @@ function AppContent() {
           <BrowsePage
             onViewProfile={handleViewProfileDetail}
             onOpenCompatibility={(p) => setCompatibilityCandidate(p)}
+            onNavigateToProfile={() => setActiveTab('profile')}
             onAuthRequired={() => setActiveTab('auth')}
             showShortlistedOnly={true}
           />
@@ -120,7 +122,7 @@ function AppContent() {
         )}
       </main>
 
-      {/* Mobile Bottom Navigation Bar (Established Mobile App Feel) */}
+      {/* Mobile Bottom Navigation Bar */}
       <MobileBottomNav
         activeTab={activeTab}
         setActiveTab={(tab) => {
