@@ -3,11 +3,21 @@ import { supabase, isSupabaseConfigured } from '../lib/supabaseClient';
 
 const AuthContext = createContext();
 
+// Admin User IDs authorized for verification review and platform management
+export const ADMIN_UIDS = [
+  '7505771e-35af-4b12-818a-d2e0396a096f'
+];
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isDemoMode, setIsDemoMode] = useState(!isSupabaseConfigured());
+
+  const isAdmin = Boolean(
+    (user?.id && ADMIN_UIDS.includes(user.id)) || 
+    profile?.is_admin === true
+  );
 
   useEffect(() => {
     // Check initial auth state
@@ -205,6 +215,7 @@ export const AuthProvider = ({ children }) => {
       value={{
         user,
         profile,
+        isAdmin,
         loading,
         isDemoMode,
         setIsDemoMode,
