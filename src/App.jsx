@@ -3,11 +3,14 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { DataProvider, useData } from './context/DataContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { LanguageProvider } from './context/LanguageContext';
+import { PWAProvider } from './context/PWAContext';
 import Navbar from './components/Navbar';
 import MobileBottomNav from './components/MobileBottomNav';
 import Footer from './components/Footer';
 import Toast from './components/Toast';
 import PWAUpdateToast from './components/PWAUpdateToast';
+import SmartInstallBanner from './components/SmartInstallBanner';
+import IOSInstallModal from './components/IOSInstallModal';
 import LandingPage from './pages/LandingPage';
 import AuthPage from './pages/AuthPage';
 import ProfileWizardPage from './pages/ProfileWizardPage';
@@ -46,6 +49,9 @@ function AppContent() {
 
   return (
     <div className="min-h-screen flex flex-col transition-colors duration-200 pb-16 md:pb-0">
+      {/* Smart Mobile Install Banner */}
+      <SmartInstallBanner />
+
       {/* Top Navbar */}
       <Navbar
         activeTab={activeTab}
@@ -61,6 +67,7 @@ function AppContent() {
       {/* Toast Notifications & PWA Update Banner */}
       <Toast message={toast.message} type={toast.type} onClose={clearToast} />
       <PWAUpdateToast />
+      <IOSInstallModal />
 
       {/* Main View Area */}
       <main className="flex-1">
@@ -180,7 +187,9 @@ export default function App() {
       <LanguageProvider>
         <AuthProvider>
           <DataProvider>
-            <AppContent />
+            <PWAProvider>
+              <AppContent />
+            </PWAProvider>
           </DataProvider>
         </AuthProvider>
       </LanguageProvider>

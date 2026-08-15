@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Eye, EyeOff, Globe, HeartHandshake, ShieldAlert, CheckCircle2, Save, UserX, ArrowLeft } from 'lucide-react';
+import { Settings, Eye, EyeOff, Globe, HeartHandshake, ShieldAlert, CheckCircle2, Save, UserX, ArrowLeft, Download, Smartphone } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
+import { usePWA } from '../context/PWAContext';
+import { Logo } from '../components/Logo';
 
 export const AccountSettingsPage = ({ onBack, onNavigateToProfile }) => {
   const { profile, partnerPreferences, savePartnerPreferences, updateAccountSettings, logout } = useAuth();
   const { lang, setLang, t } = useLanguage();
+  const { isInstalled, triggerInstall } = usePWA();
 
   const [savingPref, setSavingPref] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
@@ -97,7 +100,7 @@ export const AccountSettingsPage = ({ onBack, onNavigateToProfile }) => {
           </button>
           <div>
             <h1 className="font-serif text-2xl font-bold text-main">{t('accountSettings')}</h1>
-            <p className="text-xs text-sub">Manage partner preferences, privacy visibility, and account options.</p>
+            <p className="text-xs text-sub">Manage partner preferences, privacy visibility, app installation, and account options.</p>
           </div>
         </div>
       </div>
@@ -247,7 +250,41 @@ export const AccountSettingsPage = ({ onBack, onNavigateToProfile }) => {
           </form>
         </div>
 
-        {/* Section 2: Profile Visibility & Privacy */}
+        {/* Section 2: App Installation (PWA) */}
+        <div className="bg-surface-card radius-card border border-main p-6 shadow-xs space-y-4">
+          <div className="flex items-center gap-2 pb-3 border-b border-main">
+            <Smartphone className="w-5 h-5 text-sky-blue" />
+            <h2 className="font-serif font-bold text-main text-lg">App Installation</h2>
+          </div>
+
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-surface-ground border border-main radius-card">
+            <div className="flex items-center gap-3">
+              <Logo type="app" size="small" />
+              <div>
+                <p className="font-bold text-xs text-main">
+                  {isInstalled ? 'Vadhu Var App Installed' : 'Install Vadhu Var on this Device'}
+                </p>
+                <p className="text-[11px] text-sub mt-0.5 max-w-md">
+                  {isInstalled
+                    ? 'You are running the full installed app experience with fast offline caching.'
+                    : 'Add to your phone or desktop home screen for one-tap access, notifications, and smooth offline performance.'}
+                </p>
+              </div>
+            </div>
+
+            {!isInstalled && (
+              <button
+                onClick={triggerInstall}
+                className="px-4 py-2.5 radius-btn bg-sky-blue hover:bg-sky-blue/90 text-white font-bold text-xs shadow-xs transition-colors flex items-center justify-center gap-1.5 flex-shrink-0"
+              >
+                <Download className="w-4 h-4" />
+                <span>Install App</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Section 3: Profile Visibility & Privacy */}
         <div className="bg-surface-card radius-card border border-main p-6 shadow-xs space-y-4">
           <div className="flex items-center gap-2 pb-3 border-b border-main">
             {isSearchVisible ? <Eye className="w-5 h-5 text-sky-blue" /> : <EyeOff className="w-5 h-5 text-sub" />}
@@ -279,7 +316,7 @@ export const AccountSettingsPage = ({ onBack, onNavigateToProfile }) => {
           </div>
         </div>
 
-        {/* Section 3: Language Preference */}
+        {/* Section 4: Language Preference */}
         <div className="bg-surface-card radius-card border border-main p-6 shadow-xs space-y-4">
           <div className="flex items-center gap-2 pb-3 border-b border-main">
             <Globe className="w-5 h-5 text-sky-blue" />
@@ -307,7 +344,7 @@ export const AccountSettingsPage = ({ onBack, onNavigateToProfile }) => {
           </div>
         </div>
 
-        {/* Section 4: Deactivate Account */}
+        {/* Section 5: Deactivate Account */}
         <div className="bg-surface-card radius-card border border-main p-6 shadow-xs space-y-4">
           <div className="flex items-center gap-2 pb-3 border-b border-main text-main">
             <ShieldAlert className="w-5 h-5 text-sub" />

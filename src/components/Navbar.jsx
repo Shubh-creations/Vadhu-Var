@@ -1,45 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Heart, Search, User, Download, LogOut, Star, MessageSquare, Shield, Sun, Moon, Globe, Settings } from 'lucide-react';
 import { Logo } from './Logo';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
+import { usePWA } from '../context/PWAContext';
 
 export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal, onOpenChatModal }) => {
   const { user, profile, logout } = useAuth();
   const { interests, shortlistedIds } = useData();
   const { isDark, toggleTheme } = useTheme();
   const { lang, setLang, t } = useLanguage();
-
-  const [deferredPrompt, setDeferredPrompt] = useState(null);
-  const [isInstallable, setIsInstallable] = useState(false);
+  const { isInstalled, triggerInstall } = usePWA();
 
   const userId = profile?.id || user?.id;
   const receivedInterestsCount = interests.filter(
     i => i.receiver_id === userId && i.status === 'pending'
   ).length;
-
-  useEffect(() => {
-    const handleBeforeInstallPrompt = (e) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-      setIsInstallable(true);
-    };
-
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-  }, []);
-
-  const handleInstallPWA = async () => {
-    if (!deferredPrompt) return;
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') {
-      setIsInstallable(false);
-    }
-    setDeferredPrompt(null);
-  };
 
   const navItems = [
     { id: 'browse', label: t('discover'), icon: Search },
@@ -55,27 +33,33 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
       icon: Star, 
       badge: shortlistedIds.length > 0 ? shortlistedIds.length : null 
     },
-    { 
-      id: 'profile', 
-      label: profile ? t('myProfile') : t('createProfile'), 
-      icon: User 
-    }
   ];
 
   return (
-    <header className="sticky top-0 z-40 bg-surface-card border-b border-main transition-colors">
+    <header className="sticky top-0 z-40 bg-surface-card border-b border-main shadow-xs">
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-14 sm:h-16 gap-2">
-          {/* Logo Mark: 1st Website Icon emblem + "वधू - वर" */}
-          <div 
-            onClick={() => setActiveTab('landing')}
-            className="cursor-pointer group flex-shrink-0"
-          >
-            <Logo variant="header" />
+          {/* Brand Logo with 1st Image Website Icon */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setActiveTab('browse')}
+              className="flex items-center gap-2 text-left focus:outline-none"
+              aria-label="Go to Discover"
+            >
+              <Logo type="icon" size="medium" />
+              <div className="flex flex-col">
+                <span className="font-serif text-lg sm:text-xl font-black text-main leading-tight tracking-tight">
+                  {t('brandName')}
+                </span>
+                <span className="text-[10px] text-sub font-medium leading-none hidden sm:inline">
+                  {t('brandSubtitle')}
+                </span>
+              </div>
+            </button>
           </div>
 
-          {/* Desktop Primary Navigation Links */}
-          <nav className="hidden md:flex items-center gap-6 h-full">
+          {/* Desktop Navigation Links */}
+          <nav className="hidden md:flex items-center gap-1">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
@@ -83,10 +67,10 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
-                  className={`h-full flex items-center gap-2 px-1 text-sm font-medium transition-colors relative border-b-2 ${
+                  className={`flex items-center gap-2 px-3 py-2 radius-btn text-xs sm:text-sm font-medium transition-colors ${
                     isActive
-                      ? 'border-sky-blue text-main font-bold'
-                      : 'border-transparent text-sub hover:text-main'
+                      ? 'bg-surface-ground text-main border border-main'
+                      : 'text-sub hover:text-main hover:bg-surface-ground/50'
                   }`}
                 >
                   <Icon className="w-4 h-4 text-sub" />
@@ -101,8 +85,34 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
             })}
           </nav>
 
-          {/* Right Action Tools: Language (EN/HI/MR), Dark Mode, Privacy & Auth */}
-          <div className="flex items-center gap-1 sm:gap-2.5">
+          {/* Right Action Tools: Install Button, Language, Dark Mode, Settings & Auth */}
+          <div className="flex items-center gap-1 sm:gap-2">
+            {/* Install Button (Desktop Pill / Mobile Icon) */}
+            {!isInstalled && (
+              <>
+                {/* Desktop/Tablet Install Button */}
+                <button
+                  onClick={triggerInstall}
+                  className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 radius-btn bg-surface-ground hover:bg-surface-card text-main border border-main hover:border-sky-blue text-xs font-semibold shadow-xs transition-colors"
+                  title="Install Vadhu Var App"
+                  aria-label="Install App"
+                >
+                  <Download className="w-3.5 h-3.5 text-sky-blue" />
+                  <span>Install App</span>
+                </button>
+
+                {/* Mobile Install Icon */}
+                <button
+                  onClick={triggerInstall}
+                  className="sm:hidden p-1.5 radius-btn text-sky-blue hover:bg-surface-ground transition-colors"
+                  title="Install App"
+                  aria-label="Install App"
+                >
+                  <Download className="w-4 h-4" />
+                </button>
+              </>
+            )}
+
             {/* Trilingual Language Selector */}
             <div className="flex items-center bg-surface-ground radius-btn border border-main p-0.5 text-[11px] font-bold text-sub">
               <button
@@ -147,7 +157,7 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
             {/* Desktop Privacy & Messaging Icons */}
             <button
               onClick={onOpenPrivacyModal}
-              className="hidden sm:block p-1.5 radius-btn text-sub hover:text-main hover:bg-surface-ground transition-colors"
+              className="hidden lg:block p-1.5 radius-btn text-sub hover:text-main hover:bg-surface-ground transition-colors"
               title={t('privacyControls')}
               aria-label="Privacy Controls"
             >
@@ -156,24 +166,14 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
 
             <button
               onClick={onOpenChatModal}
-              className="hidden sm:block p-1.5 radius-btn text-sub hover:text-main hover:bg-surface-ground transition-colors"
+              className="hidden lg:block p-1.5 radius-btn text-sub hover:text-main hover:bg-surface-ground transition-colors"
               title={t('messaging')}
               aria-label="Messaging"
             >
               <MessageSquare className="w-4 h-4" />
             </button>
 
-            {isInstallable && (
-              <button
-                onClick={handleInstallPWA}
-                className="hidden lg:flex items-center gap-1 px-2.5 py-1 radius-btn bg-surface-ground text-main text-xs font-medium hover:opacity-80 transition-opacity border border-main"
-                title="Install app"
-              >
-                <Download className="w-3.5 h-3.5" />
-                <span>Install</span>
-              </button>
-            )}
-
+            {/* User Profile & Account Settings or Sign In */}
             {user || profile ? (
               <div className="flex items-center gap-1 sm:gap-2">
                 <button
@@ -200,20 +200,23 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
 
                 <button
                   onClick={logout}
-                  className="p-1.5 radius-btn text-sub hover:text-main hover:bg-surface-ground transition-colors"
+                  className="hidden sm:block p-1.5 radius-btn text-sub hover:text-main hover:bg-surface-ground transition-colors"
                   title={t('signOut')}
                   aria-label="Sign Out"
                 >
-                  <LogOut className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <LogOut className="w-4 h-4" />
                 </button>
               </div>
             ) : (
-              <button
-                onClick={onOpenAuth}
-                className="px-3 py-1 sm:px-4 sm:py-1.5 radius-btn bg-sky-blue hover:bg-sky-blue/90 text-white text-xs sm:text-sm font-bold transition-colors shadow-xs"
-              >
-                {t('signIn')}
-              </button>
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={onOpenAuth}
+                  className="px-3.5 py-1.5 radius-btn bg-sky-blue hover:bg-sky-blue/90 text-white font-medium text-xs shadow-xs transition-colors flex items-center gap-1.5"
+                >
+                  <User className="w-3.5 h-3.5" />
+                  <span>{t('signIn')}</span>
+                </button>
+              </div>
             )}
           </div>
         </div>

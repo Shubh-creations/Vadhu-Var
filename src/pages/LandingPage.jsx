@@ -1,11 +1,13 @@
 import React from 'react';
-import { ShieldCheck, Heart, Users, CheckCircle, Search, ArrowRight, Lock, UserCheck, Sparkles } from 'lucide-react';
+import { ShieldCheck, Heart, Users, CheckCircle, Search, ArrowRight, Lock, UserCheck, Sparkles, Download, Smartphone } from 'lucide-react';
 import { Logo } from '../components/Logo';
 import BadgeVerified from '../components/BadgeVerified';
 import { useData } from '../context/DataContext';
+import { usePWA } from '../context/PWAContext';
 
 export const LandingPage = ({ onGetStarted, onBrowse }) => {
   const { profiles } = useData();
+  const { isInstalled, triggerInstall } = usePWA();
   const verifiedProfiles = profiles.filter(p => p.is_id_verified).slice(0, 3);
 
   const trustPillars = [
@@ -42,7 +44,7 @@ export const LandingPage = ({ onGetStarted, onBrowse }) => {
           The verified, privacy-focused matrimony platform for brides and grooms across India.
         </p>
 
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 max-w-md mx-auto">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 max-w-xl mx-auto">
           <button
             onClick={onGetStarted}
             className="w-full sm:w-auto px-8 py-3.5 radius-btn bg-sky-blue hover:bg-sky-blue/90 text-white font-bold text-sm shadow-xs transition-all flex items-center justify-center gap-2"
@@ -58,6 +60,16 @@ export const LandingPage = ({ onGetStarted, onBrowse }) => {
             <Search className="w-4 h-4 text-sub" />
             <span>Discover Matches</span>
           </button>
+
+          {!isInstalled && (
+            <button
+              onClick={triggerInstall}
+              className="w-full sm:w-auto px-6 py-3.5 radius-btn bg-surface-ground hover:bg-surface-card text-main border border-main hover:border-sky-blue font-semibold text-sm transition-all flex items-center justify-center gap-2"
+            >
+              <Download className="w-4 h-4 text-sky-blue" />
+              <span>Install App</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -86,44 +98,81 @@ export const LandingPage = ({ onGetStarted, onBrowse }) => {
         </div>
       </div>
 
-      {/* Featured Verified Matches (Dynamic real profiles only) */}
-      {verifiedProfiles.length > 0 && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-t border-main">
-          <div className="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
-            <div>
-              <h2 className="font-serif text-2xl sm:text-3xl font-bold text-main">Featured Verified Profiles</h2>
-              <p className="text-xs sm:text-sm text-sub mt-1">
-                Real candidate profiles ready for family review.
-              </p>
+      {/* Mobile App Promotion Card (PWA) */}
+      {!isInstalled && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+          <div className="bg-surface-card radius-card border border-main p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xs">
+            <div className="flex items-center gap-4">
+              <Logo type="app" size="medium" />
+              <div>
+                <h3 className="font-serif font-bold text-main text-lg sm:text-xl">
+                  Install Vadhu Var on your Mobile or Desktop
+                </h3>
+                <p className="text-xs sm:text-sm text-sub mt-1 max-w-xl">
+                  Get instant offline matchmaking access, fullscreen browsing, and direct home screen launch.
+                </p>
+              </div>
             </div>
 
             <button
-              onClick={onBrowse}
-              className="text-sub hover:text-main font-medium text-xs sm:text-sm flex items-center gap-1"
+              onClick={triggerInstall}
+              className="w-full md:w-auto px-6 py-3 radius-btn bg-sky-blue hover:bg-sky-blue/90 text-white font-bold text-xs sm:text-sm shadow-xs transition-colors flex items-center justify-center gap-2 flex-shrink-0"
             >
-              <span>View all profiles</span>
-              <ArrowRight className="w-4 h-4" />
+              <Download className="w-4 h-4" />
+              <span>Install Vadhu Var App</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Featured Verified Matches (Dynamic real profiles only) */}
+      {verifiedProfiles.length > 0 && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-t border-main">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="font-serif text-2xl font-bold text-main">
+                Featured Verified Candidates
+              </h2>
+              <p className="text-xs text-sub mt-1">
+                Recent 100% ID-verified brides and grooms on Vadhu Var.
+              </p>
+            </div>
+            <button
+              onClick={onBrowse}
+              className="text-xs font-semibold text-sky-blue hover:underline flex items-center gap-1"
+            >
+              <span>View All</span>
+              <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {verifiedProfiles.map((profile) => (
-              <div key={profile.id} className="bg-surface-card radius-card border border-main p-5 shadow-xs">
-                <div className="flex items-center gap-4 mb-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {verifiedProfiles.map((p) => (
+              <div
+                key={p.id}
+                onClick={onBrowse}
+                className="bg-surface-card radius-card border border-main p-5 hover:border-sky-blue transition-all cursor-pointer shadow-xs space-y-3"
+              >
+                <div className="flex items-center gap-3">
                   <img
-                    src={profile.photo_url}
-                    alt={profile.full_name}
-                    className="w-14 h-14 radius-btn object-cover border border-main"
+                    src={p.photo_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'}
+                    alt={p.full_name}
+                    className="w-14 h-14 rounded-full object-cover border border-main"
                   />
                   <div>
-                    <h3 className="font-serif font-semibold text-main text-base">
-                      {profile.full_name}, {profile.age}
+                    <h3 className="font-serif font-bold text-main text-base">
+                      {p.full_name}, {p.age}
                     </h3>
-                    <p className="text-xs text-sub">{profile.occupation || 'Candidate'} • {profile.city}</p>
-                    <div className="mt-1">
-                      <BadgeVerified size="small" isIdVerified={true} />
-                    </div>
+                    <p className="text-xs text-sub">
+                      {p.occupation || 'Professional'} • {p.city}
+                    </p>
                   </div>
+                </div>
+                <div>
+                  <BadgeVerified
+                    isFullyVerified={p.is_fully_verified}
+                    isIdVerified={p.is_id_verified}
+                  />
                 </div>
               </div>
             ))}
