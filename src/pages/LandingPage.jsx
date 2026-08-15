@@ -1,5 +1,6 @@
 import React from 'react';
 import { ShieldCheck, Heart, Users, CheckCircle, Search, ArrowRight, Lock } from 'lucide-react';
+import { Logo } from '../components/Logo';
 import BadgeVerified from '../components/BadgeVerified';
 import { useData } from '../context/DataContext';
 
@@ -11,17 +12,16 @@ export const LandingPage = ({ onGetStarted, onBrowse }) => {
     <div className="bg-surface text-main min-h-screen">
       {/* Hero Banner Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-16 text-center">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 radius-btn bg-surface-ground border border-main text-sub text-xs sm:text-sm font-medium mb-6">
-          <ShieldCheck className="w-4 h-4 text-sub" />
-          <span>Manual ID-Verified Matrimony Platform</span>
+        <div className="flex justify-center mb-6">
+          <Logo size="large" />
         </div>
 
         <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-extrabold text-main tracking-tight leading-tight max-w-4xl mx-auto mb-6">
-          Every profile is <span className="underline decoration-sky-blue underline-offset-8">verified.</span>
+          Finding Your <span className="underline decoration-sky-blue underline-offset-8">Perfect Match.</span>
         </h1>
 
         <p className="text-base sm:text-lg text-sub max-w-2xl mx-auto mb-8 font-normal leading-relaxed">
-          Every candidate profile on MH Vadhu-Var undergoes identity document verification before publication.
+          Every candidate profile on Vadhu Var undergoes identity document verification before publication.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 max-w-md mx-auto">

@@ -1,5 +1,6 @@
 import React from 'react';
-import { ShieldCheck, Lock } from 'lucide-react';
+import { Lock } from 'lucide-react';
+import { Logo } from './Logo';
 import { useLanguage } from '../context/LanguageContext';
 
 export const Footer = ({ onOpenPrivacy }) => {
@@ -8,15 +9,12 @@ export const Footer = ({ onOpenPrivacy }) => {
   return (
     <footer className="bg-surface-card border-t border-main py-8 mt-16 transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 radius-btn bg-sky-blue text-white flex items-center justify-center font-extrabold shadow-xs">
-              <ShieldCheck className="w-5 h-5" />
-            </div>
-            <div>
-              <span className="font-serif font-bold text-main text-base">{t('brandName')}</span>
-              <span className="text-[10px] text-sub block font-medium">{t('brandSubtitle')}</span>
-            </div>
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div className="flex flex-col items-center sm:items-start gap-1">
+            <Logo size="normal" />
+            <p className="text-xs text-sub font-medium mt-1">
+              Finding Your Perfect Match.
+            </p>
           </div>
 
           <div className="flex items-center gap-4 text-xs font-medium text-sub flex-wrap justify-center">

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldCheck, Heart, Search, User, Download, Menu, X, LogOut, Star, MessageSquare, Shield, Sun, Moon, Globe } from 'lucide-react';
+import { Heart, Search, User, Download, Menu, X, LogOut, Star, MessageSquare, Shield, Sun, Moon, Globe } from 'lucide-react';
+import { Logo } from './Logo';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import { useTheme } from '../context/ThemeContext';
@@ -66,22 +67,12 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
     <header className="sticky top-0 z-40 bg-surface-card border-b border-main transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 gap-2">
-          {/* Logo Mark: Vadhu Var (Flex shrink 0 to avoid mobile squeeze) */}
+          {/* Logo Mark: Custom Infinity Emblem + "वधू - वर" */}
           <div 
             onClick={() => setActiveTab('landing')}
-            className="flex items-center gap-2 cursor-pointer group flex-shrink-0"
+            className="cursor-pointer group flex-shrink-0"
           >
-            <div className="w-8 h-8 radius-btn bg-sky-blue text-white flex items-center justify-center font-extrabold shadow-xs flex-shrink-0">
-              <ShieldCheck className="w-5 h-5" />
-            </div>
-            <div className="flex flex-col">
-              <span className="font-serif font-bold text-main text-base sm:text-lg tracking-tight leading-none">
-                {t('brandName')}
-              </span>
-              <span className="text-[9px] sm:text-[10px] font-semibold text-sub uppercase tracking-wider block mt-0.5 leading-none">
-                {t('brandSubtitle')}
-              </span>
-            </div>
+            <Logo size="small" />
           </div>
 
           {/* Desktop Primary Navigation Links */}
@@ -95,7 +86,7 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
                   onClick={() => setActiveTab(item.id)}
                   className={`h-full flex items-center gap-2 px-1 text-sm font-medium transition-colors relative border-b-2 ${
                     isActive
-                      ? 'border-sky-blue text-main'
+                      ? 'border-sky-blue text-main font-bold'
                       : 'border-transparent text-sub hover:text-main'
                   }`}
                 >
@@ -119,7 +110,7 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
               <button
                 onClick={() => setLang('en')}
                 className={`px-1.5 sm:px-2 py-0.5 sm:py-1 radius-btn transition-colors ${
-                  lang === 'en' ? 'bg-surface-card text-main shadow-xs' : 'hover:text-main'
+                  lang === 'en' ? 'bg-surface-card text-main shadow-xs font-bold' : 'hover:text-main'
                 }`}
                 title="English"
               >
@@ -128,7 +119,7 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
               <button
                 onClick={() => setLang('hi')}
                 className={`px-1.5 sm:px-2 py-0.5 sm:py-1 radius-btn transition-colors ${
-                  lang === 'hi' ? 'bg-surface-card text-main shadow-xs' : 'hover:text-main'
+                  lang === 'hi' ? 'bg-surface-card text-main shadow-xs font-bold' : 'hover:text-main'
                 }`}
                 title="हिंदी (Hindi)"
               >
@@ -137,7 +128,7 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
               <button
                 onClick={() => setLang('mr')}
                 className={`px-1.5 sm:px-2 py-0.5 sm:py-1 radius-btn transition-colors ${
-                  lang === 'mr' ? 'bg-surface-card text-main shadow-xs' : 'hover:text-main'
+                  lang === 'mr' ? 'bg-surface-card text-main shadow-xs font-bold' : 'hover:text-main'
                 }`}
                 title="मराठी (Marathi)"
               >
@@ -155,7 +146,7 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
               {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
 
-            {/* Privacy Controls Modal Button */}
+            {/* Privacy Controls */}
             <button
               onClick={onOpenPrivacyModal}
               className="hidden sm:block p-2 radius-btn text-sub hover:text-main hover:bg-surface-ground transition-colors"

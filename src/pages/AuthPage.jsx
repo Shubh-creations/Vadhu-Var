@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { ShieldCheck, Mail, Lock, User, ArrowRight, CheckCircle2, Inbox } from 'lucide-react';
+import { Mail, Lock, User, ArrowRight, Inbox } from 'lucide-react';
+import { Logo } from '../components/Logo';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -39,7 +40,6 @@ export const AuthPage = ({ onSuccess }) => {
     try {
       if (isSignUp) {
         const res = await signUp(email, password, fullName);
-        // Show Check Your Email screen if confirmation email is required
         if (res?.user && !res?.session) {
           setEmailSentScreen(true);
         } else {
@@ -60,8 +60,8 @@ export const AuthPage = ({ onSuccess }) => {
     return (
       <div className="max-w-md mx-auto px-4 py-12">
         <div className="bg-surface-card radius-card border border-main p-6 sm:p-8 shadow-sm text-center space-y-4">
-          <div className="w-14 h-14 radius-btn bg-sky-blue/10 text-sky-blue flex items-center justify-center mx-auto">
-            <Inbox className="w-7 h-7" />
+          <div className="flex justify-center mb-2">
+            <Logo variant="icon" size="large" />
           </div>
 
           <h2 className="font-serif text-2xl font-bold text-main">
@@ -92,9 +92,9 @@ export const AuthPage = ({ onSuccess }) => {
   return (
     <div className="max-w-md mx-auto px-4 py-12">
       <div className="bg-surface-card radius-card border border-main p-6 sm:p-8 shadow-sm text-center transition-colors">
-        {/* Header Logo Badge */}
-        <div className="w-12 h-12 radius-btn bg-sky-blue text-white flex items-center justify-center mx-auto mb-4 font-bold shadow-xs">
-          <ShieldCheck className="w-6 h-6" />
+        {/* Header Logo */}
+        <div className="flex justify-center mb-5">
+          <Logo size="large" />
         </div>
 
         <h1 className="font-serif text-2xl font-bold text-main mb-1 tracking-tight">
