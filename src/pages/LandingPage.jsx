@@ -8,7 +8,7 @@ import { usePWA } from '../context/PWAContext';
 export const LandingPage = ({ onGetStarted, onBrowse }) => {
   const { profiles } = useData();
   const { isInstalled, triggerInstall } = usePWA();
-  const verifiedProfiles = profiles.filter(p => p.is_id_verified).slice(0, 3);
+  const featuredProfiles = profiles.filter(p => p.full_name && p.is_active !== false).slice(0, 6);
 
   const trustPillars = [
     {
@@ -125,8 +125,8 @@ export const LandingPage = ({ onGetStarted, onBrowse }) => {
         </div>
       )}
 
-      {/* Featured Verified Matches (Dynamic real profiles only) */}
-      {verifiedProfiles.length > 0 && (
+      {/* Featured Candidates (Dynamic real profiles only) */}
+      {featuredProfiles.length > 0 && (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-t border-main">
           <div className="flex items-center justify-between mb-6">
             <div>
@@ -134,7 +134,7 @@ export const LandingPage = ({ onGetStarted, onBrowse }) => {
                 Featured Verified Candidates
               </h2>
               <p className="text-xs text-sub mt-1">
-                Recent 100% ID-verified brides and grooms on Vadhu Var.
+                Recent brides and grooms on Vadhu Var.
               </p>
             </div>
             <button
@@ -147,7 +147,7 @@ export const LandingPage = ({ onGetStarted, onBrowse }) => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {verifiedProfiles.map((p) => (
+            {featuredProfiles.map((p) => (
               <div
                 key={p.id}
                 onClick={onBrowse}
@@ -172,6 +172,7 @@ export const LandingPage = ({ onGetStarted, onBrowse }) => {
                   <BadgeVerified
                     isFullyVerified={p.is_fully_verified}
                     isIdVerified={p.is_id_verified}
+                    isProfessionVerified={p.is_profession_verified}
                   />
                 </div>
               </div>

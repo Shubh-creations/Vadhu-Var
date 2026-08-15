@@ -67,6 +67,31 @@ export const FilterPanel = ({ filters, onFilterChange, onReset, totalMatches }) 
         )}
       </div>
 
+      {/* Looking For Gender Filter */}
+      <div className="space-y-2">
+        <label className="text-xs font-semibold text-main block">Looking For</label>
+        <div className="grid grid-cols-3 gap-1.5 bg-surface-ground p-1 radius-btn border border-main">
+          {[
+            { value: 'all', label: 'All' },
+            { value: 'female', label: 'Brides' },
+            { value: 'male', label: 'Grooms' }
+          ].map((g) => (
+            <button
+              key={g.value}
+              type="button"
+              onClick={() => onFilterChange('gender', g.value)}
+              className={`py-1.5 text-xs font-semibold radius-btn transition-colors ${
+                (filters.gender || 'all') === g.value
+                  ? 'bg-sky-blue text-white shadow-xs'
+                  : 'text-sub hover:text-main'
+              }`}
+            >
+              {g.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* 2. Location & Income Section */}
       <div className="space-y-4">
         <span className="text-[10px] font-bold uppercase tracking-wider text-sub block">
