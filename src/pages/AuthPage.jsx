@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShieldCheck, Mail, Lock, User, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { ShieldCheck, Mail, Lock, User, ArrowRight, CheckCircle2, Inbox } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -11,6 +11,7 @@ export const AuthPage = ({ onSuccess }) => {
   const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [emailSentScreen, setEmailSentScreen] = useState(false);
 
   const { login, signUp } = useAuth();
 
@@ -29,7 +30,7 @@ export const AuthPage = ({ onSuccess }) => {
     }
 
     if (password.length < 6) {
-      setError('Password must be at least 6 characters.');
+      setError('Password must be at least 6 characters long.');
       return;
     }
 
@@ -37,17 +38,56 @@ export const AuthPage = ({ onSuccess }) => {
 
     try {
       if (isSignUp) {
-        await signUp(email, password, fullName);
+        const res = await signUp(email, password, fullName);
+        // Show Check Your Email screen if confirmation email is required
+        if (res?.user && !res?.session) {
+          setEmailSentScreen(true);
+        } else {
+          if (onSuccess) onSuccess();
+        }
       } else {
         await login(email, password);
+        if (onSuccess) onSuccess();
       }
-      if (onSuccess) onSuccess();
     } catch (err) {
-      setError(err.message || 'Authentication failed. Please check your credentials.');
+      setError(err?.message || 'Authentication failed. Please verify your details.');
     } finally {
       setLoading(false);
     }
   };
+
+  if (emailSentScreen) {
+    return (
+      <div className="max-w-md mx-auto px-4 py-12">
+        <div className="bg-surface-card radius-card border border-main p-6 sm:p-8 shadow-sm text-center space-y-4">
+          <div className="w-14 h-14 radius-btn bg-sky-blue/10 text-sky-blue flex items-center justify-center mx-auto">
+            <Inbox className="w-7 h-7" />
+          </div>
+
+          <h2 className="font-serif text-2xl font-bold text-main">
+            Check Your Email
+          </h2>
+
+          <p className="text-xs text-sub leading-relaxed max-w-sm mx-auto">
+            We sent a verification link to <strong className="text-main">{email}</strong>. Please check your inbox (and spam folder) and click the link to activate your Vadhu Var account.
+          </p>
+
+          <div className="pt-4 border-t border-main">
+            <button
+              onClick={() => {
+                setEmailSentScreen(false);
+                setIsSignUp(false);
+                setError('');
+              }}
+              className="px-6 py-2.5 radius-btn bg-sky-blue text-white text-xs font-bold hover:bg-sky-blue/90 transition-colors"
+            >
+              Return to Sign In
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-md mx-auto px-4 py-12">
@@ -113,6 +153,7 @@ export const AuthPage = ({ onSuccess }) => {
               <input
                 type="password"
                 required
+                minLength={6}
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}

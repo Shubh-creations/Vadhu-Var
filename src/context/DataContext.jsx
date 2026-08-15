@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { supabase, isSupabaseConfigured } from '../lib/supabaseClient';
 import { INITIAL_PROFILES, INITIAL_INTERESTS, INITIAL_VERIFICATION_REQUESTS } from '../lib/mockData';
 import { useAuth } from './AuthContext';
@@ -29,7 +29,6 @@ export const DataProvider = ({ children }) => {
     return saved ? JSON.parse(saved) : INITIAL_VERIFICATION_REQUESTS;
   });
 
-  // Daily Interest Expression Counter for Rate Limiting (max 20/day)
   const [dailyInterestCount, setDailyInterestCount] = useState(() => {
     const saved = localStorage.getItem('mh_matrimony_daily_interest');
     if (saved) {
@@ -40,9 +39,31 @@ export const DataProvider = ({ children }) => {
     return 0;
   });
 
-  // In-app Toast message state
   const [toast, setToast] = useState({ message: '', type: 'success' });
   const [loading, setLoading] = useState(false);
+
+  // Fresh re-fetch profiles directly from Supabase
+  const refreshProfiles = useCallback(async () => {
+    if (!isSupabaseConfigured() || isDemoMode) return;
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (!error && data && data.length > 0) {
+        setProfiles(data);
+        localStorage.setItem('mh_matrimony_profiles', JSON.stringify(data));
+      }
+    } catch (err) {
+      console.warn('Error refreshing live profiles:', err);
+    }
+  }, [isDemoMode]);
+
+  // Initial mount fresh profiles re-fetch
+  useEffect(() => {
+    refreshProfiles();
+  }, [refreshProfiles]);
 
   // Synchronize with LocalStorage
   useEffect(() => {
@@ -89,7 +110,7 @@ export const DataProvider = ({ children }) => {
 
   const isShortlisted = (candidateId) => shortlistedIds.includes(candidateId);
 
-  // Express Interest with Rate Limiting (Max 20/day)
+  // Express Interest with Duplicate & Self Guards
   const sendInterest = async (receiverId) => {
     const senderId = profile?.id || user?.id || 'demo-user-me';
 
@@ -98,9 +119,14 @@ export const DataProvider = ({ children }) => {
       throw new Error('You must be logged in to express interest.');
     }
 
+    if (senderId === receiverId) {
+      showToast('You cannot express interest in your own profile.', 'error');
+      throw new Error('Cannot express interest in own profile.');
+    }
+
     // Rate limiting check
     if (dailyInterestCount >= 20) {
-      showToast('Daily limit reached (Max 20 interests per day to prevent spam). Try again tomorrow!', 'error');
+      showToast('Daily limit reached (Max 20 interests per day). Try again tomorrow!', 'error');
       throw new Error('Daily limit reached (20/day).');
     }
 
@@ -108,7 +134,7 @@ export const DataProvider = ({ children }) => {
       i => i.sender_id === senderId && i.receiver_id === receiverId
     );
     if (existing) {
-      showToast('Interest already sent to this candidate.', 'info');
+      showToast('Interest already expressed for this candidate.', 'info');
       return existing;
     }
 
@@ -120,7 +146,6 @@ export const DataProvider = ({ children }) => {
       created_at: new Date().toISOString()
     };
 
-    // Optimistic UI Update
     setInterests(prev => [newInterest, ...prev]);
     setDailyInterestCount(prev => prev + 1);
     showToast('Interest expressed successfully!');
@@ -134,7 +159,6 @@ export const DataProvider = ({ children }) => {
           .single();
 
         if (error) {
-          // Rollback on failure
           setInterests(prev => prev.filter(i => i.id !== newInterest.id));
           showToast('Failed to send interest. Rolled back.', 'error');
           throw error;
@@ -277,13 +301,14 @@ export const DataProvider = ({ children }) => {
         loading,
         showToast,
         clearToast,
+        refreshProfiles,
         toggleShortlist,
         isShortlisted,
         sendInterest,
         updateInterestStatus,
         submitVerificationRequest,
         handleReviewVerification,
- addOrUpdateProfile
+        addOrUpdateProfile
       }}
     >
       {children}

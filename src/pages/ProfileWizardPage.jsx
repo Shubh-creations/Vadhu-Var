@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldCheck, User, Briefcase, GraduationCap, FileText, CheckCircle2, ArrowRight, ArrowLeft, Camera, IndianRupee, Crop } from 'lucide-react';
+import { ShieldCheck, User, Briefcase, GraduationCap, FileText, CheckCircle2, ArrowRight, ArrowLeft, Camera, IndianRupee, Crop, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -15,6 +15,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [successBanner, setSuccessBanner] = useState(false);
+  const [errors, setErrors] = useState({});
 
   // Image Cropper State
   const [cropperOpen, setCropperOpen] = useState(false);
@@ -24,10 +25,10 @@ export const ProfileWizardPage = ({ onComplete }) => {
     full_name: '',
     age: 26,
     gender: 'female',
-    city: 'Pune',
+    city: '',
     state: 'Maharashtra',
-    occupation: '', // Optional
-    education_level: '', // Optional
+    occupation: '', // Path B: Completely Optional
+    education_level: '', // Path B: Completely Optional
     annual_income_lpa: '', // Optional
     height_cm: 165,
     diet: 'veg',
@@ -65,6 +66,26 @@ export const ProfileWizardPage = ({ onComplete }) => {
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: null }));
+    }
+  };
+
+  const validateStep1 = () => {
+    const newErrors = {};
+    if (!formData.full_name.trim()) newErrors.full_name = 'Full Name is required.';
+    if (!formData.age || formData.age < 18 || formData.age > 80) newErrors.age = 'Age must be between 18 and 80.';
+    if (!formData.city.trim()) newErrors.city = 'City is required.';
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleNextStep = (targetStep) => {
+    if (step === 1 && !validateStep1()) {
+      return;
+    }
+    setStep(targetStep);
   };
 
   // Open Cropper on file pick
@@ -127,6 +148,12 @@ export const ProfileWizardPage = ({ onComplete }) => {
 
   const handleSubmitProfile = async (e) => {
     e.preventDefault();
+
+    if (!validateStep1()) {
+      setStep(1);
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -189,9 +216,9 @@ export const ProfileWizardPage = ({ onComplete }) => {
         <div className="mb-6 p-4 radius-card bg-surface-ground border border-main text-main text-sm font-medium flex items-center gap-3">
           <CheckCircle2 className="w-5 h-5 text-sky-blue flex-shrink-0" />
           <div>
-            <p className="font-bold">Profile Submitted!</p>
+            <p className="font-bold">Profile Saved Successfully!</p>
             <p className="text-xs text-sub mt-0.5">
-              Your profile has been saved successfully.
+              Redirecting to candidate matches...
             </p>
           </div>
         </div>
@@ -208,7 +235,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
         ].map((s) => (
           <div key={s.number} className="relative z-10 flex flex-col items-center">
             <button
-              onClick={() => setStep(s.number)}
+              onClick={() => handleNextStep(s.number)}
               className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs transition-all ${
                 step === s.number
                   ? 'bg-sky-blue text-white'
@@ -236,20 +263,28 @@ export const ProfileWizardPage = ({ onComplete }) => {
             </h2>
 
             <div>
-              <label className="block text-xs font-medium text-sub mb-1">Full Name *</label>
+              <label className="block text-xs font-semibold text-main mb-1">Full Name *</label>
               <input
                 type="text"
                 required
                 value={formData.full_name}
                 onChange={(e) => handleChange('full_name', e.target.value)}
                 placeholder="e.g. Ananya Deshmukh"
-                className="w-full px-3.5 py-2.5 border border-main radius-btn text-sm bg-surface-ground text-main outline-none focus:ring-1 focus:ring-sky-blue"
+                className={`w-full px-3.5 py-2.5 border radius-btn text-sm bg-surface-ground text-main outline-none focus:ring-1 focus:ring-sky-blue ${
+                  errors.full_name ? 'border-sky-blue' : 'border-main'
+                }`}
               />
+              {errors.full_name && (
+                <p className="text-[11px] text-sky-blue mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" />
+                  <span>{errors.full_name}</span>
+                </p>
+              )}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-sub mb-1">Age *</label>
+                <label className="block text-xs font-semibold text-main mb-1">Age *</label>
                 <input
                   type="number"
                   min="18"
@@ -257,12 +292,20 @@ export const ProfileWizardPage = ({ onComplete }) => {
                   required
                   value={formData.age}
                   onChange={(e) => handleChange('age', Number(e.target.value))}
-                  className="w-full px-3.5 py-2.5 border border-main radius-btn text-sm bg-surface-ground text-main outline-none focus:ring-1 focus:ring-sky-blue"
+                  className={`w-full px-3.5 py-2.5 border radius-btn text-sm bg-surface-ground text-main outline-none focus:ring-1 focus:ring-sky-blue ${
+                    errors.age ? 'border-sky-blue' : 'border-main'
+                  }`}
                 />
+                {errors.age && (
+                  <p className="text-[11px] text-sky-blue mt-1 flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" />
+                    <span>{errors.age}</span>
+                  </p>
+                )}
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-sub mb-1">Gender *</label>
+                <label className="block text-xs font-semibold text-main mb-1">Gender *</label>
                 <select
                   value={formData.gender}
                   onChange={(e) => handleChange('gender', e.target.value)}
@@ -276,7 +319,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <label className="block text-xs font-medium text-sub mb-1">State *</label>
+                <label className="block text-xs font-semibold text-main mb-1">State *</label>
                 <select
                   value={formData.state}
                   onChange={(e) => handleChange('state', e.target.value)}
@@ -289,19 +332,27 @@ export const ProfileWizardPage = ({ onComplete }) => {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-sub mb-1">City *</label>
+                <label className="block text-xs font-semibold text-main mb-1">City *</label>
                 <input
                   type="text"
                   required
                   value={formData.city}
                   onChange={(e) => handleChange('city', e.target.value)}
                   placeholder="e.g. Pune, Delhi, Bengaluru..."
-                  className="w-full px-3.5 py-2.5 border border-main radius-btn text-sm bg-surface-ground text-main outline-none focus:ring-1 focus:ring-sky-blue"
+                  className={`w-full px-3.5 py-2.5 border radius-btn text-sm bg-surface-ground text-main outline-none focus:ring-1 focus:ring-sky-blue ${
+                    errors.city ? 'border-sky-blue' : 'border-main'
+                  }`}
                 />
+                {errors.city && (
+                  <p className="text-[11px] text-sky-blue mt-1 flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" />
+                    <span>{errors.city}</span>
+                  </p>
+                )}
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-sub mb-1">Height (cm) *</label>
+                <label className="block text-xs font-semibold text-main mb-1">Height (cm) *</label>
                 <input
                   type="number"
                   min="120"
@@ -317,7 +368,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
             <div className="flex justify-end pt-4">
               <button
                 type="button"
-                onClick={() => setStep(2)}
+                onClick={() => handleNextStep(2)}
                 className="px-6 py-2.5 radius-btn bg-sky-blue hover:bg-sky-blue/90 text-white font-medium text-xs sm:text-sm flex items-center gap-2 shadow-xs"
               >
                 <span>Next: Career & Lifestyle</span>
@@ -334,10 +385,10 @@ export const ProfileWizardPage = ({ onComplete }) => {
               <span>Step 2: Career, Education & Income {t('optional')}</span>
             </h2>
 
-            {/* Profession & Education (Completely Optional) */}
+            {/* Profession & Education (Path B: Completely Optional, non-blocking) */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-sub mb-1">Occupation / Profession {t('optional')}</label>
+                <label className="block text-xs font-semibold text-main mb-1">Occupation / Profession {t('optional')}</label>
                 <input
                   type="text"
                   value={formData.occupation}
@@ -348,7 +399,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-sub mb-1">Education Qualification {t('optional')}</label>
+                <label className="block text-xs font-semibold text-main mb-1">Education Qualification {t('optional')}</label>
                 <input
                   type="text"
                   value={formData.education_level}
@@ -360,7 +411,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-sub mb-1">Annual Income (LPA in Lakhs) {t('optional')}</label>
+              <label className="block text-xs font-semibold text-main mb-1">Annual Income (LPA in Lakhs) {t('optional')}</label>
               <input
                 type="number"
                 step="0.5"
@@ -374,7 +425,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <label className="block text-xs font-medium text-sub mb-1">Diet *</label>
+                <label className="block text-xs font-semibold text-main mb-1">Diet *</label>
                 <select
                   value={formData.diet}
                   onChange={(e) => handleChange('diet', e.target.value)}
@@ -387,7 +438,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-sub mb-1">Marital Status *</label>
+                <label className="block text-xs font-semibold text-main mb-1">Marital Status *</label>
                 <select
                   value={formData.marital_status}
                   onChange={(e) => handleChange('marital_status', e.target.value)}
@@ -400,7 +451,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-sub mb-1">Family Type *</label>
+                <label className="block text-xs font-semibold text-main mb-1">Family Type *</label>
                 <select
                   value={formData.family_type}
                   onChange={(e) => handleChange('family_type', e.target.value)}
@@ -443,7 +494,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-sub mb-1">Caste {t('optional')}</label>
+                <label className="block text-xs font-semibold text-main mb-1">Caste {t('optional')}</label>
                 <input
                   type="text"
                   value={formData.caste}
@@ -454,7 +505,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-sub mb-1">Sub-Caste {t('optional')}</label>
+                <label className="block text-xs font-semibold text-main mb-1">Sub-Caste {t('optional')}</label>
                 <input
                   type="text"
                   value={formData.sub_caste}
@@ -466,7 +517,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-sub mb-1">Bio (About Me)</label>
+              <label className="block text-xs font-semibold text-main mb-1">Bio (About Me)</label>
               <textarea
                 rows="3"
                 maxLength="500"

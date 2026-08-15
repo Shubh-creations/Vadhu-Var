@@ -74,25 +74,36 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Sign up user
+  // Sign up user with production email redirect URL handling
   const signUp = async (email, password, fullNameOrOptions) => {
     const fullName = typeof fullNameOrOptions === 'object' 
       ? fullNameOrOptions?.full_name || fullNameFromEmail(email)
       : fullNameOrOptions || fullNameFromEmail(email);
 
     if (isSupabaseConfigured() && !isDemoMode) {
+      const redirectUrl = window.location.origin.includes('localhost')
+        ? 'https://vadhu-var.vercel.app'
+        : window.location.origin;
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
+          emailRedirectTo: redirectUrl,
           data: { full_name: fullName }
         }
       });
-      if (error) throw error;
-      setUser(data.user);
+
+      if (error) {
+        throw new Error(error.message || 'Signup failed');
+      }
+
+      if (data?.user) {
+        setUser(data.user);
+      }
       return data;
     } else {
-      // Local Sign Up
+      // Local Sign Up Fallback
       const mockUser = {
         id: `user-${Date.now()}`,
         email,
@@ -111,9 +122,15 @@ export const AuthProvider = ({ children }) => {
         email,
         password
       });
-      if (error) throw error;
-      setUser(data.user);
-      await fetchUserProfile(data.user.id);
+
+      if (error) {
+        throw new Error(error.message || 'Invalid login credentials');
+      }
+
+      if (data?.user) {
+        setUser(data.user);
+        await fetchUserProfile(data.user.id);
+      }
       return data;
     } else {
       // Demo / Local Login
@@ -190,7 +207,7 @@ export const AuthProvider = ({ children }) => {
         isDemoMode,
         setIsDemoMode,
         signUp,
-        signup: signUp, // Alias for backward compatibility
+        signup: signUp,
         login,
         logout,
         saveProfile,
