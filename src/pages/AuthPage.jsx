@@ -50,7 +50,12 @@ export const AuthPage = ({ onSuccess }) => {
         if (onSuccess) onSuccess();
       }
     } catch (err) {
-      setError(err?.message || 'Authentication failed. Please verify your details.');
+      const msg = err?.message || '';
+      if (msg.toLowerCase().includes('rate limit') || msg.toLowerCase().includes('exceeded')) {
+        setError('Email sign-up limit reached for this hour (Supabase test mailer limit). Please disable "Confirm email" in Supabase Auth Settings or connect a custom SMTP provider.');
+      } else {
+        setError(msg || 'Authentication failed. Please verify your details.');
+      }
     } finally {
       setLoading(false);
     }
