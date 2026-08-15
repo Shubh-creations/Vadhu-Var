@@ -74,16 +74,16 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Sign up user with production email redirect URL handling
+  // Sign up user with clean URL handling
   const signUp = async (email, password, fullNameOrOptions) => {
     const fullName = typeof fullNameOrOptions === 'object' 
       ? fullNameOrOptions?.full_name || fullNameFromEmail(email)
       : fullNameOrOptions || fullNameFromEmail(email);
 
     if (isSupabaseConfigured() && !isDemoMode) {
-      const redirectUrl = window.location.origin.includes('localhost')
-        ? 'https://vadhu-var.vercel.app'
-        : window.location.origin;
+      const redirectUrl = typeof window !== 'undefined' && window.location.origin
+        ? window.location.origin
+        : 'https://vadhu-var.vercel.app';
 
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -169,7 +169,7 @@ export const AuthProvider = ({ children }) => {
     return namePart.charAt(0).toUpperCase() + namePart.slice(1);
   }
 
-  // Save or update local user profile
+  // Save or update user profile
   const saveProfile = async (profileData) => {
     const fullProfile = {
       ...profileData,
@@ -189,8 +189,10 @@ export const AuthProvider = ({ children }) => {
           .single();
 
         if (error) throw error;
-        setProfile(data);
-        localStorage.setItem('vadhu_var_profile', JSON.stringify(data));
+        if (data) {
+          setProfile(data);
+          localStorage.setItem('vadhu_var_profile', JSON.stringify(data));
+        }
       } catch (err) {
         console.error('Supabase profile save error:', err);
       }
