@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldCheck, User, Briefcase, GraduationCap, FileText, CheckCircle2, ArrowRight, ArrowLeft, Camera, IndianRupee, Crop, AlertCircle } from 'lucide-react';
+import { ShieldCheck, User, Briefcase, GraduationCap, FileText, CheckCircle2, ArrowRight, ArrowLeft, Camera, IndianRupee, Crop, AlertCircle, HeartHandshake, Baby } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -8,7 +8,7 @@ import ImageCropperModal from '../components/ImageCropperModal';
 import { compressImage } from '../lib/imageCompressor';
 
 export const ProfileWizardPage = ({ onComplete }) => {
-  const { user, profile: existingProfile, saveProfile } = useAuth();
+  const { user, profile: existingProfile, partnerPreferences: existingPref, saveProfile, savePartnerPreferences } = useAuth();
   const { submitVerificationRequest, addOrUpdateProfile } = useData();
   const { t } = useLanguage();
 
@@ -21,18 +21,22 @@ export const ProfileWizardPage = ({ onComplete }) => {
   const [cropperOpen, setCropperOpen] = useState(false);
   const [rawPhotoSrc, setRawPhotoSrc] = useState(null);
 
+  // Profile Form Data
   const [formData, setFormData] = useState({
     full_name: '',
     age: 26,
     gender: 'female',
     city: '',
     state: 'Maharashtra',
-    occupation: '', // Path B: Completely Optional
-    education_level: '', // Path B: Completely Optional
+    occupation: '', // Optional
+    education_level: '', // Optional
     annual_income_lpa: '', // Optional
     height_cm: 165,
     diet: 'veg',
     marital_status: 'never_married',
+    has_children: 'no', // Optional
+    children_count: '',
+    children_living_status: 'living_together',
     family_type: 'nuclear',
     caste: '',
     sub_caste: '',
@@ -41,6 +45,21 @@ export const ProfileWizardPage = ({ onComplete }) => {
     id_document_url: '',
     family_consent_document_url: '',
     career_proof_url: '' // Optional
+  });
+
+  // Partner Preferences Form Data
+  const [prefData, setPrefData] = useState({
+    age_min: 21,
+    age_max: 35,
+    height_min_cm: 150,
+    height_max_cm: 190,
+    accepted_marital_statuses: ['never_married', 'divorced', 'widowed', 'awaiting_divorce'],
+    diet: 'any',
+    min_income_lpa: 'all',
+    state: 'any',
+    city: '',
+    education: 'any',
+    notes: ''
   });
 
   useEffect(() => {
@@ -54,7 +73,10 @@ export const ProfileWizardPage = ({ onComplete }) => {
         caste: existingProfile.caste || '',
         sub_caste: existingProfile.sub_caste || '',
         bio: existingProfile.bio || '',
-        photo_url: existingProfile.photo_url || ''
+        photo_url: existingProfile.photo_url || '',
+        has_children: existingProfile.has_children || 'no',
+        children_count: existingProfile.children_count || '',
+        children_living_status: existingProfile.children_living_status || 'living_together'
       }));
     } else if (user?.user_metadata?.full_name) {
       setFormData(prev => ({
@@ -62,13 +84,38 @@ export const ProfileWizardPage = ({ onComplete }) => {
         full_name: user.user_metadata.full_name
       }));
     }
-  }, [existingProfile, user]);
+
+    if (existingPref) {
+      setPrefData(prev => ({
+        ...prev,
+        ...existingPref,
+        accepted_marital_statuses: existingPref.accepted_marital_statuses || ['never_married', 'divorced', 'widowed', 'awaiting_divorce']
+      }));
+    }
+  }, [existingProfile, existingPref, user]);
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: null }));
     }
+  };
+
+  const handlePrefChange = (field, value) => {
+    setPrefData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleMaritalStatusToggle = (status) => {
+    setPrefData(prev => {
+      const current = prev.accepted_marital_statuses || [];
+      if (status === 'all') {
+        return { ...prev, accepted_marital_statuses: ['never_married', 'divorced', 'widowed', 'awaiting_divorce'] };
+      }
+      const updated = current.includes(status)
+        ? current.filter(s => s !== status)
+        : [...current, status];
+      return { ...prev, accepted_marital_statuses: updated.length > 0 ? updated : ['never_married'] };
+    });
   };
 
   const validateStep1 = () => {
@@ -157,13 +204,16 @@ export const ProfileWizardPage = ({ onComplete }) => {
     setLoading(true);
 
     try {
-      const saved = await saveProfile(formData);
-      addOrUpdateProfile(saved);
+      const savedProfile = await saveProfile(formData);
+      addOrUpdateProfile(savedProfile);
+
+      // Save partner preferences
+      await savePartnerPreferences(prefData);
 
       const docUrl = formData.id_document_url || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80';
       const familyUrl = formData.family_consent_document_url || null;
 
-      await submitVerificationRequest(saved.id, docUrl, familyUrl);
+      await submitVerificationRequest(savedProfile.id, docUrl, familyUrl);
 
       setSuccessBanner(true);
       setTimeout(() => {
@@ -195,10 +245,10 @@ export const ProfileWizardPage = ({ onComplete }) => {
           <span>{t('brandSubtitle')}</span>
         </div>
         <h1 className="font-serif text-2xl sm:text-3xl font-extrabold text-main">
-          {existingProfile ? 'Update Profile' : t('createProfile')}
+          {existingProfile ? 'Update Profile & Preferences' : t('createProfile')}
         </h1>
         <p className="text-xs sm:text-sm text-sub mt-1 max-w-md mx-auto">
-          Submit your details and verification documents.
+          Submit your candidate details, partner expectations, and verification proof.
         </p>
 
         {existingProfile && (
@@ -213,12 +263,12 @@ export const ProfileWizardPage = ({ onComplete }) => {
       </div>
 
       {successBanner && (
-        <div className="mb-6 p-4 radius-card bg-surface-ground border border-main text-main text-sm font-medium flex items-center gap-3">
+        <div className="mb-6 p-4 radius-card bg-surface-ground border border-main text-main text-sm font-medium flex items-center gap-3 shadow-sm">
           <CheckCircle2 className="w-5 h-5 text-sky-blue flex-shrink-0" />
           <div>
-            <p className="font-bold">Profile Saved Successfully!</p>
+            <p className="font-bold">Profile & Preferences Saved Successfully!</p>
             <p className="text-xs text-sub mt-0.5">
-              Redirecting to candidate matches...
+              Redirecting to your candidate match feed...
             </p>
           </div>
         </div>
@@ -228,17 +278,18 @@ export const ProfileWizardPage = ({ onComplete }) => {
       <div className="mb-8 flex items-center justify-between relative px-2">
         <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-0.5 bg-surface-ground -z-0" />
         {[
-          { number: 1, title: 'Basic Details' },
-          { number: 2, title: 'Career & Lifestyle' },
+          { number: 1, title: 'Basic Info' },
+          { number: 2, title: 'Career & Life' },
           { number: 3, title: 'Culture & Photo' },
-          { number: 4, title: 'Verification' }
+          { number: 4, title: 'Partner Prefs' },
+          { number: 5, title: 'Verification' }
         ].map((s) => (
           <div key={s.number} className="relative z-10 flex flex-col items-center">
             <button
               onClick={() => handleNextStep(s.number)}
               className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs transition-all ${
                 step === s.number
-                  ? 'bg-sky-blue text-white'
+                  ? 'bg-sky-blue text-white shadow-xs'
                   : step > s.number
                   ? 'bg-surface-ground text-main border border-main'
                   : 'bg-surface-card border border-main text-sub'
@@ -246,14 +297,14 @@ export const ProfileWizardPage = ({ onComplete }) => {
             >
               {step > s.number ? <CheckCircle2 className="w-4 h-4 text-sub" /> : s.number}
             </button>
-            <span className="text-[11px] font-medium text-sub mt-1 hidden sm:block">
+            <span className="text-[10px] font-medium text-sub mt-1 hidden sm:block">
               {s.title}
             </span>
           </div>
         ))}
       </div>
 
-      {/* Form Steps */}
+      {/* Form Steps Container */}
       <div className="bg-surface-card radius-card border border-main p-6 sm:p-8 shadow-xs">
         {step === 1 && (
           <div className="space-y-4">
@@ -379,13 +430,13 @@ export const ProfileWizardPage = ({ onComplete }) => {
         )}
 
         {step === 2 && (
-          <div className="space-y-4">
+          <div className="space-y-5">
             <h2 className="font-serif text-lg font-bold text-main pb-2 border-b border-main flex items-center gap-2">
               <Briefcase className="w-5 h-5 text-sub" />
-              <span>Step 2: Career, Education & Income {t('optional')}</span>
+              <span>Step 2: Career, Education & Lifestyle</span>
             </h2>
 
-            {/* Profession & Education (Path B: Completely Optional, non-blocking) */}
+            {/* Profession & Education (Optional) */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-main mb-1">Occupation / Profession {t('optional')}</label>
@@ -431,12 +482,13 @@ export const ProfileWizardPage = ({ onComplete }) => {
                   onChange={(e) => handleChange('diet', e.target.value)}
                   className="w-full px-3.5 py-2.5 border border-main radius-btn text-sm bg-surface-ground text-main outline-none focus:ring-1 focus:ring-sky-blue"
                 >
-                  <option value="veg">Vegetarian</option>
-                  <option value="non-veg">Non-Vegetarian</option>
-                  <option value="eggetarian">Eggetarian</option>
+                  <option value="veg">{t('vegetarian')}</option>
+                  <option value="non-veg">{t('nonVegetarian')}</option>
+                  <option value="eggetarian">{t('eggetarian')}</option>
                 </select>
               </div>
 
+              {/* Expanded Marital Status with Awaiting Divorce */}
               <div>
                 <label className="block text-xs font-semibold text-main mb-1">Marital Status *</label>
                 <select
@@ -444,9 +496,10 @@ export const ProfileWizardPage = ({ onComplete }) => {
                   onChange={(e) => handleChange('marital_status', e.target.value)}
                   className="w-full px-3.5 py-2.5 border border-main radius-btn text-sm bg-surface-ground text-main outline-none focus:ring-1 focus:ring-sky-blue"
                 >
-                  <option value="never_married">Never Married</option>
-                  <option value="divorced">Divorced</option>
-                  <option value="widowed">Widowed</option>
+                  <option value="never_married">{t('neverMarried')}</option>
+                  <option value="divorced">{t('divorced')}</option>
+                  <option value="widowed">{t('widowed')}</option>
+                  <option value="awaiting_divorce">{t('awaitingDivorce')}</option>
                 </select>
               </div>
 
@@ -462,6 +515,59 @@ export const ProfileWizardPage = ({ onComplete }) => {
                 </select>
               </div>
             </div>
+
+            {/* Conditional Children / Dependents Section for Remarriage Profiles */}
+            {formData.marital_status !== 'never_married' && (
+              <div className="p-4 radius-card bg-surface-ground border border-main space-y-3 mt-2">
+                <div className="flex items-center gap-2 text-main text-xs font-bold">
+                  <Baby className="w-4 h-4 text-sky-blue" />
+                  <span>Children / Dependents Details {t('optional')}</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-[11px] font-medium text-sub mb-1">{t('hasChildren')}</label>
+                    <select
+                      value={formData.has_children}
+                      onChange={(e) => handleChange('has_children', e.target.value)}
+                      className="w-full px-3 py-2 border border-main radius-btn text-xs bg-surface-card text-main outline-none"
+                    >
+                      <option value="no">No</option>
+                      <option value="yes">Yes</option>
+                    </select>
+                  </div>
+
+                  {formData.has_children === 'yes' && (
+                    <>
+                      <div>
+                        <label className="block text-[11px] font-medium text-sub mb-1">{t('childrenCount')}</label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="10"
+                          value={formData.children_count}
+                          onChange={(e) => handleChange('children_count', e.target.value)}
+                          placeholder="e.g. 1"
+                          className="w-full px-3 py-2 border border-main radius-btn text-xs bg-surface-card text-main outline-none"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-medium text-sub mb-1">{t('childrenLivingStatus')}</label>
+                        <select
+                          value={formData.children_living_status}
+                          onChange={(e) => handleChange('children_living_status', e.target.value)}
+                          className="w-full px-3 py-2 border border-main radius-btn text-xs bg-surface-card text-main outline-none"
+                        >
+                          <option value="living_together">{t('livingTogether')}</option>
+                          <option value="living_separately">{t('livingSeparately')}</option>
+                        </select>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
 
             <div className="flex justify-between pt-4">
               <button
@@ -583,20 +689,175 @@ export const ProfileWizardPage = ({ onComplete }) => {
                 onClick={() => setStep(4)}
                 className="px-6 py-2.5 radius-btn bg-sky-blue hover:bg-sky-blue/90 text-white font-medium text-xs sm:text-sm flex items-center gap-2 shadow-xs"
               >
-                <span>Next: Verification Documents</span>
+                <span>Next: Partner Preferences</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
           </div>
         )}
 
+        {/* Step 4: Partner Expectations & Preferences */}
         {step === 4 && (
+          <div className="space-y-5">
+            <h2 className="font-serif text-lg font-bold text-main pb-2 border-b border-main flex items-center gap-2">
+              <HeartHandshake className="w-5 h-5 text-sky-blue" />
+              <span>Step 4: Partner Expectations & Remarriage Preferences</span>
+            </h2>
+
+            <p className="text-xs text-sub">
+              Define the partner criteria you are looking for. These will personalize your Discover feed and Match Compatibility scores.
+            </p>
+
+            {/* Accepted Marital Status Multi-Select */}
+            <div className="space-y-2 p-4 bg-surface-ground border border-main radius-card">
+              <label className="block text-xs font-bold text-main">
+                {t('acceptedMaritalStatus')} *
+              </label>
+              <p className="text-[11px] text-sub">
+                Select all relationship backgrounds you are open to connecting with:
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
+                {[
+                  { id: 'never_married', label: t('neverMarried') },
+                  { id: 'divorced', label: t('divorced') },
+                  { id: 'widowed', label: t('widowed') },
+                  { id: 'awaiting_divorce', label: t('awaitingDivorce') }
+                ].map((status) => {
+                  const isChecked = prefData.accepted_marital_statuses?.includes(status.id);
+                  return (
+                    <button
+                      type="button"
+                      key={status.id}
+                      onClick={() => handleMaritalStatusToggle(status.id)}
+                      className={`px-3 py-2 radius-btn text-xs font-medium border text-left flex items-center justify-between transition-colors ${
+                        isChecked
+                          ? 'bg-surface-card border-sky-blue text-main font-bold shadow-xs'
+                          : 'bg-surface-card/60 border-main text-sub hover:border-sky-blue/50'
+                      }`}
+                    >
+                      <span>{status.label}</span>
+                      {isChecked && <CheckCircle2 className="w-3.5 h-3.5 text-sky-blue flex-shrink-0" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Preferred Age & Height */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-main mb-1">Preferred Age Range</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    min="18"
+                    max="80"
+                    value={prefData.age_min}
+                    onChange={(e) => handlePrefChange('age_min', Number(e.target.value))}
+                    className="w-full px-3 py-2 border border-main radius-btn text-xs bg-surface-ground text-main outline-none"
+                    placeholder="Min"
+                  />
+                  <span className="text-xs text-sub font-bold">to</span>
+                  <input
+                    type="number"
+                    min="18"
+                    max="80"
+                    value={prefData.age_max}
+                    onChange={(e) => handlePrefChange('age_max', Number(e.target.value))}
+                    className="w-full px-3 py-2 border border-main radius-btn text-xs bg-surface-ground text-main outline-none"
+                    placeholder="Max"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-main mb-1">Preferred Minimum Income (LPA)</label>
+                <select
+                  value={prefData.min_income_lpa}
+                  onChange={(e) => handlePrefChange('min_income_lpa', e.target.value)}
+                  className="w-full px-3 py-2 border border-main radius-btn text-xs bg-surface-ground text-main outline-none"
+                >
+                  <option value="all">{t('anyIncome')}</option>
+                  <option value="2.5">2.5+ LPA</option>
+                  <option value="5">5+ LPA</option>
+                  <option value="10">10+ LPA</option>
+                  <option value="15">15+ LPA</option>
+                  <option value="25">25+ LPA</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Preferred Diet & Location */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-main mb-1">Preferred Diet</label>
+                <select
+                  value={prefData.diet}
+                  onChange={(e) => handlePrefChange('diet', e.target.value)}
+                  className="w-full px-3 py-2 border border-main radius-btn text-xs bg-surface-ground text-main outline-none"
+                >
+                  <option value="any">{t('allDiets')}</option>
+                  <option value="veg">{t('vegetarian')}</option>
+                  <option value="non-veg">{t('nonVegetarian')}</option>
+                  <option value="eggetarian">{t('eggetarian')}</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-main mb-1">Preferred Location / City</label>
+                <input
+                  type="text"
+                  value={prefData.city}
+                  onChange={(e) => handlePrefChange('city', e.target.value)}
+                  placeholder="e.g. Pune, Mumbai, or No Preference"
+                  className="w-full px-3 py-2 border border-main radius-btn text-xs bg-surface-ground text-main outline-none"
+                />
+              </div>
+            </div>
+
+            {/* Open Ended Partner Notes */}
+            <div>
+              <label className="block text-xs font-semibold text-main mb-1">Partner Expectations & Values {t('optional')}</label>
+              <textarea
+                rows="2"
+                maxLength="400"
+                value={prefData.notes}
+                onChange={(e) => handlePrefChange('notes', e.target.value)}
+                placeholder="e.g. Looking for a supportive partner with shared values, open to remarriage..."
+                className="w-full px-3.5 py-2.5 border border-main radius-btn text-xs bg-surface-ground text-main outline-none"
+              />
+            </div>
+
+            <div className="flex justify-between pt-4">
+              <button
+                type="button"
+                onClick={() => setStep(3)}
+                className="px-5 py-2.5 radius-btn border border-main text-sub font-medium text-xs sm:text-sm flex items-center gap-1 hover:bg-surface-ground"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>Back</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setStep(5)}
+                className="px-6 py-2.5 radius-btn bg-sky-blue hover:bg-sky-blue/90 text-white font-medium text-xs sm:text-sm flex items-center gap-2 shadow-xs"
+              >
+                <span>Next: Verification Proof</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Step 5: Verification Documents Submission */}
+        {step === 5 && (
           <form onSubmit={handleSubmitProfile} className="space-y-6">
             <div className="p-4 bg-surface-ground border border-main radius-card">
               <div className="flex items-start gap-3">
                 <ShieldCheck className="w-5 h-5 text-sky-blue flex-shrink-0 mt-0.5" />
                 <div>
-                  <h3 className="font-serif font-bold text-main text-sm">Verification Documents</h3>
+                  <h3 className="font-serif font-bold text-main text-sm">Step 5: Verification Documents</h3>
                   <p className="text-xs text-sub mt-0.5">
                     Upload documents to unlock verification trust badges on your profile.
                   </p>
@@ -650,7 +911,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
             <div className="flex justify-between pt-4 border-t border-main">
               <button
                 type="button"
-                onClick={() => setStep(3)}
+                onClick={() => setStep(4)}
                 className="px-5 py-2.5 radius-btn border border-main text-sub font-medium text-xs sm:text-sm flex items-center gap-1 hover:bg-surface-ground"
               >
                 <ArrowLeft className="w-4 h-4" />
@@ -663,7 +924,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
                 className="px-8 py-3 radius-btn bg-sky-blue hover:bg-sky-blue/90 text-white font-bold text-sm shadow-xs transition-all flex items-center gap-2"
               >
                 <ShieldCheck className="w-4 h-4" />
-                <span>{loading ? t('sending') : 'Submit Profile'}</span>
+                <span>{loading ? t('sending') : 'Submit Profile & Preferences'}</span>
               </button>
             </div>
           </form>

@@ -9,7 +9,7 @@ import { useLanguage } from '../context/LanguageContext';
 
 export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToProfile, onAuthRequired, showShortlistedOnly = false }) => {
   const { profiles, shortlistedIds } = useData();
-  const { profile: myProfile, user } = useAuth();
+  const { profile: myProfile, partnerPreferences, user } = useAuth();
   const { t } = useLanguage();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -18,15 +18,15 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
   const [isLoadingFeed, setIsLoadingFeed] = useState(false);
 
   const [filters, setFilters] = useState({
-    ageMin: 18,
-    ageMax: 60,
+    ageMin: partnerPreferences?.age_min || 18,
+    ageMax: partnerPreferences?.age_max || 60,
     gender: 'all',
-    city: '',
-    state: '',
-    education: '',
-    diet: '',
+    city: partnerPreferences?.city || '',
+    state: partnerPreferences?.state && partnerPreferences.state !== 'any' ? partnerPreferences.state : '',
+    education: partnerPreferences?.education && partnerPreferences.education !== 'any' ? partnerPreferences.education : '',
+    diet: partnerPreferences?.diet && partnerPreferences.diet !== 'any' ? partnerPreferences.diet : '',
     maritalStatus: '',
-    incomeBracket: 'all',
+    incomeBracket: partnerPreferences?.min_income_lpa && partnerPreferences.min_income_lpa !== 'all' ? partnerPreferences.min_income_lpa : 'all',
     verifiedOnly: false
   });
 
@@ -46,7 +46,7 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
     setFilters({
       ageMin: 18,
       ageMax: 60,
-      gender: 'all',
+      gender: myProfile?.gender ? (myProfile.gender === 'female' ? 'male' : 'female') : 'all',
       city: '',
       state: '',
       education: '',
@@ -68,6 +68,10 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
     const currentUserId = myProfile?.id || user?.id;
 
     return profiles.filter((p) => {
+      // Exclude hidden or deactivated profiles
+      if (p.is_active === false) return false;
+      if (p.is_search_visible === false && p.id !== currentUserId) return false;
+
       if (showShortlistedOnly && !shortlistedIds.includes(p.id)) return false;
       if (currentUserId && p.id === currentUserId) return false;
       if (filters.verifiedOnly && !p.is_id_verified && !p.is_fully_verified) return false;

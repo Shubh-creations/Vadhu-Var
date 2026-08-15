@@ -2,10 +2,14 @@ import React from 'react';
 import { X, Sparkles, CheckCircle2 } from 'lucide-react';
 import calculateCompatibilityEstimate from '../lib/compatibilityCalculator';
 
+import { useAuth } from '../context/AuthContext';
+
 export const CompatibilityModal = ({ profile, onClose }) => {
+  const { profile: myProfile, partnerPreferences } = useAuth();
+
   if (!profile) return null;
 
-  const score = calculateCompatibilityEstimate(null, profile);
+  const score = calculateCompatibilityEstimate(myProfile, profile, partnerPreferences);
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">

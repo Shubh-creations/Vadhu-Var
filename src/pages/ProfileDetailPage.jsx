@@ -189,9 +189,22 @@ export const ProfileDetailPage = ({ profile, onBack, onAuthRequired }) => {
             <div className="flex justify-between py-1.5 border-b border-main">
               <span className="text-sub">Marital Status</span>
               <span className="font-medium text-main capitalize">
-                {profile.marital_status ? profile.marital_status.replace('_', ' ') : 'Never Married'}
+                {profile.marital_status === 'awaiting_divorce'
+                  ? 'Awaiting Divorce / Separated'
+                  : profile.marital_status
+                  ? profile.marital_status.replace('_', ' ')
+                  : 'Never Married'}
               </span>
             </div>
+            {profile.has_children === 'yes' && (
+              <div className="flex justify-between py-1.5 border-b border-main">
+                <span className="text-sub">Children / Dependents</span>
+                <span className="font-medium text-main">
+                  {profile.children_count ? `${profile.children_count} child${Number(profile.children_count) > 1 ? 'ren' : ''}` : 'Yes'}
+                  {profile.children_living_status === 'living_together' ? ' (Living with me)' : profile.children_living_status === 'living_separately' ? ' (Living separately)' : ''}
+                </span>
+              </div>
+            )}
             <div className="flex justify-between py-1.5 border-b border-main">
               <span className="text-sub">Family Type</span>
               <span className="font-medium text-main capitalize">{profile.family_type || 'Nuclear'}</span>

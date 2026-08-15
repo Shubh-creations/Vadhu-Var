@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Heart, Search, User, Download, LogOut, Star, MessageSquare, Shield, Sun, Moon, Globe } from 'lucide-react';
+import { Heart, Search, User, Download, LogOut, Star, MessageSquare, Shield, Sun, Moon, Globe, Settings } from 'lucide-react';
 import { Logo } from './Logo';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
@@ -176,6 +176,15 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
 
             {user || profile ? (
               <div className="flex items-center gap-1 sm:gap-2">
+                <button
+                  onClick={() => setActiveTab('settings')}
+                  className="p-1.5 radius-btn text-sub hover:text-main hover:bg-surface-ground transition-colors"
+                  title={t('accountSettings')}
+                  aria-label="Settings"
+                >
+                  <Settings className="w-4 h-4" />
+                </button>
+
                 <button
                   onClick={() => setActiveTab('profile')}
                   className="flex items-center gap-1.5 p-0.5 sm:pr-2.5 rounded-full border border-main hover:border-sky-blue transition-colors"

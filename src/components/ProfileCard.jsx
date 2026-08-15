@@ -7,7 +7,7 @@ import { useLanguage } from '../context/LanguageContext';
 import calculateCompatibilityEstimate from '../lib/compatibilityCalculator';
 
 export const ProfileCard = ({ profile, onViewDetails, onAuthRequired }) => {
-  const { user, profile: myProfile } = useAuth();
+  const { user, profile: myProfile, partnerPreferences } = useAuth();
   const { interests, sendInterest, toggleShortlist, isShortlisted } = useData();
   const { t } = useLanguage();
 
@@ -21,7 +21,7 @@ export const ProfileCard = ({ profile, onViewDetails, onAuthRequired }) => {
 
   const hasExpressedInterest = interestSent || Boolean(existingInterest);
   const isShort = isShortlisted(profile.id);
-  const matchScore = calculateCompatibilityEstimate(myProfile, profile);
+  const matchScore = calculateCompatibilityEstimate(myProfile, profile, partnerPreferences);
 
   const handleExpressInterest = async (e) => {
     e.stopPropagation();

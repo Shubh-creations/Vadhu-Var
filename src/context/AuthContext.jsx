@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { supabase, isSupabaseConfigured } from '../lib/supabaseClient';
 
 const AuthContext = createContext();
@@ -12,6 +12,22 @@ export const ADMIN_UIDS = [
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
+  const [partnerPreferences, setPartnerPreferences] = useState(() => {
+    const saved = localStorage.getItem('vadhu_var_partner_preferences');
+    return saved ? JSON.parse(saved) : {
+      age_min: 21,
+      age_max: 35,
+      height_min_cm: 150,
+      height_max_cm: 190,
+      accepted_marital_statuses: ['never_married', 'divorced', 'widowed', 'awaiting_divorce'],
+      diet: 'any',
+      min_income_lpa: 'all',
+      state: 'any',
+      city: '',
+      education: 'any',
+      notes: ''
+    };
+  });
   const [loading, setLoading] = useState(true);
   const [isDemoMode, setIsDemoMode] = useState(!isSupabaseConfigured());
 
@@ -19,6 +35,44 @@ export const AuthProvider = ({ children }) => {
     (user?.id && ADMIN_UIDS.includes(user.id)) || 
     profile?.is_admin === true
   );
+
+  // Fetch partner preferences from Supabase
+  const fetchPartnerPreferences = useCallback(async (userId) => {
+    if (!supabase || !userId) return;
+    try {
+      const { data, error } = await supabase
+        .from('partner_preferences')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+
+      if (!error && data) {
+        setPartnerPreferences(data);
+        localStorage.setItem('vadhu_var_partner_preferences', JSON.stringify(data));
+      }
+    } catch (err) {
+      console.warn('Could not fetch partner preferences:', err);
+    }
+  }, []);
+
+  // Fetch profile from Supabase
+  const fetchUserProfile = useCallback(async (userId) => {
+    if (!supabase || !userId) return;
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (!error && data) {
+        setProfile(data);
+        localStorage.setItem('vadhu_var_profile', JSON.stringify(data));
+      }
+    } catch (err) {
+      console.error('Error fetching user profile:', err);
+    }
+  }, []);
 
   useEffect(() => {
     // Check initial auth state
@@ -31,6 +85,7 @@ export const AuthProvider = ({ children }) => {
           if (session?.user) {
             setUser(session.user);
             await fetchUserProfile(session.user.id);
+            await fetchPartnerPreferences(session.user.id);
           }
         } catch (err) {
           console.warn('Supabase auth fetch error, using local state:', err);
@@ -57,6 +112,7 @@ export const AuthProvider = ({ children }) => {
         if (session?.user) {
           setUser(session.user);
           await fetchUserProfile(session.user.id);
+          await fetchPartnerPreferences(session.user.id);
         } else {
           setUser(null);
           setProfile(null);
@@ -64,26 +120,7 @@ export const AuthProvider = ({ children }) => {
       });
       return () => subscription?.unsubscribe();
     }
-  }, [isDemoMode]);
-
-  // Fetch profile from Supabase
-  const fetchUserProfile = async (userId) => {
-    if (!supabase) return;
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (!error && data) {
-        setProfile(data);
-        localStorage.setItem('vadhu_var_profile', JSON.stringify(data));
-      }
-    } catch (err) {
-      console.error('Error fetching user profile:', err);
-    }
-  };
+  }, [isDemoMode, fetchUserProfile, fetchPartnerPreferences]);
 
   // Sign up user with clean URL handling
   const signUp = async (email, password, fullNameOrOptions) => {
@@ -141,6 +178,7 @@ export const AuthProvider = ({ children }) => {
       if (data?.user) {
         setUser(data.user);
         await fetchUserProfile(data.user.id);
+        await fetchPartnerPreferences(data.user.id);
       }
       return data;
     } else {
@@ -171,6 +209,7 @@ export const AuthProvider = ({ children }) => {
     setProfile(null);
     localStorage.removeItem('vadhu_var_user');
     localStorage.removeItem('vadhu_var_profile');
+    localStorage.removeItem('vadhu_var_partner_preferences');
   };
 
   // Helper function
@@ -185,6 +224,8 @@ export const AuthProvider = ({ children }) => {
     const fullProfile = {
       ...profileData,
       id: user?.id || `user-${Date.now()}`,
+      is_active: profileData.is_active !== undefined ? profileData.is_active : true,
+      is_search_visible: profileData.is_search_visible !== undefined ? profileData.is_search_visible : true,
       created_at: profileData.created_at || new Date().toISOString()
     };
 
@@ -211,11 +252,54 @@ export const AuthProvider = ({ children }) => {
     return fullProfile;
   };
 
+  // Save or update partner preferences
+  const savePartnerPreferences = async (prefData) => {
+    const fullPref = {
+      ...prefData,
+      user_id: user?.id || `user-${Date.now()}`,
+      updated_at: new Date().toISOString()
+    };
+
+    setPartnerPreferences(fullPref);
+    localStorage.setItem('vadhu_var_partner_preferences', JSON.stringify(fullPref));
+
+    if (isSupabaseConfigured() && !isDemoMode && user) {
+      try {
+        const { data, error } = await supabase
+          .from('partner_preferences')
+          .upsert({ ...fullPref, user_id: user.id })
+          .select()
+          .single();
+
+        if (error) throw error;
+        if (data) {
+          setPartnerPreferences(data);
+          localStorage.setItem('vadhu_var_partner_preferences', JSON.stringify(data));
+        }
+      } catch (err) {
+        console.error('Supabase partner preferences save error:', err);
+      }
+    }
+    return fullPref;
+  };
+
+  // Update Account Settings (Visibility / Deactivation)
+  const updateAccountSettings = async (settings) => {
+    if (!profile && !user) return;
+    const updated = {
+      ...profile,
+      ...settings,
+      id: user?.id || profile?.id
+    };
+    return await saveProfile(updated);
+  };
+
   return (
     <AuthContext.Provider
       value={{
         user,
         profile,
+        partnerPreferences,
         isAdmin,
         loading,
         isDemoMode,
@@ -225,7 +309,10 @@ export const AuthProvider = ({ children }) => {
         login,
         logout,
         saveProfile,
-        fetchUserProfile
+        savePartnerPreferences,
+        updateAccountSettings,
+        fetchUserProfile,
+        fetchPartnerPreferences
       }}
     >
       {children}

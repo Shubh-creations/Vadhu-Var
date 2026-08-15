@@ -179,6 +179,7 @@ export const FilterPanel = ({ filters, onFilterChange, onReset, totalMatches }) 
             <option value="never_married">{t('neverMarried')}</option>
             <option value="divorced">{t('divorced')}</option>
             <option value="widowed">{t('widowed')}</option>
+            <option value="awaiting_divorce">{t('awaitingDivorce')}</option>
           </select>
         </div>
       </div>

@@ -15,6 +15,7 @@ import BrowsePage from './pages/BrowsePage';
 import ProfileDetailPage from './pages/ProfileDetailPage';
 import InterestsPage from './pages/InterestsPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
+import AccountSettingsPage from './pages/AccountSettingsPage';
 
 // Modals
 import CompatibilityModal from './components/CompatibilityModal';
@@ -118,6 +119,13 @@ function AppContent() {
         {activeTab === 'privacy' && (
           <PrivacyPolicyPage
             onBack={() => setActiveTab('browse')}
+          />
+        )}
+
+        {activeTab === 'settings' && (
+          <AccountSettingsPage
+            onBack={() => setActiveTab('browse')}
+            onNavigateToProfile={() => setActiveTab('profile')}
           />
         )}
       </main>
