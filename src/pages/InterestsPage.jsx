@@ -106,8 +106,12 @@ export const InterestsPage = ({ onViewProfile }) => {
               );
             })
           ) : (
-            <div className="bg-surface-card radius-card border border-main p-12 text-center text-sub text-xs">
-              No received interest requests yet.
+            <div className="bg-surface-card radius-card border border-main p-12 text-center text-sub space-y-3 shadow-xs">
+              <Heart className="w-10 h-10 text-sub/40 mx-auto" />
+              <h3 className="font-serif font-bold text-main text-base">No Received Interests Yet</h3>
+              <p className="text-xs text-sub max-w-sm mx-auto">
+                When other verified members view your profile and express interest, their connection requests will appear here.
+              </p>
             </div>
           )}
         </div>
@@ -127,7 +131,7 @@ export const InterestsPage = ({ onViewProfile }) => {
                     <img src={receiver.photo_url} alt={receiver.full_name} className="w-14 h-14 radius-btn object-cover border border-main" />
                     <div>
                       <h3 className="font-serif font-bold text-main text-base">{receiver.full_name}, {receiver.age}</h3>
-                      <p className="text-xs text-sub">{receiver.occupation} • {receiver.city}</p>
+                      <p className="text-xs text-sub">{receiver.occupation || 'Candidate'} • {receiver.city}</p>
                     </div>
                   </div>
 
@@ -146,8 +150,12 @@ export const InterestsPage = ({ onViewProfile }) => {
               );
             })
           ) : (
-            <div className="bg-surface-card radius-card border border-main p-12 text-center text-sub text-xs">
-              No sent interest requests yet.
+            <div className="bg-surface-card radius-card border border-main p-12 text-center text-sub space-y-3 shadow-xs">
+              <Heart className="w-10 h-10 text-sub/40 mx-auto" />
+              <h3 className="font-serif font-bold text-main text-base">No Sent Interests Yet</h3>
+              <p className="text-xs text-sub max-w-sm mx-auto">
+                Explore candidate profiles in Discover and tap "Express Interest" to send matrimonial connection requests.
+              </p>
             </div>
           )}
         </div>

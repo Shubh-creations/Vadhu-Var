@@ -95,6 +95,8 @@ export const ProfileDetailPage = ({ profile, onBack, onAuthRequired }) => {
               <BadgeVerified
                 isFullyVerified={profile.is_fully_verified}
                 isIdVerified={profile.is_id_verified}
+                isProfessionVerified={profile.is_profession_verified}
+                isPending={isOwnProfile && !profile.is_id_verified && !profile.is_fully_verified}
               />
             </div>
 

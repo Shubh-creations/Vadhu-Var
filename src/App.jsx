@@ -24,7 +24,13 @@ import ChatAndCallModal from './components/ChatAndCallModal';
 import BlockReportModal from './components/BlockReportModal';
 
 function AppContent() {
-  const [activeTab, setActiveTab] = useState('browse');
+  const { user, profile } = useAuth();
+  const { toast, clearToast } = useData();
+
+  const [activeTab, setActiveTab] = useState(() => {
+    // If user has local token/profile, open in browse mode; otherwise landing page
+    return localStorage.getItem('vadhu_var_user') || localStorage.getItem('vadhu_var_profile') ? 'browse' : 'landing';
+  });
   const [selectedProfile, setSelectedProfile] = useState(null);
 
   // Modal State Triggers
@@ -32,9 +38,6 @@ function AppContent() {
   const [privacyModalOpen, setPrivacyModalOpen] = useState(false);
   const [chatCandidate, setChatCandidate] = useState(null);
   const [blockReportCandidate, setBlockReportCandidate] = useState(null);
-
-  const { user, profile } = useAuth();
-  const { toast, clearToast } = useData();
 
   const handleViewProfileDetail = (p) => {
     setSelectedProfile(p);

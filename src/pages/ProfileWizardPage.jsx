@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldCheck, User, Briefcase, GraduationCap, FileText, CheckCircle2, ArrowRight, ArrowLeft, Camera, IndianRupee, Crop, AlertCircle, HeartHandshake, Baby } from 'lucide-react';
+import { ShieldCheck, User, Briefcase, GraduationCap, FileText, CheckCircle2, ArrowRight, ArrowLeft, Camera, IndianRupee, Crop, AlertCircle, HeartHandshake, Baby, Clock, Sparkles } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -14,7 +14,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
 
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [successBanner, setSuccessBanner] = useState(false);
+  const [successModal, setSuccessModal] = useState(false);
   const [errors, setErrors] = useState({});
 
   // Image Cropper State
@@ -108,9 +108,6 @@ export const ProfileWizardPage = ({ onComplete }) => {
   const handleMaritalStatusToggle = (status) => {
     setPrefData(prev => {
       const current = prev.accepted_marital_statuses || [];
-      if (status === 'all') {
-        return { ...prev, accepted_marital_statuses: ['never_married', 'divorced', 'widowed', 'awaiting_divorce'] };
-      }
       const updated = current.includes(status)
         ? current.filter(s => s !== status)
         : [...current, status];
@@ -214,11 +211,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
       const familyUrl = formData.family_consent_document_url || null;
 
       await submitVerificationRequest(savedProfile.id, docUrl, familyUrl);
-
-      setSuccessBanner(true);
-      setTimeout(() => {
-        if (onComplete) onComplete();
-      }, 1200);
+      setSuccessModal(true);
     } catch (err) {
       alert(err.message || 'Error saving profile');
     } finally {
@@ -229,7 +222,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
   const indianStates = ['Maharashtra', 'Delhi', 'Karnataka', 'Telangana', 'Tamil Nadu', 'West Bengal', 'Gujarat', 'Rajasthan', 'Uttar Pradesh', 'Punjab'];
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8">
+    <div className="max-w-3xl mx-auto px-4 py-6 sm:py-10">
       {/* Photo Cropper Modal */}
       <ImageCropperModal
         isOpen={cropperOpen}
@@ -238,9 +231,45 @@ export const ProfileWizardPage = ({ onComplete }) => {
         onClose={() => setCropperOpen(false)}
       />
 
+      {/* Post-Submission "What Happens Next" Modal */}
+      {successModal && (
+        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+          <div className="bg-surface-card radius-card border border-main max-w-md w-full p-6 sm:p-8 text-center space-y-4 shadow-2xl animate-fade-in">
+            <div className="w-14 h-14 radius-btn bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto">
+              <CheckCircle2 className="w-8 h-8" />
+            </div>
+
+            <h2 className="font-serif text-2xl font-bold text-main">
+              Profile Saved Successfully!
+            </h2>
+
+            <div className="p-4 bg-surface-ground radius-card border border-main text-left space-y-2">
+              <div className="flex items-center gap-2 text-xs font-bold text-main">
+                <Clock className="w-4 h-4 text-amber-500" />
+                <span>What Happens Next?</span>
+              </div>
+              <p className="text-xs text-sub leading-relaxed">
+                Your profile is now live. Our team is reviewing your verification documents. <strong>You don't need to wait</strong> — you can start browsing verified matches, saving shortlists, and expressing interest immediately!
+              </p>
+            </div>
+
+            <button
+              onClick={() => {
+                setSuccessModal(false);
+                if (onComplete) onComplete();
+              }}
+              className="w-full py-3 radius-btn bg-sky-blue hover:bg-sky-blue/90 text-white font-bold text-xs sm:text-sm shadow-xs transition-colors flex items-center justify-center gap-2"
+            >
+              <span>Start Browsing Matches</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
-      <div className="text-center mb-8">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 radius-btn bg-surface-ground text-main text-xs font-medium mb-2 border border-main">
+      <div className="text-center mb-6">
+        <div className="inline-flex items-center gap-2 px-3 py-1 radius-btn bg-surface-ground text-main text-xs font-medium mb-2 border border-main">
           <ShieldCheck className="w-4 h-4 text-sub" />
           <span>{t('brandSubtitle')}</span>
         </div>
@@ -248,7 +277,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
           {existingProfile ? 'Update Profile & Preferences' : t('createProfile')}
         </h1>
         <p className="text-xs sm:text-sm text-sub mt-1 max-w-md mx-auto">
-          Submit your candidate details, partner expectations, and verification proof.
+          Submit your candidate info, partner expectations, and verification proof.
         </p>
 
         {existingProfile && (
@@ -257,24 +286,27 @@ export const ProfileWizardPage = ({ onComplete }) => {
               isFullyVerified={existingProfile.is_fully_verified}
               isIdVerified={existingProfile.is_id_verified}
               isProfessionVerified={existingProfile.is_profession_verified}
+              isPending={!existingProfile.is_id_verified}
             />
           </div>
         )}
       </div>
 
-      {successBanner && (
-        <div className="mb-6 p-4 radius-card bg-surface-ground border border-main text-main text-sm font-medium flex items-center gap-3 shadow-sm">
-          <CheckCircle2 className="w-5 h-5 text-sky-blue flex-shrink-0" />
-          <div>
-            <p className="font-bold">Profile & Preferences Saved Successfully!</p>
-            <p className="text-xs text-sub mt-0.5">
-              Redirecting to your candidate match feed...
-            </p>
-          </div>
+      {/* Step Progress Bar (Step X of 5) */}
+      <div className="mb-6 bg-surface-card radius-card border border-main p-4 space-y-2 shadow-xs">
+        <div className="flex items-center justify-between text-xs">
+          <span className="font-bold text-main">Step {step} of 5</span>
+          <span className="text-sub font-medium">{Math.round((step / 5) * 100)}% Completed</span>
         </div>
-      )}
+        <div className="w-full h-2 bg-surface-ground radius-btn overflow-hidden border border-main">
+          <div
+            className="h-full bg-sky-blue transition-all duration-300"
+            style={{ width: `${(step / 5) * 100}%` }}
+          />
+        </div>
+      </div>
 
-      {/* Steps Bar */}
+      {/* Steps Navigation Bar */}
       <div className="mb-8 flex items-center justify-between relative px-2">
         <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-0.5 bg-surface-ground -z-0" />
         {[
@@ -436,10 +468,13 @@ export const ProfileWizardPage = ({ onComplete }) => {
               <span>Step 2: Career, Education & Lifestyle</span>
             </h2>
 
-            {/* Profession & Education (Optional) */}
+            {/* Profession & Education (Explicitly marked Optional) */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-main mb-1">Occupation / Profession {t('optional')}</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-semibold text-main">Occupation / Profession</label>
+                  <span className="text-[10px] text-sub bg-surface-ground px-1.5 py-0.5 rounded border border-main">Optional</span>
+                </div>
                 <input
                   type="text"
                   value={formData.occupation}
@@ -450,7 +485,10 @@ export const ProfileWizardPage = ({ onComplete }) => {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-main mb-1">Education Qualification {t('optional')}</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-semibold text-main">Education Qualification</label>
+                  <span className="text-[10px] text-sub bg-surface-ground px-1.5 py-0.5 rounded border border-main">Optional</span>
+                </div>
                 <input
                   type="text"
                   value={formData.education_level}
@@ -462,7 +500,10 @@ export const ProfileWizardPage = ({ onComplete }) => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-main mb-1">Annual Income (LPA in Lakhs) {t('optional')}</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-xs font-semibold text-main">Annual Income (LPA in Lakhs)</label>
+                <span className="text-[10px] text-sub bg-surface-ground px-1.5 py-0.5 rounded border border-main">Optional</span>
+              </div>
               <input
                 type="number"
                 step="0.5"
@@ -488,7 +529,6 @@ export const ProfileWizardPage = ({ onComplete }) => {
                 </select>
               </div>
 
-              {/* Expanded Marital Status with Awaiting Divorce */}
               <div>
                 <label className="block text-xs font-semibold text-main mb-1">Marital Status *</label>
                 <select
@@ -516,12 +556,15 @@ export const ProfileWizardPage = ({ onComplete }) => {
               </div>
             </div>
 
-            {/* Conditional Children / Dependents Section for Remarriage Profiles */}
+            {/* Conditional Children / Dependents Section */}
             {formData.marital_status !== 'never_married' && (
               <div className="p-4 radius-card bg-surface-ground border border-main space-y-3 mt-2">
-                <div className="flex items-center gap-2 text-main text-xs font-bold">
-                  <Baby className="w-4 h-4 text-sky-blue" />
-                  <span>Children / Dependents Details {t('optional')}</span>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-main text-xs font-bold">
+                    <Baby className="w-4 h-4 text-sky-blue" />
+                    <span>Children / Dependents Details</span>
+                  </div>
+                  <span className="text-[10px] text-sub bg-surface-card px-1.5 py-0.5 rounded border border-main">Optional</span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -600,7 +643,10 @@ export const ProfileWizardPage = ({ onComplete }) => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-main mb-1">Caste {t('optional')}</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-semibold text-main">Caste</label>
+                  <span className="text-[10px] text-sub bg-surface-ground px-1.5 py-0.5 rounded border border-main">Optional</span>
+                </div>
                 <input
                   type="text"
                   value={formData.caste}
@@ -611,7 +657,10 @@ export const ProfileWizardPage = ({ onComplete }) => {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-main mb-1">Sub-Caste {t('optional')}</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-semibold text-main">Sub-Caste</label>
+                  <span className="text-[10px] text-sub bg-surface-ground px-1.5 py-0.5 rounded border border-main">Optional</span>
+                </div>
                 <input
                   type="text"
                   value={formData.sub_caste}
@@ -623,7 +672,10 @@ export const ProfileWizardPage = ({ onComplete }) => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-main mb-1">Bio (About Me)</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-xs font-semibold text-main">Bio (About Me)</label>
+                <span className="text-[10px] text-sub bg-surface-ground px-1.5 py-0.5 rounded border border-main">Optional</span>
+              </div>
               <textarea
                 rows="3"
                 maxLength="500"
@@ -705,16 +757,16 @@ export const ProfileWizardPage = ({ onComplete }) => {
             </h2>
 
             <p className="text-xs text-sub">
-              Define the partner criteria you are looking for. These will personalize your Discover feed and Match Compatibility scores.
+              Define what you are looking for in a partner. These will personalize your match recommendations and compatibility scores.
             </p>
 
             {/* Accepted Marital Status Multi-Select */}
             <div className="space-y-2 p-4 bg-surface-ground border border-main radius-card">
               <label className="block text-xs font-bold text-main">
-                {t('acceptedMaritalStatus')} *
+                {t('acceptedMaritalStatus')}
               </label>
               <p className="text-[11px] text-sub">
-                Select all relationship backgrounds you are open to connecting with:
+                Select relationship backgrounds you are open to connecting with:
               </p>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
                 {[
@@ -809,15 +861,17 @@ export const ProfileWizardPage = ({ onComplete }) => {
                   type="text"
                   value={prefData.city}
                   onChange={(e) => handlePrefChange('city', e.target.value)}
-                  placeholder="e.g. Pune, Mumbai, or No Preference"
+                  placeholder="e.g. Pune, Mumbai, or Any"
                   className="w-full px-3 py-2 border border-main radius-btn text-xs bg-surface-ground text-main outline-none"
                 />
               </div>
             </div>
 
-            {/* Open Ended Partner Notes */}
             <div>
-              <label className="block text-xs font-semibold text-main mb-1">Partner Expectations & Values {t('optional')}</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-xs font-semibold text-main">Partner Expectations & Notes</label>
+                <span className="text-[10px] text-sub bg-surface-ground px-1.5 py-0.5 rounded border border-main">Optional</span>
+              </div>
               <textarea
                 rows="2"
                 maxLength="400"
@@ -859,7 +913,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
                 <div>
                   <h3 className="font-serif font-bold text-main text-sm">Step 5: Verification Documents</h3>
                   <p className="text-xs text-sub mt-0.5">
-                    Upload documents to unlock verification trust badges on your profile.
+                    Upload documents to unlock green verified trust badges on your candidate profile.
                   </p>
                 </div>
               </div>
@@ -879,9 +933,12 @@ export const ProfileWizardPage = ({ onComplete }) => {
             </div>
 
             <div className="border border-main p-4 radius-card space-y-2">
-              <div className="flex items-center gap-2 font-medium text-main text-sm">
-                <BadgeVerified isFullyVerified={true} size="small" />
-                <span>2. Family Consent Letter {t('optional')}</span>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 font-medium text-main text-sm">
+                  <BadgeVerified isFullyVerified={true} size="small" />
+                  <span>2. Family Consent Letter</span>
+                </div>
+                <span className="text-[10px] text-sub bg-surface-ground px-1.5 py-0.5 rounded border border-main">Optional</span>
               </div>
               <input
                 type="file"
@@ -891,11 +948,13 @@ export const ProfileWizardPage = ({ onComplete }) => {
               />
             </div>
 
-            {/* Optional Career or Education Certificate Upload */}
             <div className="border border-main p-4 radius-card space-y-2">
-              <div className="flex items-center gap-2 font-medium text-main text-sm">
-                <BadgeVerified isProfessionVerified={true} size="small" />
-                <span>3. {t('careerCertificate')} {t('optional')}</span>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 font-medium text-main text-sm">
+                  <BadgeVerified isProfessionVerified={true} size="small" />
+                  <span>3. {t('careerCertificate')}</span>
+                </div>
+                <span className="text-[10px] text-sub bg-surface-ground px-1.5 py-0.5 rounded border border-main">Optional</span>
               </div>
               <p className="text-xs text-sub">
                 {t('careerCertDesc')}
