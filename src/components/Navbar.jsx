@@ -67,12 +67,12 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
     <header className="sticky top-0 z-40 bg-surface-card border-b border-main transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 gap-2">
-          {/* Logo Mark: Custom Infinity Emblem + "वधू - वर" */}
+          {/* Logo Mark: 1st Website Icon emblem + "वधू - वर" */}
           <div 
             onClick={() => setActiveTab('landing')}
             className="cursor-pointer group flex-shrink-0"
           >
-            <Logo size="small" />
+            <Logo variant="header" />
           </div>
 
           {/* Desktop Primary Navigation Links */}
