@@ -4,6 +4,7 @@ import { DataProvider, useData } from './context/DataContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { LanguageProvider } from './context/LanguageContext';
 import Navbar from './components/Navbar';
+import MobileBottomNav from './components/MobileBottomNav';
 import Footer from './components/Footer';
 import Toast from './components/Toast';
 import PWAUpdateToast from './components/PWAUpdateToast';
@@ -40,7 +41,7 @@ function AppContent() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col transition-colors duration-200">
+    <div className="min-h-screen flex flex-col transition-colors duration-200 pb-16 md:pb-0">
       {/* Top Navbar */}
       <Navbar
         activeTab={activeTab}
@@ -118,6 +119,15 @@ function AppContent() {
           />
         )}
       </main>
+
+      {/* Mobile Bottom Navigation Bar (Established Mobile App Feel) */}
+      <MobileBottomNav
+        activeTab={activeTab}
+        setActiveTab={(tab) => {
+          setActiveTab(tab);
+          if (tab !== 'detail') setSelectedProfile(null);
+        }}
+      />
 
       {/* Modals */}
       <CompatibilityModal

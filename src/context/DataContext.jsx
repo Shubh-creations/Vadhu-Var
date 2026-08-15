@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { supabase, isSupabaseConfigured } from '../lib/supabaseClient';
-import { INITIAL_PROFILES, INITIAL_INTERESTS, INITIAL_VERIFICATION_REQUESTS } from '../lib/mockData';
 import { useAuth } from './AuthContext';
 
 const DataContext = createContext();
@@ -8,55 +7,72 @@ const DataContext = createContext();
 export const DataProvider = ({ children }) => {
   const { user, profile, isDemoMode } = useAuth();
   
-  // State initialization
+  // State initialization with dummy data cleanup
   const [profiles, setProfiles] = useState(() => {
     const saved = localStorage.getItem('mh_matrimony_profiles');
-    return saved ? JSON.parse(saved) : INITIAL_PROFILES;
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        // Filter out legacy dummy mock IDs
+        const realOnly = parsed.filter(p => !p.id?.startsWith('cand-'));
+        return realOnly;
+      } catch (e) {
+        return [];
+      }
+    }
+    return [];
   });
 
   const [interests, setInterests] = useState(() => {
     const saved = localStorage.getItem('mh_matrimony_interests');
-    return saved ? JSON.parse(saved) : INITIAL_INTERESTS;
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return parsed.filter(i => !i.id?.startsWith('int-001'));
+      } catch (e) {
+        return [];
+      }
+    }
+    return [];
   });
 
   const [shortlistedIds, setShortlistedIds] = useState(() => {
     const saved = localStorage.getItem('vadhu_var_shortlisted');
-    return saved ? JSON.parse(saved) : ['cand-002'];
-  });
-
-  const [verificationRequests, setVerificationRequests] = useState(() => {
-    const saved = localStorage.getItem('mh_matrimony_verification_requests');
-    return saved ? JSON.parse(saved) : INITIAL_VERIFICATION_REQUESTS;
-  });
-
-  const [dailyInterestCount, setDailyInterestCount] = useState(() => {
-    const saved = localStorage.getItem('mh_matrimony_daily_interest');
     if (saved) {
-      const parsed = JSON.parse(saved);
-      const isToday = new Date(parsed.date).toDateString() === new Date().toDateString();
-      if (isToday) return parsed.count;
+      try {
+        const parsed = JSON.parse(saved);
+        return parsed.filter(id => !id.startsWith('cand-'));
+      } catch (e) {
+        return [];
+      }
     }
-    return 0;
+    return [];
   });
 
+  const [verificationRequests, setVerificationRequests] = useState([]);
+  const [dailyInterestCount, setDailyInterestCount] = useState(0);
   const [toast, setToast] = useState({ message: '', type: 'success' });
   const [loading, setLoading] = useState(false);
 
   // Fresh re-fetch profiles directly from Supabase
   const refreshProfiles = useCallback(async () => {
     if (!isSupabaseConfigured() || isDemoMode) return;
+    setLoading(true);
     try {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (!error && data && data.length > 0) {
-        setProfiles(data);
-        localStorage.setItem('mh_matrimony_profiles', JSON.stringify(data));
+      if (!error && data) {
+        const cleanProfiles = data.filter(p => !p.id?.startsWith('cand-'));
+        setProfiles(cleanProfiles);
+        localStorage.setItem('mh_matrimony_profiles', JSON.stringify(cleanProfiles));
       }
     } catch (err) {
       console.warn('Error refreshing live profiles:', err);
+    } finally {
+      setLoading(false);
     }
   }, [isDemoMode]);
 
@@ -77,17 +93,6 @@ export const DataProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem('vadhu_var_shortlisted', JSON.stringify(shortlistedIds));
   }, [shortlistedIds]);
-
-  useEffect(() => {
-    localStorage.setItem('mh_matrimony_verification_requests', JSON.stringify(verificationRequests));
-  }, [verificationRequests]);
-
-  useEffect(() => {
-    localStorage.setItem(
-      'mh_matrimony_daily_interest',
-      JSON.stringify({ date: new Date().toISOString(), count: dailyInterestCount })
-    );
-  }, [dailyInterestCount]);
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type });
@@ -112,7 +117,7 @@ export const DataProvider = ({ children }) => {
 
   // Express Interest with Duplicate & Self Guards
   const sendInterest = async (receiverId) => {
-    const senderId = profile?.id || user?.id || 'demo-user-me';
+    const senderId = profile?.id || user?.id;
 
     if (!senderId) {
       showToast('Please sign in to express interest.', 'error');
@@ -122,12 +127,6 @@ export const DataProvider = ({ children }) => {
     if (senderId === receiverId) {
       showToast('You cannot express interest in your own profile.', 'error');
       throw new Error('Cannot express interest in own profile.');
-    }
-
-    // Rate limiting check
-    if (dailyInterestCount >= 20) {
-      showToast('Daily limit reached (Max 20 interests per day). Try again tomorrow!', 'error');
-      throw new Error('Daily limit reached (20/day).');
     }
 
     const existing = interests.find(
@@ -147,7 +146,6 @@ export const DataProvider = ({ children }) => {
     };
 
     setInterests(prev => [newInterest, ...prev]);
-    setDailyInterestCount(prev => prev + 1);
     showToast('Interest expressed successfully!');
 
     if (isSupabaseConfigured() && !isDemoMode) {
@@ -228,55 +226,6 @@ export const DataProvider = ({ children }) => {
     return newRequest;
   };
 
-  const handleReviewVerification = async (requestId, userId, isApproved, isFullVerification = false) => {
-    const status = isApproved ? 'approved' : 'rejected';
-    const now = new Date().toISOString();
-
-    setVerificationRequests(prev =>
-      prev.map(req => req.id === requestId ? { ...req, status, reviewed_at: now } : req)
-    );
-
-    if (isApproved) {
-      setProfiles(prev =>
-        prev.map(p =>
-          p.id === userId
-            ? {
-                ...p,
-                is_id_verified: true,
-                is_fully_verified: isFullVerification,
-                verification_date: now
-              }
-            : p
-        )
-      );
-      showToast(isFullVerification ? 'Approved 100% Full Verification Badge!' : 'Approved ID Verification Badge!');
-    } else {
-      showToast('Verification request rejected.', 'error');
-    }
-
-    if (isSupabaseConfigured() && !isDemoMode) {
-      try {
-        await supabase
-          .from('verification_requests')
-          .update({ status, reviewed_at: now })
-          .eq('id', requestId);
-
-        if (isApproved) {
-          await supabase
-            .from('profiles')
-            .update({
-              is_id_verified: true,
-              is_fully_verified: isFullVerification,
-              verification_date: now
-            })
-            .eq('id', userId);
-        }
-      } catch (err) {
-        console.error('Supabase admin review error:', err);
-      }
-    }
-  };
-
   const addOrUpdateProfile = (profileData) => {
     setProfiles(prev => {
       const idx = prev.findIndex(p => p.id === profileData.id);
@@ -307,7 +256,6 @@ export const DataProvider = ({ children }) => {
         sendInterest,
         updateInterestStatus,
         submitVerificationRequest,
-        handleReviewVerification,
         addOrUpdateProfile
       }}
     >

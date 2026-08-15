@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldCheck, Heart, Users, CheckCircle, Search, ArrowRight, Lock } from 'lucide-react';
+import { ShieldCheck, Heart, Users, CheckCircle, Search, ArrowRight, Lock, UserCheck, Sparkles } from 'lucide-react';
 import { Logo } from '../components/Logo';
 import BadgeVerified from '../components/BadgeVerified';
 import { useData } from '../context/DataContext';
@@ -8,26 +8,44 @@ export const LandingPage = ({ onGetStarted, onBrowse }) => {
   const { profiles } = useData();
   const verifiedProfiles = profiles.filter(p => p.is_id_verified).slice(0, 3);
 
+  const trustPillars = [
+    {
+      icon: ShieldCheck,
+      title: '100% ID Verified Profiles',
+      desc: 'Government ID verification ensures real, authentic matrimonial candidates.'
+    },
+    {
+      icon: Lock,
+      title: 'Total Privacy & Control',
+      desc: 'You control photo visibility, phone numbers, and contact request permissions.'
+    },
+    {
+      icon: Heart,
+      title: 'Direct Family Connections',
+      desc: 'Connect directly with candidates and families without brokerage barriers.'
+    }
+  ];
+
   return (
     <div className="bg-surface text-main min-h-screen">
       {/* Hero Banner Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-16 text-center">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-14 pb-14 text-center">
         <div className="flex justify-center mb-6">
           <Logo size="large" />
         </div>
 
-        <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-extrabold text-main tracking-tight leading-tight max-w-4xl mx-auto mb-6">
+        <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-extrabold text-main tracking-tight leading-tight max-w-4xl mx-auto mb-5">
           Finding Your <span className="underline decoration-sky-blue underline-offset-8">Perfect Match.</span>
         </h1>
 
-        <p className="text-base sm:text-lg text-sub max-w-2xl mx-auto mb-8 font-normal leading-relaxed">
-          Every candidate profile on Vadhu Var undergoes identity document verification before publication.
+        <p className="text-sm sm:text-base text-sub max-w-2xl mx-auto mb-8 font-normal leading-relaxed">
+          The verified, privacy-focused matrimony platform for brides and grooms across India.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 max-w-md mx-auto">
           <button
             onClick={onGetStarted}
-            className="w-full sm:w-auto px-8 py-3.5 radius-btn bg-sky-blue hover:bg-sky-blue/90 text-white font-medium text-sm shadow-xs transition-all flex items-center justify-center gap-2"
+            className="w-full sm:w-auto px-8 py-3.5 radius-btn bg-sky-blue hover:bg-sky-blue/90 text-white font-bold text-sm shadow-xs transition-all flex items-center justify-center gap-2"
           >
             <span>Create Profile</span>
             <ArrowRight className="w-4 h-4" />
@@ -38,12 +56,37 @@ export const LandingPage = ({ onGetStarted, onBrowse }) => {
             className="w-full sm:w-auto px-8 py-3.5 radius-btn bg-surface-card hover:bg-surface-ground text-main border border-main font-medium text-sm transition-all flex items-center justify-center gap-2"
           >
             <Search className="w-4 h-4 text-sub" />
-            <span>Browse Profiles</span>
+            <span>Discover Matches</span>
           </button>
         </div>
       </div>
 
-      {/* Featured Verified Matches */}
+      {/* Trust Pillars Section (Familiar, Established Matrimony Layout) */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-t border-main">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {trustPillars.map((pillar, i) => {
+            const Icon = pillar.icon;
+            return (
+              <div
+                key={i}
+                className="bg-surface-card radius-card border border-main p-6 text-left space-y-2 shadow-xs transition-all hover:border-sky-blue/50"
+              >
+                <div className="w-10 h-10 radius-btn bg-sky-blue/10 text-sky-blue flex items-center justify-center mb-3">
+                  <Icon className="w-5 h-5" />
+                </div>
+                <h3 className="font-serif font-bold text-main text-base">
+                  {pillar.title}
+                </h3>
+                <p className="text-xs text-sub leading-relaxed">
+                  {pillar.desc}
+                </p>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Featured Verified Matches (Dynamic real profiles only) */}
       {verifiedProfiles.length > 0 && (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-t border-main">
           <div className="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
@@ -76,7 +119,7 @@ export const LandingPage = ({ onGetStarted, onBrowse }) => {
                     <h3 className="font-serif font-semibold text-main text-base">
                       {profile.full_name}, {profile.age}
                     </h3>
-                    <p className="text-xs text-sub">{profile.occupation} • {profile.city}</p>
+                    <p className="text-xs text-sub">{profile.occupation || 'Candidate'} • {profile.city}</p>
                     <div className="mt-1">
                       <BadgeVerified size="small" isIdVerified={true} />
                     </div>

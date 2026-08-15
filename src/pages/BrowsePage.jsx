@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Search, Filter, ShieldCheck, X, Sparkles, LayoutGrid, Layers, UserPlus } from 'lucide-react';
+import { Search, Filter, ShieldCheck, X, Sparkles, LayoutGrid, Layers, UserPlus, ArrowRight } from 'lucide-react';
 import ProfileCard from '../components/ProfileCard';
 import FilterPanel from '../components/FilterPanel';
 import HingeCardDeck from '../components/HingeCardDeck';
@@ -105,7 +105,7 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onAuthRequired,
   }, [profiles, filters, searchQuery, myProfile, user, showShortlistedOnly, shortlistedIds]);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
@@ -247,22 +247,29 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onAuthRequired,
                 ))}
               </div>
             ) : (
-              <div className="bg-surface-card radius-card border border-main p-12 text-center my-4 space-y-4">
-                <div className="w-12 h-12 radius-btn bg-sky-blue/10 text-sky-blue flex items-center justify-center mx-auto">
-                  <UserPlus className="w-6 h-6" />
+              <div className="bg-surface-card radius-card border border-main p-8 sm:p-12 text-center my-4 space-y-4 shadow-sm">
+                <div className="w-14 h-14 radius-btn bg-sky-blue/10 text-sky-blue flex items-center justify-center mx-auto">
+                  <UserPlus className="w-7 h-7" />
                 </div>
-                <div>
-                  <h3 className="font-serif font-bold text-main text-lg mb-1">
-                    No Matching Candidates Found
+                <div className="space-y-1 max-w-md mx-auto">
+                  <h3 className="font-serif font-bold text-main text-lg sm:text-xl">
+                    Be the First Verified Profile
                   </h3>
-                  <p className="text-xs text-sub max-w-md mx-auto">
-                    Be among the first verified profiles in your area or try resetting your filter preferences.
+                  <p className="text-xs text-sub leading-relaxed">
+                    Complete your candidate details to get discovered by verified matches across India.
                   </p>
                 </div>
-                <div className="flex justify-center gap-3">
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+                  <button
+                    onClick={onAuthRequired}
+                    className="w-full sm:w-auto px-6 py-2.5 radius-btn bg-sky-blue text-white text-xs font-bold hover:bg-sky-blue/90 transition-colors flex items-center justify-center gap-1.5 shadow-xs"
+                  >
+                    <span>{myProfile ? 'Update Profile' : 'Create Your Profile'}</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
                   <button
                     onClick={handleResetFilters}
-                    className="px-5 py-2.5 radius-btn bg-sky-blue text-white text-xs font-medium hover:bg-sky-blue/90 transition-colors"
+                    className="w-full sm:w-auto px-5 py-2.5 radius-btn bg-surface-ground border border-main text-sub text-xs font-medium hover:text-main transition-colors"
                   >
                     {t('reset')}
                   </button>
