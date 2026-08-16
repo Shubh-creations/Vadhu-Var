@@ -30,75 +30,19 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
   const { profile: myProfile, partnerPreferences, user } = useAuth();
   const { t } = useLanguage();
 
+  // 1. All State Hooks (Declared first)
   const [searchQuery, setSearchQuery] = useState('');
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
   const [discoveryView, setDiscoveryView] = useState('grid');
   const [isLoadingFeed, setIsLoadingFeed] = useState(false);
   const [sortBy, setSortBy] = useState('best_match');
   const [showOnboarding, setShowOnboarding] = useState(false);
-
-  // Deck Swiper State & Touch Handlers
   const [deckIndex, setDeckIndex] = useState(0);
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
-
-  useEffect(() => {
-    // Show onboarding tour once to signed-in users on their first visit to Discover
-    if (user && !showShortlistedOnly) {
-      const seen = localStorage.getItem('vadhu_var_discover_intro_seen');
-      if (!seen) {
-        setShowOnboarding(true);
-      }
-    }
-  }, [user, showShortlistedOnly]);
-
-  // Reset deckIndex when filters or search change
-  useEffect(() => {
-    setDeckIndex(0);
-  }, [appliedFilters, searchQuery, sortBy]);
-
-  // Keyboard navigation for Deck mode (Left / Right Arrow keys)
-  useEffect(() => {
-    if (discoveryView !== 'deck') return;
-    const handleKeyDown = (e) => {
-      if (e.key === 'ArrowRight') {
-        setDeckIndex(prev => Math.min(filteredProfiles.length, prev + 1));
-      } else if (e.key === 'ArrowLeft') {
-        setDeckIndex(prev => Math.max(0, prev - 1));
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [discoveryView, filteredProfiles.length]);
-
-  // Touch Swipe Handlers for mobile gestures
-  const handleTouchStart = (e) => {
-    setTouchEnd(null);
-    setTouchStart(e.targetTouches[0].clientX);
-  };
-
-  const handleTouchMove = (e) => {
-    setTouchEnd(e.targetTouches[0].clientX);
-  };
-
-  const handleTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > 45;
-    const isRightSwipe = distance < -45;
-
-    if (isLeftSwipe) {
-      // Next candidate
-      setDeckIndex(prev => Math.min(filteredProfiles.length, prev + 1));
-    } else if (isRightSwipe) {
-      // Previous candidate
-      setDeckIndex(prev => Math.max(0, prev - 1));
-    }
-  };
-
-  // Applied filters state (only updates when user explicitly clicks "Apply Filters" or "Reset")
   const [appliedFilters, setAppliedFilters] = useState(defaultFilters);
 
+  // 2. Filter & Sort Handlers
   const handleApplyFilters = (newFilters) => {
     setIsLoadingFeed(true);
     setAppliedFilters(newFilters);
@@ -125,23 +69,18 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
     setTimeout(() => setIsLoadingFeed(false), 200);
   };
 
-  // Filter and Score Sorting Engine
+  // 3. Filter and Score Sorting Engine (useMemo)
   const filteredProfiles = useMemo(() => {
     const currentUserId = myProfile?.id || user?.id;
 
-    // 1. Hard Filtering (Applied only via appliedFilters)
-    const matching = profiles.filter((p) => {
-      // Exclude deactivated or search-hidden profiles
+    // Hard Filtering
+    const matching = (profiles || []).filter((p) => {
+      if (!p) return false;
       if (p.is_active === false) return false;
       if ((p.is_visible === false || p.is_search_visible === false) && p.id !== currentUserId) return false;
-
-      // Exclude viewer's own profile from discover feed
       if (currentUserId && p.id === currentUserId) return false;
-
-      // Shortlisted filter toggle
       if (showShortlistedOnly && !shortlistedIds.includes(p.id)) return false;
 
-      // Manual Applied Filters
       if (appliedFilters.verifiedOnly && !p.is_id_verified && !p.is_fully_verified) return false;
       if (appliedFilters.gender !== 'all' && p.gender !== appliedFilters.gender) return false;
       if (p.age < appliedFilters.ageMin || p.age > appliedFilters.ageMax) return false;
@@ -151,7 +90,6 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
       if (appliedFilters.diet && p.diet !== appliedFilters.diet) return false;
       if (appliedFilters.maritalStatus && p.marital_status !== appliedFilters.maritalStatus) return false;
 
-      // Income Bracket Filter (Starting 2.5 LPA+)
       if (appliedFilters.incomeBracket && appliedFilters.incomeBracket !== 'all') {
         const income = p.annual_income_lpa || 0;
         if (appliedFilters.incomeBracket === '2.5-5' && (income < 2.5 || income > 5)) return false;
@@ -162,56 +100,101 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
         if (appliedFilters.incomeBracket === '50+' && income < 50) return false;
       }
 
-      // Keyword Search
       if (searchQuery.trim()) {
-        const query = searchQuery.toLowerCase();
-        const matchesName = p.full_name?.toLowerCase().includes(query);
-        const matchesCity = p.city?.toLowerCase().includes(query);
-        const matchesState = p.state?.toLowerCase().includes(query);
-        const matchesOccupation = p.occupation?.toLowerCase().includes(query);
-        const matchesEdu = p.education_level?.toLowerCase().includes(query);
-        if (!matchesName && !matchesCity && !matchesState && !matchesOccupation && !matchesEdu) return false;
+        const q = searchQuery.toLowerCase().trim();
+        const matchesName = p.full_name?.toLowerCase().includes(q);
+        const matchesCity = p.city?.toLowerCase().includes(q);
+        const matchesOccupation = p.occupation?.toLowerCase().includes(q);
+        const matchesEducation = p.education_level?.toLowerCase().includes(q);
+        const matchesCaste = p.caste?.toLowerCase().includes(q);
+        if (!matchesName && !matchesCity && !matchesOccupation && !matchesEducation && !matchesCaste) {
+          return false;
+        }
       }
 
       return true;
     });
 
-    // 2. Score Calculation & Sorting
-    const scoredList = matching.map(p => ({
-      ...p,
-      computedMatchScore: calculateCompatibilityEstimate(myProfile, p, partnerPreferences)
-    }));
-
-    return scoredList.sort((a, b) => {
+    // Ranking & Sorting
+    return [...matching].sort((a, b) => {
       if (sortBy === 'best_match') {
-        // Primary: Match Score descending (Uses saved partner preferences if present)
-        const scoreDiff = b.computedMatchScore - a.computedMatchScore;
-        if (scoreDiff !== 0) return scoreDiff;
-
-        // Tie-breaker 1: Verification Tier (100% Fully Verified > ID Verified > Unverified)
-        const getTier = (item) => item.is_fully_verified ? 3 : item.is_id_verified ? 2 : 1;
-        const tierDiff = getTier(b) - getTier(a);
-        if (tierDiff !== 0) return tierDiff;
-
-        // Tie-breaker 2: Recency
-        return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+        const scoreA = calculateCompatibilityEstimate(myProfile, a, partnerPreferences);
+        const scoreB = calculateCompatibilityEstimate(myProfile, b, partnerPreferences);
+        return scoreB - scoreA;
       }
-
       if (sortBy === 'newest') {
-        return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+        const timeA = new Date(a.created_at || 0).getTime();
+        const timeB = new Date(b.created_at || 0).getTime();
+        return timeB - timeA;
       }
-
       if (sortBy === 'age_asc') {
         return (a.age || 0) - (b.age || 0);
       }
-
       if (sortBy === 'age_desc') {
         return (b.age || 0) - (a.age || 0);
       }
-
       return 0;
     });
-  }, [profiles, appliedFilters, searchQuery, myProfile, partnerPreferences, user, showShortlistedOnly, shortlistedIds, sortBy]);
+  }, [profiles, shortlistedIds, appliedFilters, searchQuery, sortBy, myProfile, user, partnerPreferences, showShortlistedOnly]);
+
+  // 4. Effects (Running after declarations)
+  useEffect(() => {
+    if (user && !showShortlistedOnly) {
+      const seen = localStorage.getItem('vadhu_var_discover_intro_seen');
+      if (!seen) {
+        setShowOnboarding(true);
+      }
+    }
+  }, [user, showShortlistedOnly]);
+
+  // Reset deckIndex when filters or search change
+  useEffect(() => {
+    setDeckIndex(0);
+  }, [appliedFilters, searchQuery, sortBy]);
+
+  // Clamp deckIndex if candidate list shrinks
+  useEffect(() => {
+    if (deckIndex > 0 && deckIndex >= filteredProfiles.length) {
+      setDeckIndex(Math.max(0, filteredProfiles.length - 1));
+    }
+  }, [filteredProfiles.length, deckIndex]);
+
+  // Keyboard navigation for Deck mode
+  useEffect(() => {
+    if (discoveryView !== 'deck') return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'ArrowRight') {
+        setDeckIndex(prev => Math.min(filteredProfiles.length, prev + 1));
+      } else if (e.key === 'ArrowLeft') {
+        setDeckIndex(prev => Math.max(0, prev - 1));
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [discoveryView, filteredProfiles.length]);
+
+  // 5. Touch Handlers
+  const handleTouchStart = (e) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 45;
+    const isRightSwipe = distance < -45;
+
+    if (isLeftSwipe) {
+      setDeckIndex(prev => Math.min(filteredProfiles.length, prev + 1));
+    } else if (isRightSwipe) {
+      setDeckIndex(prev => Math.max(0, prev - 1));
+    }
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-8">
