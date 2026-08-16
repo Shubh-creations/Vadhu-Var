@@ -14,7 +14,9 @@ export const AccountSettingsPage = ({ onBack, onNavigateToProfile }) => {
   const [successMsg, setSuccessMsg] = useState('');
   
   // Settings State
-  const [isSearchVisible, setIsSearchVisible] = useState(profile?.is_search_visible !== false);
+  const [isSearchVisible, setIsSearchVisible] = useState(
+    profile?.is_visible !== undefined ? profile.is_visible !== false : profile?.is_search_visible !== false
+  );
   const [prefData, setPrefData] = useState({
     age_min: partnerPreferences?.age_min || 21,
     age_max: partnerPreferences?.age_max || 35,
@@ -67,7 +69,7 @@ export const AccountSettingsPage = ({ onBack, onNavigateToProfile }) => {
     const newVal = !isSearchVisible;
     setIsSearchVisible(newVal);
     try {
-      await updateAccountSettings({ is_search_visible: newVal });
+      await updateAccountSettings({ is_visible: newVal });
       setSuccessMsg(newVal ? 'Profile is now visible in Discover results.' : 'Profile hidden from search.');
       setTimeout(() => setSuccessMsg(''), 3000);
     } catch (err) {
@@ -81,7 +83,7 @@ export const AccountSettingsPage = ({ onBack, onNavigateToProfile }) => {
     );
     if (confirmDeactivate) {
       try {
-        await updateAccountSettings({ is_active: false, is_search_visible: false });
+        await updateAccountSettings({ is_active: false, is_visible: false });
         alert('Your account has been deactivated.');
         logout();
       } catch (err) {

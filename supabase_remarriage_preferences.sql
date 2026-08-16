@@ -15,7 +15,7 @@ ALTER TABLE profiles
   ADD COLUMN IF NOT EXISTS has_children VARCHAR(10) DEFAULT 'no',
   ADD COLUMN IF NOT EXISTS children_count NUMERIC,
   ADD COLUMN IF NOT EXISTS children_living_status VARCHAR(50) DEFAULT 'living_together',
-  ADD COLUMN IF NOT EXISTS is_search_visible BOOLEAN DEFAULT TRUE,
+  ADD COLUMN IF NOT EXISTS is_visible BOOLEAN DEFAULT TRUE,
   ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE;
 
 -- 3. Create partner_preferences table

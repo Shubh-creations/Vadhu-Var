@@ -68,7 +68,7 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
     const matching = profiles.filter((p) => {
       // Exclude deactivated or search-hidden profiles
       if (p.is_active === false) return false;
-      if (p.is_search_visible === false && p.id !== currentUserId) return false;
+      if ((p.is_visible === false || p.is_search_visible === false) && p.id !== currentUserId) return false;
 
       // Exclude viewer's own profile from discover feed
       if (currentUserId && p.id === currentUserId) return false;

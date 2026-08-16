@@ -225,7 +225,7 @@ export const AuthProvider = ({ children }) => {
       ...profileData,
       id: user?.id || `user-${Date.now()}`,
       is_active: profileData.is_active !== undefined ? profileData.is_active : true,
-      is_search_visible: profileData.is_search_visible !== undefined ? profileData.is_search_visible : true,
+      is_visible: profileData.is_visible !== undefined ? profileData.is_visible : (profileData.is_search_visible !== undefined ? profileData.is_search_visible : true),
       created_at: profileData.created_at || new Date().toISOString()
     };
 
