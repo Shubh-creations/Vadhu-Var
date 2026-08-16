@@ -119,6 +119,7 @@ function AppContent() {
             onBack={() => setActiveTab('browse')}
             onOpenCompatibility={(p) => setCompatibilityCandidate(p)}
             onOpenChat={(p) => setChatCandidate(p)}
+            onEditProfile={() => setActiveTab('profile')}
             onAuthRequired={() => setActiveTab('auth')}
           />
         )}

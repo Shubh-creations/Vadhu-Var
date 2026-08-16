@@ -293,7 +293,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
             </div>
 
             <h2 className="font-serif text-2xl font-bold text-main">
-              Profile Saved Successfully!
+              {existingProfile?.id || existingProfile?.full_name ? 'Profile Changes Saved Successfully!' : 'Profile Saved Successfully!'}
             </h2>
 
             <div className="p-4 bg-surface-ground radius-card border border-main text-left space-y-2">
@@ -302,7 +302,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
                 <span>What Happens Next?</span>
               </div>
               <p className="text-xs text-sub leading-relaxed">
-                Your profile is now live. Our team is reviewing your verification documents. <strong>You don't need to wait</strong> — you can start browsing verified matches, saving shortlists, and expressing interest immediately!
+                Your profile updates are live. Our team is reviewing your verification documents. <strong>You don't need to wait</strong> — you can start browsing verified matches, saving shortlists, and expressing interest immediately!
               </p>
             </div>
 
@@ -328,13 +328,15 @@ export const ProfileWizardPage = ({ onComplete }) => {
           <span>{t('brandSubtitle')}</span>
         </div>
         <h1 className="font-serif text-2xl sm:text-3xl font-extrabold text-main">
-          {existingProfile ? 'Update Profile & Preferences' : t('createProfile')}
+          {existingProfile?.id || existingProfile?.full_name ? 'Update Your Profile' : t('createProfile')}
         </h1>
         <p className="text-xs sm:text-sm text-sub mt-1 max-w-md mx-auto">
-          Submit your candidate info, partner expectations, and verification proof.
+          {existingProfile?.id || existingProfile?.full_name
+            ? 'Review and edit your candidate details, partner expectations, and verification status.'
+            : 'Submit your candidate info, partner expectations, and verification proof.'}
         </p>
 
-        {existingProfile && (
+        {(existingProfile?.id || existingProfile?.full_name) && (
           <div className="mt-3 inline-block">
             <BadgeVerified
               isFullyVerified={existingProfile.is_fully_verified}
@@ -1083,7 +1085,13 @@ export const ProfileWizardPage = ({ onComplete }) => {
                 className="px-8 py-3 radius-btn bg-sky-blue hover:bg-sky-blue/90 text-white font-bold text-sm shadow-xs transition-all flex items-center gap-2"
               >
                 <ShieldCheck className="w-4 h-4" />
-                <span>{loading ? t('sending') : 'Submit Profile & Preferences'}</span>
+                <span>
+                  {loading
+                    ? t('sending')
+                    : existingProfile?.id || existingProfile?.full_name
+                    ? 'Save Changes & Update Profile'
+                    : 'Submit Profile & Preferences'}
+                </span>
               </button>
             </div>
           </form>

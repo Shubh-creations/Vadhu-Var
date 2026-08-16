@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { ArrowLeft, ShieldCheck, Heart, MapPin, Briefcase, GraduationCap, Ruler, Utensils, Users, CheckCircle2, User, FileText, Sparkles } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, Heart, MapPin, Briefcase, GraduationCap, Ruler, Utensils, Users, CheckCircle2, User, FileText, Sparkles, Pencil } from 'lucide-react';
 import BadgeVerified from '../components/BadgeVerified';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import calculateCompatibilityEstimate from '../lib/compatibilityCalculator';
 
-export const ProfileDetailPage = ({ profile, onBack, onOpenCompatibility, onAuthRequired }) => {
+export const ProfileDetailPage = ({ profile, onBack, onOpenCompatibility, onOpenChat, onEditProfile, onAuthRequired }) => {
   const { user, profile: myProfile, partnerPreferences } = useAuth();
   const { interests, sendInterest } = useData();
   const [loading, setLoading] = useState(false);
@@ -44,49 +44,44 @@ export const ProfileDetailPage = ({ profile, onBack, onOpenCompatibility, onAuth
     : 'MV';
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
       {/* Back Button */}
       <button
         onClick={onBack}
-        className="mb-6 inline-flex items-center gap-2 px-4 py-2 radius-btn bg-surface-card border border-main text-sub font-medium text-xs sm:text-sm hover:opacity-80 transition-opacity shadow-xs"
+        className="inline-flex items-center gap-1.5 text-sub hover:text-main text-xs sm:text-sm font-medium mb-6 transition-colors"
       >
-        <ArrowLeft className="w-4 h-4 text-sub" />
-        <span>Back to Discovery</span>
+        <ArrowLeft className="w-4 h-4" />
+        <span>Back to Matches</span>
       </button>
 
-      {/* Hero Header Card */}
-      <div className="bg-surface-card radius-card border border-main p-6 sm:p-8 shadow-xs mb-6">
+      {/* Main Profile Header Card */}
+      <div className="bg-surface-card radius-card border border-main p-6 sm:p-8 shadow-sm mb-6">
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
+          {/* Avatar / Photo */}
           <div className="relative flex-shrink-0">
             {profile.photo_url ? (
               <img
                 src={profile.photo_url}
-                alt={profile.full_name || 'Candidate photo'}
-                className="w-32 h-32 sm:w-40 sm:h-40 radius-card object-cover border border-main shadow-xs"
+                alt={profile.full_name}
+                className="w-28 h-28 sm:w-32 sm:h-32 rounded-full object-cover border-2 border-main shadow-xs"
               />
             ) : (
-              <div className="w-32 h-32 sm:w-40 sm:h-40 radius-card bg-surface-ground text-sub font-serif font-bold text-3xl flex items-center justify-center border border-main">
+              <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-surface-ground border-2 border-main flex items-center justify-center text-main font-serif text-3xl font-bold">
                 {initials}
               </div>
             )}
           </div>
 
+          {/* Name & Primary Attributes */}
           <div className="flex-1 text-center sm:text-left">
-            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-2">
-              <h1 className="font-serif text-2xl sm:text-3xl font-extrabold text-main">
-                {profile.full_name}, <span className="font-sans font-normal text-sub">{profile.age}</span>
-              </h1>
-            </div>
-
-            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 text-xs sm:text-sm text-sub mb-3">
-              <div className="flex items-center gap-1">
-                <Briefcase className="w-4 h-4 text-sub" />
-                <span>{profile.occupation}</span>
-              </div>
-              <span>•</span>
-              <div className="flex items-center gap-1">
-                <MapPin className="w-4 h-4 text-sub" />
-                <span>{profile.city}, {profile.state || 'Maharashtra'}</span>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+              <div>
+                <h1 className="font-serif text-2xl sm:text-3xl font-extrabold text-main">
+                  {profile.full_name}, {profile.age}
+                </h1>
+                <p className="text-xs sm:text-sm text-sub mt-0.5 font-medium">
+                  {profile.occupation || 'Professional'} • {profile.city}, {profile.state}
+                </p>
               </div>
             </div>
 
@@ -118,32 +113,41 @@ export const ProfileDetailPage = ({ profile, onBack, onOpenCompatibility, onAuth
               )}
             </div>
 
-            {/* Express Interest Button (Sky Blue) */}
-            <div className="flex items-center justify-center sm:justify-start">
-              <button
-                onClick={handleExpressInterest}
-                disabled={loading || hasExpressedInterest || isOwnProfile}
-                aria-label={`Express interest in ${profile.full_name}`}
-                className={`px-8 py-3 radius-btn font-medium text-sm shadow-xs transition-all flex items-center gap-2 ${
-                  hasExpressedInterest
-                    ? 'bg-surface-ground text-sub border border-main cursor-default'
-                    : isOwnProfile
-                    ? 'bg-surface-ground text-sub cursor-not-allowed opacity-50'
-                    : 'bg-sky-blue hover:bg-sky-blue/90 text-white active:scale-[0.98]'
-                }`}
-              >
-                {hasExpressedInterest ? (
-                  <>
-                    <CheckCircle2 className="w-5 h-5 text-sub" />
-                    <span>Interest Expressed</span>
-                  </>
-                ) : (
-                  <>
-                    <Heart className="w-5 h-5 fill-white/20" />
-                    <span>{loading ? 'Sending...' : 'Express Interest'}</span>
-                  </>
-                )}
-              </button>
+            {/* Action Buttons: Edit Profile for Own Profile / Express Interest for Candidates */}
+            <div className="flex items-center justify-center sm:justify-start gap-3">
+              {isOwnProfile ? (
+                <button
+                  type="button"
+                  onClick={onEditProfile}
+                  className="px-8 py-3 radius-btn bg-sky-blue hover:bg-sky-blue/90 text-white font-bold text-sm shadow-xs transition-all flex items-center gap-2 active:scale-95"
+                >
+                  <Pencil className="w-4 h-4" />
+                  <span>Edit Your Profile</span>
+                </button>
+              ) : (
+                <button
+                  onClick={handleExpressInterest}
+                  disabled={loading || hasExpressedInterest}
+                  aria-label={`Express interest in ${profile.full_name}`}
+                  className={`px-8 py-3 radius-btn font-medium text-sm shadow-xs transition-all flex items-center gap-2 ${
+                    hasExpressedInterest
+                      ? 'bg-surface-ground text-sub border border-main cursor-default'
+                      : 'bg-sky-blue hover:bg-sky-blue/90 text-white active:scale-[0.98]'
+                  }`}
+                >
+                  {hasExpressedInterest ? (
+                    <>
+                      <CheckCircle2 className="w-5 h-5 text-sub" />
+                      <span>Interest Expressed</span>
+                    </>
+                  ) : (
+                    <>
+                      <Heart className="w-5 h-5 fill-white/20" />
+                      <span>{loading ? 'Sending...' : 'Express Interest'}</span>
+                    </>
+                  )}
+                </button>
+              )}
             </div>
           </div>
         </div>
