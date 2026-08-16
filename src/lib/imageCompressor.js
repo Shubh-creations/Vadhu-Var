@@ -4,11 +4,18 @@
  */
 export const compressImage = (file, maxWidth = 1200, maxHeight = 1200, quality = 0.8) => {
   return new Promise((resolve, reject) => {
-    if (!file || !file.type.startsWith('image/')) {
-      return resolve(file); // Return original if not image
-    }
+    if (!file) return resolve('');
 
     const reader = new FileReader();
+
+    // If it's a PDF or non-image document, read and resolve as base64 Data URL directly
+    if (!file.type.startsWith('image/')) {
+      reader.readAsDataURL(file);
+      reader.onload = (event) => resolve(event.target.result);
+      reader.onerror = (err) => reject(err);
+      return;
+    }
+
     reader.readAsDataURL(file);
 
     reader.onload = (event) => {
