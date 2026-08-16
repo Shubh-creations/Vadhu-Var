@@ -248,6 +248,8 @@ export const DataProvider = ({ children }) => {
         dailyInterestCount,
         toast,
         loading,
+        privacySettings: { photoBlur: false, phoneShield: true, incognito: false },
+        updatePrivacySettings: () => {},
         showToast,
         clearToast,
         refreshProfiles,
