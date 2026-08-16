@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { supabase, isSupabaseConfigured } from '../lib/supabaseClient';
+import { captureError } from '../lib/sentry';
 
 const AuthContext = createContext();
 
@@ -12,6 +13,7 @@ export const ADMIN_UIDS = [
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
+  const [isAccountDeactivated, setIsAccountDeactivated] = useState(false);
   const [partnerPreferences, setPartnerPreferences] = useState(() => {
     const saved = localStorage.getItem('vadhu_var_partner_preferences');
     return saved ? JSON.parse(saved) : {
@@ -74,8 +76,17 @@ export const AuthProvider = ({ children }) => {
         .single();
 
       if (!error && data) {
+        // If account has been deactivated/deleted, block normal app access
+        if (data.is_active === false) {
+          setIsAccountDeactivated(true);
+          setProfile(data);
+          return data;
+        }
+
+        setIsAccountDeactivated(false);
         setProfile(data);
         localStorage.setItem('vadhu_var_profile', JSON.stringify(data));
+        return data;
       }
     } catch (err) {
       console.error('Error fetching user profile:', err);
@@ -106,7 +117,11 @@ export const AuthProvider = ({ children }) => {
           setUser(JSON.parse(storedUser));
         }
         if (storedProfile) {
-          setProfile(JSON.parse(storedProfile));
+          const parsed = JSON.parse(storedProfile);
+          if (parsed.is_active === false) {
+            setIsAccountDeactivated(true);
+          }
+          setProfile(parsed);
         }
       }
       setLoading(false);
@@ -144,23 +159,25 @@ export const AuthProvider = ({ children }) => {
         ? window.location.origin
         : 'https://vadhu-var.vercel.app';
 
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: redirectUrl,
-          data: { full_name: fullName }
+      try {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: redirectUrl,
+            data: { full_name: fullName }
+          }
+        });
+
+        if (error) throw error;
+        if (data?.user) {
+          setUser(data.user);
         }
-      });
-
-      if (error) {
-        throw new Error(error.message || 'Signup failed');
+        return data;
+      } catch (err) {
+        captureError(err, { tags: { flow: 'signup' } });
+        throw new Error(err.message || 'Signup failed');
       }
-
-      if (data?.user) {
-        setUser(data.user);
-      }
-      return data;
     } else {
       // Local Sign Up Fallback
       const mockUser = {
@@ -177,21 +194,27 @@ export const AuthProvider = ({ children }) => {
   // Login user
   const login = async (email, password) => {
     if (isSupabaseConfigured() && !isDemoMode) {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
 
-      if (error) {
-        throw new Error(error.message || 'Invalid login credentials');
-      }
+        if (error) throw error;
 
-      if (data?.user) {
-        setUser(data.user);
-        await fetchUserProfile(data.user.id);
-        await fetchPartnerPreferences(data.user.id);
+        if (data?.user) {
+          setUser(data.user);
+          const profileData = await fetchUserProfile(data.user.id);
+          if (profileData && profileData.is_active === false) {
+            setIsAccountDeactivated(true);
+          }
+          await fetchPartnerPreferences(data.user.id);
+        }
+        return data;
+      } catch (err) {
+        captureError(err, { tags: { flow: 'login' } });
+        throw new Error(err.message || 'Invalid login credentials');
       }
-      return data;
     } else {
       // Demo / Local Login
       const storedUser = localStorage.getItem('vadhu_var_user');
@@ -200,64 +223,77 @@ export const AuthProvider = ({ children }) => {
       if (!mockUser || mockUser.email !== email) {
         mockUser = {
           id: `user-${Date.now()}`,
-          email: email || 'user@example.com',
+          email,
           user_metadata: { full_name: fullNameFromEmail(email) }
         };
       }
 
       setUser(mockUser);
       localStorage.setItem('vadhu_var_user', JSON.stringify(mockUser));
+
+      const storedProfile = localStorage.getItem('vadhu_var_profile');
+      if (storedProfile) {
+        const parsed = JSON.parse(storedProfile);
+        if (parsed.is_active === false) {
+          setIsAccountDeactivated(true);
+        }
+        setProfile(parsed);
+      }
       return { user: mockUser };
     }
   };
 
-  // Send Password Reset Email Link
+  // Trigger Password Reset Email via Supabase
   const resetPassword = async (email) => {
     if (isSupabaseConfigured() && !isDemoMode) {
       const redirectUrl = typeof window !== 'undefined' && window.location.origin
         ? window.location.origin
         : 'https://vadhu-var.vercel.app';
 
-      const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: redirectUrl
-      });
+      try {
+        const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: redirectUrl
+        });
 
-      if (error) {
-        throw new Error(error.message || 'Could not send reset password email.');
+        if (error) throw error;
+        return data;
+      } catch (err) {
+        captureError(err, { tags: { flow: 'resetPassword' } });
+        throw new Error(err.message || 'Failed to send password recovery email.');
       }
-      return data;
     } else {
-      // Demo / local mode simulated success
       return { success: true };
     }
   };
 
-  // Update Password (used after clicking recovery link or in settings)
+  // Update password after user clicks reset link
   const updatePassword = async (newPassword) => {
     if (isSupabaseConfigured() && !isDemoMode) {
-      const { data, error } = await supabase.auth.updateUser({
-        password: newPassword
-      });
+      try {
+        const { data, error } = await supabase.auth.updateUser({
+          password: newPassword
+        });
 
-      if (error) {
-        throw new Error(error.message || 'Could not update password.');
+        if (error) throw error;
+
+        if (data?.user) {
+          setUser(data.user);
+          localStorage.setItem('vadhu_var_user', JSON.stringify(data.user));
+          await fetchUserProfile(data.user.id);
+          await fetchPartnerPreferences(data.user.id);
+        }
+
+        setIsPasswordRecovery(false);
+
+        if (typeof window !== 'undefined' && window.history && window.history.replaceState) {
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+
+        return data;
+      } catch (err) {
+        captureError(err, { tags: { flow: 'updatePassword' } });
+        throw new Error(err.message || 'Could not update password.');
       }
-
-      if (data?.user) {
-        setUser(data.user);
-        localStorage.setItem('vadhu_var_user', JSON.stringify(data.user));
-        await fetchUserProfile(data.user.id);
-        await fetchPartnerPreferences(data.user.id);
-      }
-
-      setIsPasswordRecovery(false);
-
-      // Clean up recovery tokens from browser URL without reloading
-      if (typeof window !== 'undefined' && window.history && window.history.replaceState) {
-        window.history.replaceState({}, document.title, window.location.pathname);
-      }
-
-      return data;
     } else {
       setIsPasswordRecovery(false);
       return { success: true };
@@ -267,11 +303,16 @@ export const AuthProvider = ({ children }) => {
   // Logout user
   const logout = async () => {
     if (isSupabaseConfigured() && !isDemoMode) {
-      await supabase.auth.signOut();
+      try {
+        await supabase.auth.signOut();
+      } catch (e) {
+        // silent
+      }
     }
     setUser(null);
     setProfile(null);
     setIsPasswordRecovery(false);
+    setIsAccountDeactivated(false);
     localStorage.removeItem('vadhu_var_user');
     localStorage.removeItem('vadhu_var_profile');
     localStorage.removeItem('vadhu_var_partner_preferences');
@@ -284,7 +325,7 @@ export const AuthProvider = ({ children }) => {
     return namePart.charAt(0).toUpperCase() + namePart.slice(1);
   }
 
-  // Numeric sanitizer helper to prevent Postgres 'invalid input syntax for type numeric: ""' errors
+  // Numeric sanitizer helper
   const sanitizeNumeric = (value) => {
     if (value === '' || value === undefined || value === null) {
       return null;
@@ -295,7 +336,6 @@ export const AuthProvider = ({ children }) => {
 
   // Save or update user profile
   const saveProfile = async (profileData) => {
-    // Separate document upload fields which are persisted in the verification_requests table
     const { 
       id_document_url, 
       family_consent_document_url, 
@@ -359,6 +399,7 @@ export const AuthProvider = ({ children }) => {
           return merged;
         }
       } catch (err) {
+        captureError(err, { tags: { flow: 'saveProfile' }, user: { id: user?.id } });
         console.error('Supabase profile save error:', err);
         throw new Error(err.message || 'Database error: Could not save profile to Supabase.');
       }
@@ -366,15 +407,15 @@ export const AuthProvider = ({ children }) => {
     return fullProfile;
   };
 
-  // Save or update partner preferences
+  // Save Partner Preferences
   const savePartnerPreferences = async (prefData) => {
     const fullPref = {
       ...prefData,
       user_id: user?.id || `user-${Date.now()}`,
-      age_min: sanitizeNumeric(prefData.age_min),
-      age_max: sanitizeNumeric(prefData.age_max),
-      height_min_cm: sanitizeNumeric(prefData.height_min_cm),
-      height_max_cm: sanitizeNumeric(prefData.height_max_cm),
+      age_min: sanitizeNumeric(prefData.age_min) || 21,
+      age_max: sanitizeNumeric(prefData.age_max) || 35,
+      height_min_cm: sanitizeNumeric(prefData.height_min_cm) || 150,
+      height_max_cm: sanitizeNumeric(prefData.height_max_cm) || 190,
       updated_at: new Date().toISOString()
     };
 
@@ -406,6 +447,7 @@ export const AuthProvider = ({ children }) => {
           return data;
         }
       } catch (err) {
+        captureError(err, { tags: { flow: 'savePartnerPreferences' }, user: { id: user?.id } });
         console.error('Supabase partner preferences save error:', err);
         throw new Error(err.message || 'Database error: Could not save partner preferences.');
       }
@@ -413,7 +455,7 @@ export const AuthProvider = ({ children }) => {
     return fullPref;
   };
 
-  // Update Account Settings (Visibility / Deactivation)
+  // Update Account Settings (Visibility / Incognito)
   const updateAccountSettings = async (settings) => {
     if (!profile && !user) return;
     const updated = {
@@ -422,6 +464,104 @@ export const AuthProvider = ({ children }) => {
       id: user?.id || profile?.id
     };
     return await saveProfile(updated);
+  };
+
+  // Real "Delete My Account & Personal Data" Flow (No service_role required)
+  const deleteAccountAndData = async () => {
+    const currentUserId = user?.id || profile?.id;
+    if (!currentUserId) {
+      throw new Error('No active user session found to delete.');
+    }
+
+    try {
+      if (isSupabaseConfigured() && !isDemoMode) {
+        // 1. Delete user files from Supabase Storage buckets (avatars, verification-docs, documents)
+        const buckets = ['avatars', 'verification-docs', 'documents'];
+        for (const bucketName of buckets) {
+          try {
+            const { data: fileList } = await supabase.storage.from(bucketName).list(currentUserId);
+            if (fileList && fileList.length > 0) {
+              const filePaths = fileList.map(f => `${currentUserId}/${f.name}`);
+              await supabase.storage.from(bucketName).remove(filePaths);
+            }
+          } catch (storageErr) {
+            console.warn(`Storage file removal notice for ${bucketName}:`, storageErr);
+          }
+        }
+
+        // 2. Anonymize user profile row & deactivate
+        const anonymizedPayload = {
+          full_name: 'Deleted User',
+          bio: null,
+          photo_url: null,
+          career_proof_url: null,
+          city: null,
+          state: null,
+          occupation: null,
+          education_level: null,
+          caste: null,
+          sub_caste: null,
+          annual_income_lpa: null,
+          children_count: null,
+          children_living_status: null,
+          has_children: false,
+          is_active: false,
+          is_visible: false,
+          is_id_verified: false,
+          is_fully_verified: false,
+          is_profession_verified: false
+        };
+
+        const { error: updateErr } = await supabase
+          .from('profiles')
+          .update(anonymizedPayload)
+          .eq('id', currentUserId);
+
+        if (updateErr) {
+          captureError(updateErr, { tags: { flow: 'deleteAccount' }, user: { id: currentUserId } });
+        }
+
+        // 3. Delete verification requests and uploaded document records
+        try {
+          await supabase.from('verification_requests').delete().eq('user_id', currentUserId);
+        } catch (e) {
+          // silent
+        }
+
+        // 4. Delete partner preferences
+        try {
+          await supabase.from('partner_preferences').delete().eq('user_id', currentUserId);
+        } catch (e) {
+          // silent
+        }
+
+        // 5. Delete sent or received interests
+        try {
+          await supabase.from('interests').delete().or(`sender_id.eq.${currentUserId},receiver_id.eq.${currentUserId}`);
+        } catch (e) {
+          // silent
+        }
+
+        // 6. Sign out from Supabase Auth
+        await supabase.auth.signOut();
+      }
+
+      // 5. Clear all client local cache
+      setUser(null);
+      setProfile(null);
+      setIsAccountDeactivated(false);
+      localStorage.removeItem('vadhu_var_user');
+      localStorage.removeItem('vadhu_var_profile');
+      localStorage.removeItem('vadhu_var_partner_preferences');
+      localStorage.removeItem('mh_matrimony_profiles');
+      localStorage.removeItem('vadhu_var_shortlisted');
+      localStorage.removeItem('vadhu_var_privacy_settings');
+
+      return { success: true };
+    } catch (err) {
+      captureError(err, { tags: { flow: 'deleteAccount' }, user: { id: currentUserId } });
+      throw err;
+    }
   };
 
   return (
@@ -433,6 +573,8 @@ export const AuthProvider = ({ children }) => {
         isAdmin,
         loading,
         isDemoMode,
+        isAccountDeactivated,
+        setIsAccountDeactivated,
         setIsDemoMode,
         signUp,
         signup: signUp,
@@ -445,6 +587,7 @@ export const AuthProvider = ({ children }) => {
         saveProfile,
         savePartnerPreferences,
         updateAccountSettings,
+        deleteAccountAndData,
         fetchUserProfile,
         fetchPartnerPreferences
       }}

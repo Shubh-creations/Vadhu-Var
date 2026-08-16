@@ -21,6 +21,7 @@ import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import TermsOfServicePage from './pages/TermsOfServicePage';
 import HelpPage from './pages/HelpPage';
 import AccountSettingsPage from './pages/AccountSettingsPage';
+import AccountDeactivatedPage from './pages/AccountDeactivatedPage';
 
 import ErrorBoundary from './components/ErrorBoundary';
 
@@ -33,8 +34,14 @@ import BlockReportModal from './components/BlockReportModal';
 import UserProfileHub from './components/UserProfileHub';
 
 function AppContent() {
-  const { user, profile, isPasswordRecovery } = useAuth();
+  const { user, profile, isPasswordRecovery, isAccountDeactivated } = useAuth();
   const { toast, clearToast } = useData();
+
+  if (isAccountDeactivated) {
+    return (
+      <AccountDeactivatedPage onReturnHome={() => window.location.reload()} />
+    );
+  }
 
   const [activeTab, setActiveTab] = useState(() => {
     if (typeof window !== 'undefined') {

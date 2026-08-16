@@ -104,10 +104,10 @@ export const HelpPage = ({ onBack }) => {
             • <strong>Hide from Search Feeds:</strong> In your Profile Hub, toggle <strong>"Profile Visibility"</strong> to "Hidden from Search". Only candidates you explicitly message can view your card.
           </p>
           <p>
-            • <strong>Deactivate Account:</strong> Scroll down in your Profile Hub and click <strong>"Deactivate Account"</strong>.
+            • <strong>Temporary Deactivation:</strong> In your Profile Hub, click <strong>"Deactivate Account"</strong> to temporarily pause matching while keeping your records safe.
           </p>
           <p>
-            • <strong>Permanent Data Erasure:</strong> To permanently delete your profile, documents, and account credentials, email <span className="font-bold text-sky-blue">privacy@vadhu-var.com</span> and our team will erase all data within 7 business days.
+            • <strong>Instant Permanent Account & Data Deletion:</strong> In your Profile Hub, scroll to the <strong>Danger Zone</strong> and click <strong>"Delete My Account"</strong>. Confirm by typing DELETE to permanently erase your profile, photos, and ID documents from our servers instantly.
           </p>
         </div>
       )
@@ -124,7 +124,13 @@ export const HelpPage = ({ onBack }) => {
           <div className="p-4 bg-surface-ground radius-btn border border-main space-y-2">
             <div className="flex items-center gap-2 text-main font-bold">
               <Mail className="w-4 h-4 text-sky-blue" />
-              <span>Email Support: support@vadhu-var.com</span>
+              <span>Email Support: </span>
+              <a
+                href="mailto:vadhuvar.matrimonyapp@gmail.com"
+                className="text-sky-blue hover:underline font-bold"
+              >
+                vadhuvar.matrimonyapp@gmail.com
+              </a>
             </div>
             <p className="text-xs text-sub">
               Typical response time: Under 4 hours during business hours (9:00 AM – 8:00 PM IST).
@@ -205,11 +211,11 @@ export const HelpPage = ({ onBack }) => {
             Our verification and matrimonial support team is happy to help you via email.
           </p>
           <a
-            href="mailto:support@vadhu-var.com"
+            href="mailto:vadhuvar.matrimonyapp@gmail.com"
             className="inline-flex items-center gap-2 px-6 py-2.5 radius-btn bg-sky-blue hover:bg-sky-blue/90 text-white font-bold text-xs shadow-xs transition-colors"
           >
             <Mail className="w-4 h-4" />
-            <span>Contact support@vadhu-var.com</span>
+            <span>Email vadhuvar.matrimonyapp@gmail.com</span>
           </a>
         </div>
       </div>

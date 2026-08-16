@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { 
   User, Pencil, ShieldCheck, HeartHandshake, Eye, EyeOff, Globe, 
   Download, LogOut, UserX, ArrowLeft, CheckCircle2, Sparkles, MapPin, 
-  Briefcase, IndianRupee, ShieldAlert, Smartphone, ChevronRight, Share2, HelpCircle, FileText
+  Briefcase, IndianRupee, ShieldAlert, Smartphone, ChevronRight, Share2, HelpCircle, FileText, Trash2
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -11,14 +11,16 @@ import BadgeVerified from './BadgeVerified';
 import ProfileWizardPage from '../pages/ProfileWizardPage';
 import ProfileCompletenessCard from './ProfileCompletenessCard';
 import ShareProfileModal from './ShareProfileModal';
+import DeleteAccountModal from './DeleteAccountModal';
 
-export const UserProfileHub = ({ onNavigateToDiscover, onOpenHelp, onOpenTerms }) => {
+export const UserProfileHub = ({ onNavigateToDiscover, onOpenHelp, onOpenTerms, onNavigateHome }) => {
   const { user, profile, partnerPreferences, savePartnerPreferences, updateAccountSettings, logout } = useAuth();
   const { lang, setLang, t } = useLanguage();
   const { isInstalled, triggerInstall } = usePWA();
 
   const [isEditingWizard, setIsEditingWizard] = useState(false);
   const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [isSearchVisible, setIsSearchVisible] = useState(
     profile?.is_visible !== undefined ? profile.is_visible !== false : profile?.is_search_visible !== false
   );
@@ -340,23 +342,30 @@ export const UserProfileHub = ({ onNavigateToDiscover, onOpenHelp, onOpenTerms }
           </div>
         </div>
 
-        {/* Deactivate Account */}
-        <div className="bg-surface-card radius-card border border-main p-6 shadow-xs space-y-4">
-          <div className="flex items-center gap-2 pb-3 border-b border-main text-sub">
-            <ShieldAlert className="w-5 h-5" />
-            <h2 className="font-serif font-bold text-main text-base">{t('deactivateAccount')}</h2>
+        {/* Danger Zone: Permanent Account & Data Deletion */}
+        <div className="bg-surface-card radius-card border border-rose-500/30 p-6 shadow-xs space-y-4 md:col-span-2">
+          <div className="flex items-center gap-2 pb-3 border-b border-rose-500/20 text-rose-600 dark:text-rose-400">
+            <Trash2 className="w-5 h-5" />
+            <h2 className="font-serif font-bold text-base">Danger Zone — Delete Account & Data</h2>
           </div>
-          <p className="text-xs text-sub">
-            Temporarily deactivate your matrimonial profile while keeping your data intact.
-          </p>
-          <button
-            type="button"
-            onClick={handleDeactivateAccount}
-            className="w-full py-2.5 px-4 radius-btn bg-surface-ground hover:bg-surface-card border border-main text-sub text-xs font-medium flex items-center justify-center gap-2 transition-colors"
-          >
-            <UserX className="w-4 h-4" />
-            <span>{t('deactivateAccount')}</span>
-          </button>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <p className="text-xs text-sub leading-relaxed">
+                Permanently deletes your matrimonial profile, uploaded photos, and government ID verification documents, and closes your account.
+              </p>
+              <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium mt-1">
+                Warning: This action is irreversible.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setDeleteModalOpen(true)}
+              className="px-5 py-2.5 radius-btn bg-rose-500/10 hover:bg-rose-600 text-rose-600 hover:text-white border border-rose-500/30 text-xs font-bold flex items-center gap-2 transition-colors flex-shrink-0"
+            >
+              <Trash2 className="w-4 h-4" />
+              <span>Delete My Account</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -365,6 +374,20 @@ export const UserProfileHub = ({ onNavigateToDiscover, onOpenHelp, onOpenTerms }
         profile={profile}
         isOpen={shareModalOpen}
         onClose={() => setShareModalOpen(false)}
+      />
+
+      {/* Delete Account & Data Modal */}
+      <DeleteAccountModal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onDeleted={() => {
+          setDeleteModalOpen(false);
+          if (onNavigateHome) {
+            onNavigateHome();
+          } else {
+            window.location.reload();
+          }
+        }}
       />
     </div>
   );

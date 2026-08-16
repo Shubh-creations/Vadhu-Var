@@ -1,5 +1,6 @@
 import React from 'react';
-import { RotateCcw, AlertTriangle } from 'lucide-react';
+import { RotateCcw, AlertTriangle, Mail } from 'lucide-react';
+import { captureError } from '../lib/sentry';
 
 export class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -13,6 +14,11 @@ export class ErrorBoundary extends React.Component {
 
   componentDidCatch(error, errorInfo) {
     console.error('Unhandled UI Error caught by boundary:', error, errorInfo);
+    // Report uncaught React UI crashes to Sentry
+    captureError(error, {
+      tags: { boundary: 'RootErrorBoundary' },
+      extra: { componentStack: errorInfo?.componentStack }
+    });
   }
 
   handleReload = () => {
@@ -41,6 +47,18 @@ export class ErrorBoundary extends React.Component {
               <RotateCcw className="w-4 h-4" />
               <span>Reload Application</span>
             </button>
+            <div className="pt-3 border-t border-main">
+              <p className="text-[11px] text-sub">
+                Need assistance? Contact our support team:
+              </p>
+              <a
+                href="mailto:vadhuvar.matrimonyapp@gmail.com"
+                className="text-xs font-semibold text-sky-blue hover:underline inline-flex items-center gap-1 mt-1"
+              >
+                <Mail className="w-3.5 h-3.5" />
+                <span>vadhuvar.matrimonyapp@gmail.com</span>
+              </a>
+            </div>
           </div>
         </div>
       );

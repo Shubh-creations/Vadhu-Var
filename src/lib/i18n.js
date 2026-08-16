@@ -176,8 +176,11 @@ export const translations = {
     profileCreatedSuccess: "Profile Saved Successfully!",
     profileUpdatedSuccess: "Profile Changes Saved Successfully!",
     whatHappensNext: "What Happens Next?",
-    whatHappensNextDesc: "Your profile is live. Our team is reviewing your verification documents. You can start browsing verified matches, saving shortlists, and expressing interest immediately!",
-    startBrowsing: "Start Browsing Matches"
+    startBrowsing: "Start Browsing Matches",
+    supportContact: "Support",
+    deleteAccountTitle: "Delete Account & Data",
+    deleteAccountWarning: "This permanently removes your profile, photos, and verification documents, and closes your account. This action cannot be undone.",
+    permanentlyDelete: "Permanently Delete"
   },
   hi: {
     brandName: "वर वधु",
@@ -353,8 +356,11 @@ export const translations = {
     profileCreatedSuccess: "प्रोफाइल सफलतापूर्वक सहेजी गई!",
     profileUpdatedSuccess: "प्रोफाइल सफलतापूर्वक अपडेट की गई!",
     whatHappensNext: "आगे क्या होगा?",
-    whatHappensNextDesc: "आपकी प्रोफाइल लाइव है। हमारी टीम आपके दस्तावेजों की समीक्षा कर रही है। आप अभी से रिश्ते देखना, शॉर्टलिस्ट करना और रुचि भेजना शुरू कर सकते हैं!",
-    startBrowsing: "रिश्ते देखना शुरू करें"
+    startBrowsing: "रिश्ते देखना शुरू करें",
+    supportContact: "सहायता",
+    deleteAccountTitle: "खाता और डेटा हटाएं",
+    deleteAccountWarning: "यह आपकी प्रोफाइल, फोटो और सत्यापन दस्तावेजों को हमेशा के लिए हटा देगा और आपका खाता बंद कर देगा। इसे पूर्ववत नहीं किया जा सकता।",
+    permanentlyDelete: "हमेशा के लिए हटाएं"
   },
   mr: {
     brandName: "वधू वर",
@@ -530,8 +536,11 @@ export const translations = {
     profileCreatedSuccess: "प्रोफाईल यशस्वीरीत्या जतन झाली!",
     profileUpdatedSuccess: "प्रोफाईल यशस्वीरीत्या अपडेट झाली!",
     whatHappensNext: "पुढे काय होईल?",
-    whatHappensNextDesc: "तुमची प्रोफाईल लाइव्ह आहे. आमची टीम कागदपत्रांची पडताळणी करत आहे. तुम्ही लगेच स्थळे पाहणे, शॉर्टलिस्ट करणे आणि रस दाखवणे सुरू करू शकता!",
-    startBrowsing: "स्थळे पाहणे सुरू करा"
+    startBrowsing: "स्थळे पाहणे सुरू करा",
+    supportContact: "मदत व संपर्क",
+    deleteAccountTitle: "खाते आणि डेटा कायमचा हटवा",
+    deleteAccountWarning: "हे तुमची प्रोफाईल, फोटो आणि पडताळणी कागदपत्रे कायमची काढून टाकेल आणि खाते बंद करेल. ही कृती पूर्ववत करता येणार नाही.",
+    permanentlyDelete: "कायमचे हटवा"
   }
 };
 
