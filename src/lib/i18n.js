@@ -123,6 +123,8 @@ export const translations = {
     // Wizard Steps
     stepOfFive: "Step {step} of 5",
     percentCompleted: "{percent}% Completed",
+    backStep: "Back",
+    nextStep: "Next",
     step1Title: "Personal Details",
     step2Title: "Career, Education & Lifestyle",
     step3Title: "Cultural Background & Profile Photo",
@@ -289,6 +291,8 @@ export const translations = {
     // Wizard Steps
     stepOfFive: "चरण {step} / 5",
     percentCompleted: "{percent}% पूर्ण",
+    backStep: "पीछे",
+    nextStep: "आगे",
     step1Title: "व्यक्तिगत विवरण",
     step2Title: "करियर, शिक्षा और जीवनशैली",
     step3Title: "सांस्कृतिक पृष्ठभूमि और फोटो",
@@ -455,6 +459,8 @@ export const translations = {
     // Wizard Steps
     stepOfFive: "टप्पा {step} / 5",
     percentCompleted: "{percent}% पूर्ण",
+    backStep: "मागे",
+    nextStep: "पुढे",
     step1Title: "वैयक्तिक तपशील",
     step2Title: "करिअर, शिक्षण आणि जीवनशैली",
     step3Title: "सांस्कृतिक पार्श्वभूमी आणि फोटो",
