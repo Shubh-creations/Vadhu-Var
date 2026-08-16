@@ -219,6 +219,15 @@ export const AuthProvider = ({ children }) => {
     return namePart.charAt(0).toUpperCase() + namePart.slice(1);
   }
 
+  // Numeric sanitizer helper to prevent Postgres 'invalid input syntax for type numeric: ""' errors
+  const sanitizeNumeric = (value) => {
+    if (value === '' || value === undefined || value === null) {
+      return null;
+    }
+    const num = Number(value);
+    return Number.isNaN(num) ? null : num;
+  };
+
   // Save or update user profile
   const saveProfile = async (profileData) => {
     // Separate document upload fields which are persisted in the verification_requests table
@@ -233,6 +242,10 @@ export const AuthProvider = ({ children }) => {
     const fullProfile = {
       ...profileData,
       id: user?.id || `user-${Date.now()}`,
+      age: sanitizeNumeric(profileData.age) || 26,
+      height_cm: sanitizeNumeric(profileData.height_cm),
+      annual_income_lpa: sanitizeNumeric(profileData.annual_income_lpa),
+      children_count: sanitizeNumeric(profileData.children_count),
       is_active: profileData.is_active !== undefined ? profileData.is_active : true,
       is_visible: profileData.is_visible !== undefined ? profileData.is_visible : (profileData.is_search_visible !== undefined ? profileData.is_search_visible : true),
       created_at: profileData.created_at || new Date().toISOString()
@@ -241,6 +254,10 @@ export const AuthProvider = ({ children }) => {
     const dbPayload = {
       ...profileColumns,
       id: user?.id || `user-${Date.now()}`,
+      age: sanitizeNumeric(profileColumns.age) || 26,
+      height_cm: sanitizeNumeric(profileColumns.height_cm),
+      annual_income_lpa: sanitizeNumeric(profileColumns.annual_income_lpa),
+      children_count: sanitizeNumeric(profileColumns.children_count),
       is_active: fullProfile.is_active,
       is_visible: fullProfile.is_visible,
       created_at: fullProfile.created_at
@@ -277,6 +294,20 @@ export const AuthProvider = ({ children }) => {
     const fullPref = {
       ...prefData,
       user_id: user?.id || `user-${Date.now()}`,
+      age_min: sanitizeNumeric(prefData.age_min),
+      age_max: sanitizeNumeric(prefData.age_max),
+      height_min_cm: sanitizeNumeric(prefData.height_min_cm),
+      height_max_cm: sanitizeNumeric(prefData.height_max_cm),
+      updated_at: new Date().toISOString()
+    };
+
+    const dbPrefPayload = {
+      ...prefData,
+      user_id: user?.id || `user-${Date.now()}`,
+      age_min: sanitizeNumeric(prefData.age_min),
+      age_max: sanitizeNumeric(prefData.age_max),
+      height_min_cm: sanitizeNumeric(prefData.height_min_cm),
+      height_max_cm: sanitizeNumeric(prefData.height_max_cm),
       updated_at: new Date().toISOString()
     };
 
@@ -287,7 +318,7 @@ export const AuthProvider = ({ children }) => {
       try {
         const { data, error } = await supabase
           .from('partner_preferences')
-          .upsert({ ...fullPref, user_id: user.id })
+          .upsert({ ...dbPrefPayload, user_id: user.id })
           .select()
           .single();
 
