@@ -4,6 +4,7 @@
 
 @layer base {
   :root {
+    color-scheme: light;
     --surface: #fafafa;
     --surface-card: #ffffff;
     --surface-ground: #f1f5f9;
@@ -21,6 +22,7 @@
   }
 
   html.dark {
+    color-scheme: dark;
     --surface: #0b0d10;
     --surface-card: #12151c;
     --surface-ground: #1a1e29;
@@ -47,6 +49,29 @@
 
   h1, h2, h3, .font-serif-heading {
     font-family: 'Lora', 'Noto Serif Devanagari', Georgia, serif;
+  }
+
+  /* Form Elements & Native Dropdown Dark Mode Optimization */
+  select, input, textarea, button {
+    color-scheme: inherit;
+  }
+
+  select option,
+  select optgroup {
+    background-color: var(--surface-card);
+    color: var(--text-primary);
+  }
+
+  html.dark select,
+  html.dark input,
+  html.dark textarea {
+    color-scheme: dark;
+  }
+
+  html.dark select option,
+  html.dark select optgroup {
+    background-color: #12151c !important;
+    color: #ffffff !important;
   }
 }
 

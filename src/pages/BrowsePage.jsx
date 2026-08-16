@@ -191,10 +191,10 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
               className="bg-transparent text-xs font-semibold text-main outline-none cursor-pointer"
               aria-label={t('sortBestMatch')}
             >
-              <option value="best_match">{t('sortBestMatch')}</option>
-              <option value="newest">{t('sortRecentlyJoined')}</option>
-              <option value="age_asc">{t('sortAgeLowHigh')}</option>
-              <option value="age_desc">{t('sortAgeHighLow')}</option>
+              <option value="best_match" className="bg-surface-card dark:bg-[#12151c] text-main dark:text-white">{t('sortBestMatch')}</option>
+              <option value="newest" className="bg-surface-card dark:bg-[#12151c] text-main dark:text-white">{t('sortRecentlyJoined')}</option>
+              <option value="age_asc" className="bg-surface-card dark:bg-[#12151c] text-main dark:text-white">{t('sortAgeLowHigh')}</option>
+              <option value="age_desc" className="bg-surface-card dark:bg-[#12151c] text-main dark:text-white">{t('sortAgeHighLow')}</option>
             </select>
           </div>
 
