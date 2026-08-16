@@ -1,31 +1,87 @@
-import React, { useState } from 'react';
-import { Mail, Lock, User, ArrowRight, Inbox } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Mail, Lock, User, ArrowRight, Inbox, CheckCircle2, KeyRound, ArrowLeft, ShieldCheck } from 'lucide-react';
 import { Logo } from '../components/Logo';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 
 export const AuthPage = ({ onSuccess }) => {
   const { t } = useLanguage();
-  const [isSignUp, setIsSignUp] = useState(false);
+  const { login, signUp, resetPassword, updatePassword, isPasswordRecovery, setIsPasswordRecovery } = useAuth();
+
+  // Mode: 'signin' | 'signup' | 'forgot' | 'recovery'
+  const [mode, setMode] = useState(isPasswordRecovery ? 'recovery' : 'signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
   const [emailSentScreen, setEmailSentScreen] = useState(false);
 
-  const { login, signUp } = useAuth();
+  useEffect(() => {
+    if (isPasswordRecovery) {
+      setMode('recovery');
+    }
+  }, [isPasswordRecovery]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setSuccessMsg('');
 
+    // 1. Password Recovery / Update Mode
+    if (mode === 'recovery') {
+      if (!password || password.length < 6) {
+        setError('New password must be at least 6 characters long.');
+        return;
+      }
+      if (password !== confirmPassword) {
+        setError('Passwords do not match. Please re-enter.');
+        return;
+      }
+
+      setLoading(true);
+      try {
+        await updatePassword(password);
+        setSuccessMsg('Your password has been updated successfully!');
+        setTimeout(() => {
+          if (onSuccess) onSuccess();
+        }, 1500);
+      } catch (err) {
+        setError(err.message || 'Could not update password. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
+    // 2. Forgot Password Mode
+    if (mode === 'forgot') {
+      if (!email.trim()) {
+        setError('Please enter your registered email address.');
+        return;
+      }
+
+      setLoading(true);
+      try {
+        await resetPassword(email.trim());
+        setSuccessMsg(`Password reset link sent! Check ${email} for instructions.`);
+      } catch (err) {
+        setError(err.message || 'Could not send password reset email.');
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
+    // 3. Sign In & Sign Up Modes
     if (!email || !password) {
       setError('Please fill in all required fields.');
       return;
     }
 
-    if (isSignUp && !fullName.trim()) {
+    if (mode === 'signup' && !fullName.trim()) {
       setError('Please enter your full name.');
       return;
     }
@@ -38,7 +94,7 @@ export const AuthPage = ({ onSuccess }) => {
     setLoading(true);
 
     try {
-      if (isSignUp) {
+      if (mode === 'signup') {
         const res = await signUp(email, password, fullName);
         if (res?.user && !res?.session) {
           setEmailSentScreen(true);
@@ -81,7 +137,7 @@ export const AuthPage = ({ onSuccess }) => {
             <button
               onClick={() => {
                 setEmailSentScreen(false);
-                setIsSignUp(false);
+                setMode('signin');
                 setError('');
               }}
               className="px-6 py-2.5 radius-btn bg-sky-blue text-white text-xs font-bold hover:bg-sky-blue/90 transition-colors"
@@ -95,31 +151,83 @@ export const AuthPage = ({ onSuccess }) => {
   }
 
   return (
-    <div className="max-w-md mx-auto px-4 py-12">
+    <div className="max-w-md mx-auto px-4 py-10 sm:py-14">
       <div className="bg-surface-card radius-card border border-main p-6 sm:p-8 shadow-sm text-center transition-colors">
         {/* Header Logo */}
         <div className="flex justify-center mb-5">
           <Logo size="large" />
         </div>
 
-        <h1 className="font-serif text-2xl font-bold text-main mb-1 tracking-tight">
-          {isSignUp ? 'Create Your Profile' : 'Sign In to Vadhu Var'}
-        </h1>
-        <p className="text-xs text-sub mb-6">
-          {isSignUp
-            ? 'Start your verified matrimony search today.'
-            : 'Access verified bride and groom profiles across India.'}
-        </p>
+        {/* Title and Subtitle */}
+        {mode === 'recovery' && (
+          <>
+            <div className="w-12 h-12 rounded-full bg-sky-blue/10 text-sky-blue flex items-center justify-center mx-auto mb-3">
+              <KeyRound className="w-6 h-6" />
+            </div>
+            <h1 className="font-serif text-2xl font-bold text-main mb-1 tracking-tight">
+              Set New Password
+            </h1>
+            <p className="text-xs text-sub mb-6">
+              Create a new secure password for your Vadhu Var account.
+            </p>
+          </>
+        )}
 
+        {mode === 'forgot' && (
+          <>
+            <div className="w-12 h-12 rounded-full bg-sky-blue/10 text-sky-blue flex items-center justify-center mx-auto mb-3">
+              <KeyRound className="w-6 h-6" />
+            </div>
+            <h1 className="font-serif text-2xl font-bold text-main mb-1 tracking-tight">
+              Reset Your Password
+            </h1>
+            <p className="text-xs text-sub mb-6">
+              Enter your registered email address and we'll send you a password reset link.
+            </p>
+          </>
+        )}
+
+        {mode === 'signin' && (
+          <>
+            <h1 className="font-serif text-2xl font-bold text-main mb-1 tracking-tight">
+              Sign In to Vadhu Var
+            </h1>
+            <p className="text-xs text-sub mb-6">
+              Access verified bride and groom profiles across India.
+            </p>
+          </>
+        )}
+
+        {mode === 'signup' && (
+          <>
+            <h1 className="font-serif text-2xl font-bold text-main mb-1 tracking-tight">
+              Create Your Profile
+            </h1>
+            <p className="text-xs text-sub mb-6">
+              Start your verified matrimony search today.
+            </p>
+          </>
+        )}
+
+        {/* Error Alert */}
         {error && (
-          <div className="mb-4 p-3 radius-btn bg-surface-ground border border-main text-main text-xs font-medium text-left flex items-start gap-2">
-            <span className="text-sky-blue font-bold">•</span>
+          <div className="mb-4 p-3 radius-btn bg-surface-ground border border-main text-rose-600 dark:text-rose-400 text-xs font-medium text-left flex items-start gap-2">
+            <span className="font-bold">•</span>
             <span>{error}</span>
           </div>
         )}
 
+        {/* Success Alert */}
+        {successMsg && (
+          <div className="mb-4 p-3 radius-btn bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs font-medium text-left flex items-start gap-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+            <span>{successMsg}</span>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4 text-left">
-          {isSignUp && (
+          {/* Sign Up: Full Name */}
+          {mode === 'signup' && (
             <div>
               <label className="block text-xs font-semibold text-main mb-1">Full Name *</label>
               <div className="relative">
@@ -136,72 +244,144 @@ export const AuthPage = ({ onSuccess }) => {
             </div>
           )}
 
-          <div>
-            <label className="block text-xs font-semibold text-main mb-1">Email Address *</label>
-            <div className="relative">
-              <Mail className="w-4 h-4 text-sub absolute left-3 top-3" />
-              <input
-                type="email"
-                required
-                placeholder="name@domain.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-9 pr-3 py-2.5 border border-main radius-btn text-sm bg-surface-ground text-main outline-none focus:border-sky-blue focus:ring-1 focus:ring-sky-blue transition-colors"
-              />
+          {/* Email Address (Hidden in recovery mode) */}
+          {mode !== 'recovery' && (
+            <div>
+              <label className="block text-xs font-semibold text-main mb-1">Email Address *</label>
+              <div className="relative">
+                <Mail className="w-4 h-4 text-sub absolute left-3 top-3" />
+                <input
+                  type="email"
+                  required
+                  placeholder="name@domain.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2.5 border border-main radius-btn text-sm bg-surface-ground text-main outline-none focus:border-sky-blue focus:ring-1 focus:ring-sky-blue transition-colors"
+                />
+              </div>
             </div>
-          </div>
+          )}
 
-          <div>
-            <label className="block text-xs font-semibold text-main mb-1">Password *</label>
-            <div className="relative">
-              <Lock className="w-4 h-4 text-sub absolute left-3 top-3" />
-              <input
-                type="password"
-                required
-                minLength={6}
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-9 pr-3 py-2.5 border border-main radius-btn text-sm bg-surface-ground text-main outline-none focus:border-sky-blue focus:ring-1 focus:ring-sky-blue transition-colors"
-              />
+          {/* Password field (Used in signin, signup, and recovery) */}
+          {mode !== 'forgot' && (
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-semibold text-main">
+                  {mode === 'recovery' ? 'New Password *' : 'Password *'}
+                </label>
+                {mode === 'signin' && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setError('');
+                      setSuccessMsg('');
+                      setMode('forgot');
+                    }}
+                    className="text-xs text-sky-blue hover:underline font-medium"
+                  >
+                    Forgot Password?
+                  </button>
+                )}
+              </div>
+              <div className="relative">
+                <Lock className="w-4 h-4 text-sub absolute left-3 top-3" />
+                <input
+                  type="password"
+                  required
+                  minLength={6}
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2.5 border border-main radius-btn text-sm bg-surface-ground text-main outline-none focus:border-sky-blue focus:ring-1 focus:ring-sky-blue transition-colors"
+                />
+              </div>
             </div>
-          </div>
+          )}
 
+          {/* Confirm Password (only for recovery) */}
+          {mode === 'recovery' && (
+            <div>
+              <label className="block text-xs font-semibold text-main mb-1">Confirm New Password *</label>
+              <div className="relative">
+                <Lock className="w-4 h-4 text-sub absolute left-3 top-3" />
+                <input
+                  type="password"
+                  required
+                  minLength={6}
+                  placeholder="••••••••"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2.5 border border-main radius-btn text-sm bg-surface-ground text-main outline-none focus:border-sky-blue focus:ring-1 focus:ring-sky-blue transition-colors"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Submit Button */}
           <button
             type="submit"
             disabled={loading}
             className="w-full py-3 radius-btn bg-sky-blue hover:bg-sky-blue/90 text-white font-bold text-sm shadow-xs transition-colors flex items-center justify-center gap-2 mt-2"
           >
-            <span>{loading ? 'Processing...' : isSignUp ? 'Create Account' : 'Sign In'}</span>
+            <span>
+              {loading
+                ? 'Processing...'
+                : mode === 'recovery'
+                ? 'Update Password & Sign In'
+                : mode === 'forgot'
+                ? 'Send Reset Link'
+                : mode === 'signup'
+                ? 'Create Account'
+                : 'Sign In'}
+            </span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>
 
-        <div className="mt-6 pt-4 border-t border-main text-xs text-sub">
-          {isSignUp ? (
-            <p>
-              Already have an account?{' '}
-              <button
-                onClick={() => {
-                  setError('');
-                  setIsSignUp(false);
-                }}
-                className="text-sky-blue font-bold hover:underline"
-              >
-                Sign In
-              </button>
-            </p>
-          ) : (
+        {/* Navigation & Mode Switching */}
+        <div className="mt-6 pt-4 border-t border-main text-xs text-sub space-y-2">
+          {mode === 'forgot' && (
+            <button
+              onClick={() => {
+                setError('');
+                setSuccessMsg('');
+                setMode('signin');
+              }}
+              className="text-sky-blue font-bold hover:underline flex items-center justify-center gap-1 mx-auto"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Back to Sign In</span>
+            </button>
+          )}
+
+          {mode === 'signin' && (
             <p>
               New candidate?{' '}
               <button
                 onClick={() => {
                   setError('');
-                  setIsSignUp(true);
+                  setSuccessMsg('');
+                  setMode('signup');
                 }}
                 className="text-sky-blue font-bold hover:underline"
               >
                 Create an Account
+              </button>
+            </p>
+          )}
+
+          {mode === 'signup' && (
+            <p>
+              Already have an account?{' '}
+              <button
+                onClick={() => {
+                  setError('');
+                  setSuccessMsg('');
+                  setMode('signin');
+                }}
+                className="text-sky-blue font-bold hover:underline"
+              >
+                Sign In
               </button>
             </p>
           )}

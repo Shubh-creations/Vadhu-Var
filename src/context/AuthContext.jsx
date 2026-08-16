@@ -30,6 +30,7 @@ export const AuthProvider = ({ children }) => {
   });
   const [loading, setLoading] = useState(true);
   const [isDemoMode, setIsDemoMode] = useState(!isSupabaseConfigured());
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
 
   const isAdmin = Boolean(
     (user?.id && ADMIN_UIDS.includes(user.id)) || 
@@ -109,6 +110,9 @@ export const AuthProvider = ({ children }) => {
     // Listen to Supabase auth state changes if configured
     if (isSupabaseConfigured()) {
       const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+        if (event === 'PASSWORD_RECOVERY') {
+          setIsPasswordRecovery(true);
+        }
         if (session?.user) {
           setUser(session.user);
           await fetchUserProfile(session.user.id);
@@ -200,6 +204,45 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Send Password Reset Email Link
+  const resetPassword = async (email) => {
+    if (isSupabaseConfigured() && !isDemoMode) {
+      const redirectUrl = typeof window !== 'undefined' && window.location.origin
+        ? window.location.origin
+        : 'https://vadhu-var.vercel.app';
+
+      const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: redirectUrl
+      });
+
+      if (error) {
+        throw new Error(error.message || 'Could not send reset password email.');
+      }
+      return data;
+    } else {
+      // Demo / local mode simulated success
+      return { success: true };
+    }
+  };
+
+  // Update Password (used after clicking recovery link or in settings)
+  const updatePassword = async (newPassword) => {
+    if (isSupabaseConfigured() && !isDemoMode) {
+      const { data, error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) {
+        throw new Error(error.message || 'Could not update password.');
+      }
+      setIsPasswordRecovery(false);
+      return data;
+    } else {
+      setIsPasswordRecovery(false);
+      return { success: true };
+    }
+  };
+
   // Logout user
   const logout = async () => {
     if (isSupabaseConfigured() && !isDemoMode) {
@@ -207,6 +250,7 @@ export const AuthProvider = ({ children }) => {
     }
     setUser(null);
     setProfile(null);
+    setIsPasswordRecovery(false);
     localStorage.removeItem('vadhu_var_user');
     localStorage.removeItem('vadhu_var_profile');
     localStorage.removeItem('vadhu_var_partner_preferences');
@@ -365,6 +409,10 @@ export const AuthProvider = ({ children }) => {
         signup: signUp,
         login,
         logout,
+        resetPassword,
+        updatePassword,
+        isPasswordRecovery,
+        setIsPasswordRecovery,
         saveProfile,
         savePartnerPreferences,
         updateAccountSettings,
