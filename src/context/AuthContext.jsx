@@ -30,7 +30,14 @@ export const AuthProvider = ({ children }) => {
   });
   const [loading, setLoading] = useState(true);
   const [isDemoMode, setIsDemoMode] = useState(!isSupabaseConfigured());
-  const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const hash = window.location.hash || '';
+      const search = window.location.search || '';
+      return hash.includes('type=recovery') || search.includes('type=recovery');
+    }
+    return false;
+  });
 
   const isAdmin = Boolean(
     (user?.id && ADMIN_UIDS.includes(user.id)) || 
@@ -235,7 +242,21 @@ export const AuthProvider = ({ children }) => {
       if (error) {
         throw new Error(error.message || 'Could not update password.');
       }
+
+      if (data?.user) {
+        setUser(data.user);
+        localStorage.setItem('vadhu_var_user', JSON.stringify(data.user));
+        await fetchUserProfile(data.user.id);
+        await fetchPartnerPreferences(data.user.id);
+      }
+
       setIsPasswordRecovery(false);
+
+      // Clean up recovery tokens from browser URL without reloading
+      if (typeof window !== 'undefined' && window.history && window.history.replaceState) {
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+
       return data;
     } else {
       setIsPasswordRecovery(false);

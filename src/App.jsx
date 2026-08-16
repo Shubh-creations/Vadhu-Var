@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { DataProvider, useData } from './context/DataContext';
 import { ThemeProvider } from './context/ThemeContext';
@@ -31,13 +31,39 @@ import BlockReportModal from './components/BlockReportModal';
 import UserProfileHub from './components/UserProfileHub';
 
 function AppContent() {
-  const { user, profile } = useAuth();
+  const { user, profile, isPasswordRecovery } = useAuth();
   const { toast, clearToast } = useData();
 
   const [activeTab, setActiveTab] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const hash = window.location.hash || '';
+      const search = window.location.search || '';
+      if (hash.includes('type=recovery') || search.includes('type=recovery')) {
+        return 'auth';
+      }
+    }
     // If user has local token/profile, open in browse mode; otherwise landing page
     return localStorage.getItem('vadhu_var_user') || localStorage.getItem('vadhu_var_profile') ? 'browse' : 'landing';
   });
+
+  useEffect(() => {
+    if (isPasswordRecovery) {
+      setActiveTab('auth');
+    }
+  }, [isPasswordRecovery]);
+
+  useEffect(() => {
+    const handleCheckRecovery = () => {
+      const hash = window.location.hash || '';
+      const search = window.location.search || '';
+      if (hash.includes('type=recovery') || search.includes('type=recovery')) {
+        setActiveTab('auth');
+      }
+    };
+    handleCheckRecovery();
+    window.addEventListener('hashchange', handleCheckRecovery);
+    return () => window.removeEventListener('hashchange', handleCheckRecovery);
+  }, []);
   const [selectedProfile, setSelectedProfile] = useState(null);
 
   // Modal State Triggers

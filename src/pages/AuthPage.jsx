@@ -9,7 +9,17 @@ export const AuthPage = ({ onSuccess }) => {
   const { login, signUp, resetPassword, updatePassword, isPasswordRecovery, setIsPasswordRecovery } = useAuth();
 
   // Mode: 'signin' | 'signup' | 'forgot' | 'recovery'
-  const [mode, setMode] = useState(isPasswordRecovery ? 'recovery' : 'signin');
+  const [mode, setMode] = useState(() => {
+    if (isPasswordRecovery) return 'recovery';
+    if (typeof window !== 'undefined') {
+      const hash = window.location.hash || '';
+      const search = window.location.search || '';
+      if (hash.includes('type=recovery') || search.includes('type=recovery')) {
+        return 'recovery';
+      }
+    }
+    return 'signin';
+  });
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -20,9 +30,14 @@ export const AuthPage = ({ onSuccess }) => {
   const [emailSentScreen, setEmailSentScreen] = useState(false);
 
   useEffect(() => {
-    if (isPasswordRecovery) {
-      setMode('recovery');
-    }
+    const checkHash = () => {
+      const hash = typeof window !== 'undefined' ? window.location.hash || '' : '';
+      const search = typeof window !== 'undefined' ? window.location.search || '' : '';
+      if (isPasswordRecovery || hash.includes('type=recovery') || search.includes('type=recovery')) {
+        setMode('recovery');
+      }
+    };
+    checkHash();
   }, [isPasswordRecovery]);
 
   const handleSubmit = async (e) => {
