@@ -1,5 +1,9 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Search, SlidersHorizontal, Grid, Layers, Sparkles, Filter, ShieldCheck, Heart, UserPlus, ArrowRight, X, ArrowUpDown, Loader2, Star } from 'lucide-react';
+import { 
+  Search, SlidersHorizontal, Grid, Layers, Sparkles, Filter, ShieldCheck, 
+  Heart, UserPlus, ArrowRight, X, ArrowUpDown, Loader2, Star,
+  ChevronLeft, ChevronRight, RotateCcw, CheckCircle2
+} from 'lucide-react';
 import ProfileCard from '../components/ProfileCard';
 import FilterPanel from '../components/FilterPanel';
 import DiscoverOnboardingModal from '../components/DiscoverOnboardingModal';
@@ -33,6 +37,11 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
   const [sortBy, setSortBy] = useState('best_match');
   const [showOnboarding, setShowOnboarding] = useState(false);
 
+  // Deck Swiper State & Touch Handlers
+  const [deckIndex, setDeckIndex] = useState(0);
+  const [touchStart, setTouchStart] = useState(null);
+  const [touchEnd, setTouchEnd] = useState(null);
+
   useEffect(() => {
     // Show onboarding tour once to signed-in users on their first visit to Discover
     if (user && !showShortlistedOnly) {
@@ -42,6 +51,50 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
       }
     }
   }, [user, showShortlistedOnly]);
+
+  // Reset deckIndex when filters or search change
+  useEffect(() => {
+    setDeckIndex(0);
+  }, [appliedFilters, searchQuery, sortBy]);
+
+  // Keyboard navigation for Deck mode (Left / Right Arrow keys)
+  useEffect(() => {
+    if (discoveryView !== 'deck') return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'ArrowRight') {
+        setDeckIndex(prev => Math.min(filteredProfiles.length, prev + 1));
+      } else if (e.key === 'ArrowLeft') {
+        setDeckIndex(prev => Math.max(0, prev - 1));
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [discoveryView, filteredProfiles.length]);
+
+  // Touch Swipe Handlers for mobile gestures
+  const handleTouchStart = (e) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 45;
+    const isRightSwipe = distance < -45;
+
+    if (isLeftSwipe) {
+      // Next candidate
+      setDeckIndex(prev => Math.min(filteredProfiles.length, prev + 1));
+    } else if (isRightSwipe) {
+      // Previous candidate
+      setDeckIndex(prev => Math.max(0, prev - 1));
+    }
+  };
 
   // Applied filters state (only updates when user explicitly clicks "Apply Filters" or "Reset")
   const [appliedFilters, setAppliedFilters] = useState(defaultFilters);
@@ -257,27 +310,115 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
 
       {/* Main Discover Layout */}
       {discoveryView === 'deck' ? (
-        /* Deck Mode */
-        <div className="max-w-md mx-auto py-4">
-          {filteredProfiles.length > 0 ? (
-            <div className="relative">
-              <ProfileCard
-                profile={filteredProfiles[0]}
-                onViewDetails={onViewProfile}
-                onOpenCompatibility={onOpenCompatibility}
-                onAuthRequired={onAuthRequired}
-              />
-            </div>
-          ) : (
+        /* Interactive Deck Mode */
+        <div className="max-w-md mx-auto py-2 sm:py-4">
+          {filteredProfiles.length === 0 ? (
             <div className="bg-surface-card radius-card border border-main p-8 text-center space-y-4 shadow-sm">
               <h3 className="font-serif font-bold text-main text-lg">{t('noMatchingProfiles')}</h3>
               <p className="text-xs text-sub">{t('noMatchingProfilesDesc')}</p>
               <button
                 onClick={handleResetFilters}
-                className="px-6 py-2 radius-btn bg-sky-blue text-white text-xs font-bold"
+                className="px-6 py-2.5 radius-btn bg-sky-blue text-white text-xs font-bold"
               >
                 {t('resetAllFilters')}
               </button>
+            </div>
+          ) : deckIndex >= filteredProfiles.length ? (
+            /* End of Deck State */
+            <div className="bg-surface-card radius-card border border-main p-8 sm:p-10 text-center space-y-5 shadow-sm animate-fade-in">
+              <div className="w-14 h-14 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center mx-auto">
+                <CheckCircle2 className="w-7 h-7" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="font-serif font-bold text-main text-lg sm:text-xl">
+                  You've Reviewed All Profiles!
+                </h3>
+                <p className="text-xs text-sub max-w-xs mx-auto">
+                  You have reviewed all {filteredProfiles.length} candidates in this deck.
+                </p>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setDeckIndex(0)}
+                  className="w-full sm:w-auto px-5 py-2.5 radius-btn bg-sky-blue text-white font-bold text-xs flex items-center justify-center gap-2 shadow-xs hover:bg-sky-blue/90 transition-colors"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  <span>Review from Start</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleSwitchView('grid')}
+                  className="w-full sm:w-auto px-5 py-2.5 radius-btn bg-surface-ground hover:bg-surface-card border border-main text-main font-bold text-xs flex items-center justify-center gap-2 transition-colors"
+                >
+                  <Grid className="w-4 h-4 text-sky-blue" />
+                  <span>Switch to Grid View</span>
+                </button>
+              </div>
+            </div>
+          ) : (
+            /* Active Candidate Card & Controls */
+            <div className="space-y-3">
+              {/* Deck Progress Bar & Counter */}
+              <div className="flex items-center justify-between text-xs px-1 text-sub font-semibold">
+                <span className="flex items-center gap-1.5 text-main">
+                  <span className="w-2 h-2 rounded-full bg-sky-blue animate-pulse" />
+                  Profile {deckIndex + 1} of {filteredProfiles.length}
+                </span>
+                <span className="text-[11px] text-sub">
+                  Swipe or use buttons below
+                </span>
+              </div>
+
+              <div className="h-1.5 w-full bg-surface-ground radius-btn overflow-hidden border border-main">
+                <div
+                  className="h-full bg-sky-blue transition-all duration-300 ease-out"
+                  style={{ width: `${((deckIndex + 1) / filteredProfiles.length) * 100}%` }}
+                />
+              </div>
+
+              {/* Active Profile Card Container */}
+              <div
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+                className="relative transition-all duration-200 select-none animate-fade-in"
+              >
+                <ProfileCard
+                  profile={filteredProfiles[deckIndex]}
+                  onViewDetails={onViewProfile}
+                  onOpenCompatibility={onOpenCompatibility}
+                  onAuthRequired={onAuthRequired}
+                />
+              </div>
+
+              {/* Deck Navigation Controls */}
+              <div className="grid grid-cols-2 gap-3 pt-2">
+                <button
+                  type="button"
+                  disabled={deckIndex === 0}
+                  onClick={() => setDeckIndex(prev => Math.max(0, prev - 1))}
+                  className="py-3 px-4 radius-btn bg-surface-card hover:bg-surface-ground border border-main text-main disabled:opacity-40 disabled:cursor-not-allowed text-xs font-bold flex items-center justify-center gap-2 shadow-xs transition-colors"
+                >
+                  <ChevronLeft className="w-4 h-4 text-sky-blue" />
+                  <span>Previous Profile</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setDeckIndex(prev => prev + 1)}
+                  className="py-3 px-4 radius-btn bg-sky-blue hover:bg-sky-blue/90 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-xs transition-colors"
+                >
+                  <span>{deckIndex === filteredProfiles.length - 1 ? 'Finish Deck' : 'Next Profile'}</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+
+              <p className="text-[11px] text-sub text-center pt-1">
+                Tip: Press <kbd className="px-1.5 py-0.5 rounded bg-surface-ground border border-main text-[10px] font-mono">←</kbd> or <kbd className="px-1.5 py-0.5 rounded bg-surface-ground border border-main text-[10px] font-mono">→</kbd> keys to flip profiles
+              </p>
             </div>
           )}
         </div>
