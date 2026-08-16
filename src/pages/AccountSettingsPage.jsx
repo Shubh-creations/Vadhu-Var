@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Eye, EyeOff, Globe, HeartHandshake, ShieldAlert, CheckCircle2, Save, UserX, ArrowLeft, Download, Smartphone } from 'lucide-react';
+import { Settings, Eye, EyeOff, Globe, HeartHandshake, ShieldAlert, CheckCircle2, Save, UserX, ArrowLeft, Download, Smartphone, LogOut } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { usePWA } from '../context/PWAContext';
@@ -346,7 +346,30 @@ export const AccountSettingsPage = ({ onBack, onNavigateToProfile }) => {
           </div>
         </div>
 
-        {/* Section 5: Deactivate Account */}
+        {/* Section 5: Sign Out */}
+        <div className="bg-surface-card radius-card border border-main p-6 shadow-xs space-y-4">
+          <div className="flex items-center gap-2 pb-3 border-b border-main text-main">
+            <LogOut className="w-5 h-5 text-rose-500" />
+            <h2 className="font-serif font-bold text-main text-lg">{t('signOut')}</h2>
+          </div>
+
+          <p className="text-xs text-sub">
+            Sign out of your active session on this device. You can sign back in at any time with your registered account.
+          </p>
+
+          <button
+            onClick={() => {
+              logout();
+              if (onBack) onBack();
+            }}
+            className="px-5 py-2.5 radius-btn bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs font-bold transition-colors flex items-center gap-2"
+          >
+            <LogOut className="w-4 h-4" />
+            <span>{t('signOut')}</span>
+          </button>
+        </div>
+
+        {/* Section 6: Deactivate Account */}
         <div className="bg-surface-card radius-card border border-main p-6 shadow-xs space-y-4">
           <div className="flex items-center gap-2 pb-3 border-b border-main text-main">
             <ShieldAlert className="w-5 h-5 text-sub" />

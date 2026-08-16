@@ -202,11 +202,12 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
 
                 <button
                   onClick={logout}
-                  className="hidden sm:block p-1.5 radius-btn text-sub hover:text-main hover:bg-surface-ground transition-colors"
+                  className="p-1.5 radius-btn text-sub hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-500/10 transition-colors flex items-center gap-1"
                   title={t('signOut')}
                   aria-label={t('signOut')}
                 >
                   <LogOut className="w-4 h-4" />
+                  <span className="hidden md:inline text-xs">{t('signOut')}</span>
                 </button>
               </div>
             ) : (

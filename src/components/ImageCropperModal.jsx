@@ -28,6 +28,9 @@ export const ImageCropperModal = ({ isOpen, imageSrc, onCropComplete, onClose })
 
   if (!isOpen || !imageSrc) return null;
 
+  // Viewport ref to measure exact rendered circle dimensions
+  const viewportRef = useRef(null);
+
   // Mouse Drag Handlers
   const handleMouseDown = (e) => {
     e.preventDefault();
@@ -37,6 +40,7 @@ export const ImageCropperModal = ({ isOpen, imageSrc, onCropComplete, onClose })
 
   const handleMouseMove = (e) => {
     if (!isDragging) return;
+    e.preventDefault();
     setPan({
       x: e.clientX - dragStart.x,
       y: e.clientY - dragStart.y
@@ -58,6 +62,7 @@ export const ImageCropperModal = ({ isOpen, imageSrc, onCropComplete, onClose })
 
   const handleTouchMove = (e) => {
     if (!isDragging || e.touches.length !== 1) return;
+    if (e.cancelable) e.preventDefault();
     const touch = e.touches[0];
     setPan({
       x: touch.clientX - dragStart.x,
@@ -67,6 +72,17 @@ export const ImageCropperModal = ({ isOpen, imageSrc, onCropComplete, onClose })
 
   const handleTouchEnd = () => {
     setIsDragging(false);
+  };
+
+  // Directional Nudge / Centering Helpers
+  const nudge = (dx, dy) => {
+    setPan(prev => ({ x: prev.x + dx, y: prev.y + dy }));
+  };
+
+  const resetCenter = () => {
+    setPan({ x: 0, y: 0 });
+    setZoom(1);
+    setRotation(0);
   };
 
   // Mouse Wheel Zoom
@@ -96,6 +112,10 @@ export const ImageCropperModal = ({ isOpen, imageSrc, onCropComplete, onClose })
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    // Measure viewport scale ratio so saved crop exactly matches on-screen preview
+    const viewportWidth = viewportRef.current?.clientWidth || 280;
+    const viewportRatio = cropSize / viewportWidth;
+
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, cropSize, cropSize);
 
@@ -111,8 +131,8 @@ export const ImageCropperModal = ({ isOpen, imageSrc, onCropComplete, onClose })
 
     ctx.drawImage(
       img,
-      -drawWidth / 2 + pan.x / zoom,
-      -drawHeight / 2 + pan.y / zoom,
+      -drawWidth / 2 + (pan.x * viewportRatio) / zoom,
+      -drawHeight / 2 + (pan.y * viewportRatio) / zoom,
       drawWidth,
       drawHeight
     );
@@ -125,13 +145,13 @@ export const ImageCropperModal = ({ isOpen, imageSrc, onCropComplete, onClose })
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
-      <div className="bg-surface-card radius-card border border-main max-w-md w-full p-6 space-y-5 shadow-2xl animate-fade-in">
+    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-xs flex items-center justify-center p-4">
+      <div className="bg-surface-card radius-card border border-main max-w-md w-full p-5 sm:p-6 space-y-4 shadow-2xl animate-fade-in">
         {/* Modal Header */}
         <div className="flex items-center justify-between pb-3 border-b border-main">
           <div className="flex items-center gap-2">
             <Crop className="w-5 h-5 text-sky-blue" />
-            <h3 className="font-serif font-bold text-main text-lg">{t('cropPhoto')}</h3>
+            <h3 className="font-serif font-bold text-main text-base sm:text-lg">{t('cropPhoto')}</h3>
           </div>
           <button type="button" onClick={onClose} className="p-1 text-sub hover:text-main radius-btn">
             <X className="w-5 h-5" />
@@ -139,32 +159,79 @@ export const ImageCropperModal = ({ isOpen, imageSrc, onCropComplete, onClose })
         </div>
 
         {/* Cropping Viewport with Full Mouse & Touch Drag */}
-        <div
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseUp}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          onWheel={handleWheel}
-          className="relative w-64 h-64 sm:w-72 sm:h-72 mx-auto rounded-full overflow-hidden border-4 border-sky-blue bg-surface-ground cursor-grab active:cursor-grabbing shadow-inner flex items-center justify-center select-none touch-none"
-        >
-          <img
-            src={imageSrc}
-            alt="Crop Preview"
-            draggable={false}
-            style={{
-              transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom}) rotate(${rotation}deg)`,
-              transition: isDragging ? 'none' : 'transform 0.05s ease-out',
-              maxHeight: '100%',
-              maxWidth: '100%',
-              objectFit: 'cover',
-              pointerEvents: 'none'
-            }}
-          />
-          <div className="absolute inset-0 pointer-events-none border-2 border-white/40 rounded-full flex items-center justify-center">
-            <Move className="w-6 h-6 text-white/70 drop-shadow-md" />
+        <div className="relative flex flex-col items-center justify-center">
+          <div
+            ref={viewportRef}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            onWheel={handleWheel}
+            className="relative w-64 h-64 sm:w-72 sm:h-72 mx-auto rounded-full overflow-hidden border-4 border-sky-blue bg-surface-ground cursor-grab active:cursor-grabbing shadow-inner flex items-center justify-center select-none touch-none"
+          >
+            <img
+              src={imageSrc}
+              alt="Crop Preview"
+              draggable={false}
+              style={{
+                transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom}) rotate(${rotation}deg)`,
+                transition: isDragging ? 'none' : 'transform 0.05s ease-out',
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                pointerEvents: 'none'
+              }}
+            />
+            <div className="absolute inset-0 pointer-events-none border-2 border-white/40 rounded-full flex items-center justify-center">
+              <Move className="w-6 h-6 text-white/70 drop-shadow-md" />
+            </div>
+          </div>
+
+          {/* Quick Directional Nudge & Centering Controls */}
+          <div className="flex items-center justify-center gap-1.5 mt-3">
+            <button
+              type="button"
+              onClick={() => nudge(-15, 0)}
+              className="px-2.5 py-1 text-xs radius-btn bg-surface-ground hover:bg-surface-card border border-main text-sub hover:text-main font-bold"
+              title="Move Left"
+            >
+              ←
+            </button>
+            <button
+              type="button"
+              onClick={() => nudge(0, -15)}
+              className="px-2.5 py-1 text-xs radius-btn bg-surface-ground hover:bg-surface-card border border-main text-sub hover:text-main font-bold"
+              title="Move Up"
+            >
+              ↑
+            </button>
+            <button
+              type="button"
+              onClick={resetCenter}
+              className="px-3 py-1 text-[11px] radius-btn bg-sky-blue/10 hover:bg-sky-blue/20 text-sky-blue border border-sky-blue/30 font-bold"
+              title="Reset to Center"
+            >
+              Center 🎯
+            </button>
+            <button
+              type="button"
+              onClick={() => nudge(0, 15)}
+              className="px-2.5 py-1 text-xs radius-btn bg-surface-ground hover:bg-surface-card border border-main text-sub hover:text-main font-bold"
+              title="Move Down"
+            >
+              ↓
+            </button>
+            <button
+              type="button"
+              onClick={() => nudge(15, 0)}
+              className="px-2.5 py-1 text-xs radius-btn bg-surface-ground hover:bg-surface-card border border-main text-sub hover:text-main font-bold"
+              title="Move Right"
+            >
+              →
+            </button>
           </div>
         </div>
 
