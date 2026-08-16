@@ -181,12 +181,26 @@ export const ProfileWizardPage = ({ onComplete }) => {
     }
   };
 
+  const validateStep5 = () => {
+    if (!formData.id_document_url && !existingProfile?.is_id_verified) {
+      setErrors(prev => ({
+        ...prev,
+        id_document_url: 'Government ID Document (Aadhaar / Driving License / Voter ID) is required to complete registration.'
+      }));
+      return false;
+    }
+    return true;
+  };
+
   const handleIdDocUpload = async (e) => {
     const file = e.target.files?.[0];
     if (file) {
       try {
         const compressedDataUrl = await compressImage(file, 1200, 1200, 0.8);
         setFormData(prev => ({ ...prev, id_document_url: compressedDataUrl }));
+        if (errors.id_document_url) {
+          setErrors(prev => ({ ...prev, id_document_url: null }));
+        }
       } catch (err) {
         alert('Could not process ID document upload');
       }
@@ -225,6 +239,11 @@ export const ProfileWizardPage = ({ onComplete }) => {
       return;
     }
 
+    if (!validateStep5()) {
+      setStep(5);
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -235,7 +254,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
       // 2. Save partner preferences
       await savePartnerPreferences(prefData);
 
-      // 3. Submit verification request if documents attached
+      // 3. Submit verification request with compulsory ID and optional family doc
       const docUrl = formData.id_document_url || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80';
       const familyUrl = formData.family_consent_document_url || null;
       await submitVerificationRequest(savedProfile.id, docUrl, familyUrl);
@@ -967,17 +986,35 @@ export const ProfileWizardPage = ({ onComplete }) => {
               </div>
             </div>
 
-            <div className="border border-main p-4 radius-card space-y-2">
-              <div className="flex items-center gap-2 font-medium text-main text-sm">
-                <BadgeVerified isIdVerified={true} size="small" />
-                <span>1. Government ID Document (Aadhaar / License)</span>
+            <div className={`border radius-card p-4 space-y-2 transition-colors ${errors.id_document_url ? 'border-rose-500 bg-rose-500/5' : 'border-main'}`}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 font-medium text-main text-sm">
+                  <BadgeVerified isIdVerified={true} size="small" />
+                  <span>1. Government ID Document (Aadhaar / License / Voter ID)</span>
+                </div>
+                <span className="text-[10px] text-white bg-sky-blue px-2 py-0.5 radius-btn font-bold">Compulsory *</span>
               </div>
+              <p className="text-xs text-sub">
+                Upload your official photo ID to verify your profile authenticity and earn the ID Verified badge.
+              </p>
               <input
                 type="file"
                 accept="image/*,.pdf"
                 onChange={handleIdDocUpload}
-                className="block w-full text-xs text-sub file:py-2 file:px-4 file:radius-btn file:border-0 file:text-xs file:font-medium file:bg-surface-ground file:text-main"
+                className="block w-full text-xs text-sub file:py-2 file:px-4 file:radius-btn file:border-0 file:text-xs file:font-medium file:bg-surface-ground file:text-main cursor-pointer"
               />
+              {formData.id_document_url && (
+                <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>Government ID document attached successfully</span>
+                </p>
+              )}
+              {errors.id_document_url && (
+                <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium flex items-center gap-1">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  <span>{errors.id_document_url}</span>
+                </p>
+              )}
             </div>
 
             <div className="border border-main p-4 radius-card space-y-2">
@@ -988,12 +1025,21 @@ export const ProfileWizardPage = ({ onComplete }) => {
                 </div>
                 <span className="text-[10px] text-sub bg-surface-ground px-1.5 py-0.5 rounded border border-main">Optional</span>
               </div>
+              <p className="text-xs text-sub">
+                Optional document signed by family or parents for 100% Fully Verified trust badge.
+              </p>
               <input
                 type="file"
                 accept="image/*,.pdf"
                 onChange={handleFamilyDocUpload}
-                className="block w-full text-xs text-sub file:py-2 file:px-4 file:radius-btn file:border-0 file:text-xs file:font-medium file:bg-surface-ground file:text-main"
+                className="block w-full text-xs text-sub file:py-2 file:px-4 file:radius-btn file:border-0 file:text-xs file:font-medium file:bg-surface-ground file:text-main cursor-pointer"
               />
+              {formData.family_consent_document_url && (
+                <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>Family consent document attached</span>
+                </p>
+              )}
             </div>
 
             <div className="border border-main p-4 radius-card space-y-2">
@@ -1011,8 +1057,14 @@ export const ProfileWizardPage = ({ onComplete }) => {
                 type="file"
                 accept="image/*,.pdf"
                 onChange={handleCareerDocUpload}
-                className="block w-full text-xs text-sub file:py-2 file:px-4 file:radius-btn file:border-0 file:text-xs file:font-medium file:bg-surface-ground file:text-main"
+                className="block w-full text-xs text-sub file:py-2 file:px-4 file:radius-btn file:border-0 file:text-xs file:font-medium file:bg-surface-ground file:text-main cursor-pointer"
               />
+              {formData.career_proof_url && (
+                <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>Career certificate attached</span>
+                </p>
+              )}
             </div>
 
             <div className="flex justify-between pt-4 border-t border-main">
