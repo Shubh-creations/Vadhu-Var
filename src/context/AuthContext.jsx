@@ -258,6 +258,10 @@ export const AuthProvider = ({ children }) => {
       height_cm: sanitizeNumeric(profileColumns.height_cm),
       annual_income_lpa: sanitizeNumeric(profileColumns.annual_income_lpa),
       children_count: sanitizeNumeric(profileColumns.children_count),
+      diet: (profileColumns.diet || 'veg').toLowerCase().trim(),
+      marital_status: (profileColumns.marital_status || 'never_married').toLowerCase().trim(),
+      family_type: (profileColumns.family_type || 'nuclear').toLowerCase().trim(),
+      gender: (profileColumns.gender || 'female').toLowerCase().trim(),
       is_active: fullProfile.is_active,
       is_visible: fullProfile.is_visible,
       created_at: fullProfile.created_at
