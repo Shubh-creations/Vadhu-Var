@@ -3,6 +3,7 @@ import { ShieldCheck, User, Briefcase, GraduationCap, FileText, CheckCircle2, Ar
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import { useLanguage } from '../context/LanguageContext';
+import { supabase } from '../lib/supabaseClient';
 import BadgeVerified from '../components/BadgeVerified';
 import ImageCropperModal from '../components/ImageCropperModal';
 import { compressImage } from '../lib/imageCompressor';
@@ -265,15 +266,19 @@ export const ProfileWizardPage = ({ onComplete }) => {
       }
 
       // 5. Send automated profile completion email in background (non-blocking)
-      const candidateEmail = user?.email || formData.email;
-      if (candidateEmail && supabase) {
-        supabase.functions.invoke('send-profile-complete-email', {
-          body: {
-            email: candidateEmail,
-            full_name: savedProfile.full_name,
-            profile_id: savedProfile.id
-          }
-        }).catch(e => console.warn('Background email trigger:', e));
+      try {
+        const candidateEmail = user?.email || formData.email;
+        if (candidateEmail && supabase?.functions) {
+          supabase.functions.invoke('send-profile-complete-email', {
+            body: {
+              email: candidateEmail,
+              full_name: savedProfile.full_name,
+              profile_id: savedProfile.id
+            }
+          }).catch(e => console.warn('Background email trigger:', e));
+        }
+      } catch (emailErr) {
+        console.warn('Silent email trigger error:', emailErr);
       }
 
       setSuccessModal(true);

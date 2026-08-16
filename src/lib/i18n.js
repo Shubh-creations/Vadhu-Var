@@ -121,6 +121,8 @@ export const translations = {
     careerCertDesc: "Upload degree certificate, offer letter, or professional ID card for verification.",
     
     // Wizard Steps
+    stepOfFive: "Step {step} of 5",
+    percentCompleted: "{percent}% Completed",
     step1Title: "Personal Details",
     step2Title: "Career, Education & Lifestyle",
     step3Title: "Cultural Background & Profile Photo",
@@ -285,7 +287,9 @@ export const translations = {
     careerCertDesc: "सत्यापन के लिए डिग्री प्रमाण पत्र या आईडी कार्ड अपलोड करें।",
     
     // Wizard Steps
-    step1Title: "व्यक्तिगत जानकारी",
+    stepOfFive: "चरण {step} / 5",
+    percentCompleted: "{percent}% पूर्ण",
+    step1Title: "व्यक्तिगत विवरण",
     step2Title: "करियर, शिक्षा और जीवनशैली",
     step3Title: "सांस्कृतिक पृष्ठभूमि और फोटो",
     step4Title: "साथी की अपेक्षाएं और पुनर्विवाह प्राथमिकताएं",
@@ -449,6 +453,8 @@ export const translations = {
     careerCertDesc: "सत्यापनासाठी पदवी प्रमाणपत्र किंवा आईडी कार्ड अपलोड करा.",
     
     // Wizard Steps
+    stepOfFive: "टप्पा {step} / 5",
+    percentCompleted: "{percent}% पूर्ण",
     step1Title: "वैयक्तिक तपशील",
     step2Title: "करिअर, शिक्षण आणि जीवनशैली",
     step3Title: "सांस्कृतिक पार्श्वभूमी आणि फोटो",
