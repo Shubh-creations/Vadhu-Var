@@ -12,8 +12,14 @@ export const LanguageProvider = ({ children }) => {
     localStorage.setItem('vadhu_var_lang', lang);
   }, [lang]);
 
-  const t = (key) => {
-    return translations[lang]?.[key] || translations.en[key] || key;
+  const t = (key, params) => {
+    let text = translations[lang]?.[key] || translations.en?.[key] || key;
+    if (params && typeof params === 'object') {
+      Object.entries(params).forEach(([paramKey, paramVal]) => {
+        text = text.replace(new RegExp(`\\{${paramKey}\\}`, 'g'), paramVal);
+      });
+    }
+    return text;
   };
 
   return (

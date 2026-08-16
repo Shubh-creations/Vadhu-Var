@@ -3,11 +3,13 @@ import { ArrowLeft, ShieldCheck, Heart, MapPin, Briefcase, GraduationCap, Ruler,
 import BadgeVerified from '../components/BadgeVerified';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import calculateCompatibilityEstimate from '../lib/compatibilityCalculator';
 
 export const ProfileDetailPage = ({ profile, onBack, onOpenCompatibility, onOpenChat, onEditProfile, onAuthRequired }) => {
   const { user, profile: myProfile, partnerPreferences } = useAuth();
   const { interests, sendInterest } = useData();
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [interestSent, setInterestSent] = useState(false);
 
@@ -51,7 +53,7 @@ export const ProfileDetailPage = ({ profile, onBack, onOpenCompatibility, onOpen
         className="inline-flex items-center gap-1.5 text-sub hover:text-main text-xs sm:text-sm font-medium mb-6 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
-        <span>Back to Matches</span>
+        <span>{t('backToMatches')}</span>
       </button>
 
       {/* Main Profile Header Card */}
@@ -99,7 +101,7 @@ export const ProfileDetailPage = ({ profile, onBack, onOpenCompatibility, onOpen
             <div className="inline-flex items-center gap-3 bg-surface-ground border border-main px-4 py-2 radius-btn text-xs mb-5">
               <div className="flex items-center gap-1.5">
                 <Sparkles className="w-4 h-4 text-sky-blue" />
-                <span className="font-medium text-main">Match Compatibility:</span>
+                <span className="font-medium text-main">{t('matchCompatibility')}:</span>
                 <span className="font-bold text-sky-blue text-sm">{matchScore}%</span>
               </div>
               {onOpenCompatibility && (
@@ -108,7 +110,7 @@ export const ProfileDetailPage = ({ profile, onBack, onOpenCompatibility, onOpen
                   onClick={() => onOpenCompatibility(profile)}
                   className="font-bold text-sky-blue hover:underline pl-2 border-l border-main"
                 >
-                  View Breakdown →
+                  {t('viewBreakdown')}
                 </button>
               )}
             </div>
@@ -122,13 +124,13 @@ export const ProfileDetailPage = ({ profile, onBack, onOpenCompatibility, onOpen
                   className="px-8 py-3 radius-btn bg-sky-blue hover:bg-sky-blue/90 text-white font-bold text-sm shadow-xs transition-all flex items-center gap-2 active:scale-95"
                 >
                   <Pencil className="w-4 h-4" />
-                  <span>Edit Your Profile</span>
+                  <span>{t('editYourProfile')}</span>
                 </button>
               ) : (
                 <button
                   onClick={handleExpressInterest}
                   disabled={loading || hasExpressedInterest}
-                  aria-label={`Express interest in ${profile.full_name}`}
+                  aria-label={`${t('expressInterest')} in ${profile.full_name}`}
                   className={`px-8 py-3 radius-btn font-medium text-sm shadow-xs transition-all flex items-center gap-2 ${
                     hasExpressedInterest
                       ? 'bg-surface-ground text-sub border border-main cursor-default'
@@ -138,12 +140,12 @@ export const ProfileDetailPage = ({ profile, onBack, onOpenCompatibility, onOpen
                   {hasExpressedInterest ? (
                     <>
                       <CheckCircle2 className="w-5 h-5 text-sub" />
-                      <span>Interest Expressed</span>
+                      <span>{t('interestExpressed')}</span>
                     </>
                   ) : (
                     <>
                       <Heart className="w-5 h-5 fill-white/20" />
-                      <span>{loading ? 'Sending...' : 'Express Interest'}</span>
+                      <span>{loading ? t('sending') : t('expressInterest')}</span>
                     </>
                   )}
                 </button>

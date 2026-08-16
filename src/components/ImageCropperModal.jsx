@@ -1,7 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Crop, ZoomIn, ZoomOut, RotateCw, Check, X, Move, Plus, Minus } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 export const ImageCropperModal = ({ isOpen, imageSrc, onCropComplete, onClose }) => {
+  const { t } = useLanguage();
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
   const [pan, setPan] = useState({ x: 0, y: 0 });
@@ -129,7 +131,7 @@ export const ImageCropperModal = ({ isOpen, imageSrc, onCropComplete, onClose })
         <div className="flex items-center justify-between pb-3 border-b border-main">
           <div className="flex items-center gap-2">
             <Crop className="w-5 h-5 text-sky-blue" />
-            <h3 className="font-serif font-bold text-main text-lg">Crop & Reposition Photo</h3>
+            <h3 className="font-serif font-bold text-main text-lg">{t('cropPhoto')}</h3>
           </div>
           <button type="button" onClick={onClose} className="p-1 text-sub hover:text-main radius-btn">
             <X className="w-5 h-5" />
@@ -167,7 +169,7 @@ export const ImageCropperModal = ({ isOpen, imageSrc, onCropComplete, onClose })
         </div>
 
         <p className="text-center text-xs text-sub font-medium">
-          Drag or swipe photo to reposition inside circle • Use slider to zoom
+          {t('dragPhotoHint')}
         </p>
 
         {/* Editing Controls */}
@@ -213,7 +215,7 @@ export const ImageCropperModal = ({ isOpen, imageSrc, onCropComplete, onClose })
               className="flex items-center gap-1.5 px-3 py-2 radius-btn bg-surface-ground border border-main text-sub hover:text-main text-xs font-medium transition-colors"
             >
               <RotateCw className="w-4 h-4" />
-              <span>Rotate 90°</span>
+              <span>{t('rotate90')}</span>
             </button>
 
             <div className="flex gap-2">
@@ -222,7 +224,7 @@ export const ImageCropperModal = ({ isOpen, imageSrc, onCropComplete, onClose })
                 onClick={onClose}
                 className="px-4 py-2 radius-btn border border-main text-sub font-medium text-xs hover:bg-surface-ground"
               >
-                Cancel
+                {t('cancel')}
               </button>
               <button
                 type="button"
@@ -230,7 +232,7 @@ export const ImageCropperModal = ({ isOpen, imageSrc, onCropComplete, onClose })
                 className="px-5 py-2 radius-btn bg-sky-blue hover:bg-sky-blue/90 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition-colors"
               >
                 <Check className="w-4 h-4" />
-                <span>Save Crop</span>
+                <span>{t('saveCrop')}</span>
               </button>
             </div>
           </div>

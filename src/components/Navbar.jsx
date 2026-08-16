@@ -20,7 +20,7 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
   ).length;
 
   const navItems = [
-    { id: 'landing', label: 'Home', icon: Home },
+    { id: 'landing', label: t('home'), icon: Home },
     { id: 'browse', label: t('discover'), icon: Search },
     { 
       id: 'interests', 
@@ -45,8 +45,8 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
             <button
               onClick={() => setActiveTab('landing')}
               className="flex items-center gap-2 text-left focus:outline-none hover:opacity-90 transition-opacity"
-              aria-label="Go to Home"
-              title="Vadhu Var Home"
+              aria-label={t('home')}
+              title={`${t('brandName')} ${t('home')}`}
             >
               <Logo type="icon" size="medium" />
               <div className="flex flex-col">
@@ -96,19 +96,19 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
                 <button
                   onClick={triggerInstall}
                   className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 radius-btn bg-surface-ground hover:bg-surface-card text-main border border-main hover:border-sky-blue text-xs font-semibold shadow-xs transition-colors"
-                  title="Install Vadhu Var App"
-                  aria-label="Install App"
+                  title={t('installVadhuVarApp')}
+                  aria-label={t('installApp')}
                 >
                   <Download className="w-3.5 h-3.5 text-sky-blue" />
-                  <span>Install App</span>
+                  <span>{t('installApp')}</span>
                 </button>
 
                 {/* Mobile Install Icon */}
                 <button
                   onClick={triggerInstall}
                   className="sm:hidden p-1.5 radius-btn text-sky-blue hover:bg-surface-ground transition-colors"
-                  title="Install App"
-                  aria-label="Install App"
+                  title={t('installApp')}
+                  aria-label={t('installApp')}
                 >
                   <Download className="w-4 h-4" />
                 </button>
@@ -150,8 +150,8 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
             <button
               onClick={toggleTheme}
               className="p-1.5 radius-btn text-sub hover:text-main hover:bg-surface-ground transition-colors"
-              title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-              aria-label="Toggle Theme"
+              title={t('toggleTheme')}
+              aria-label={t('toggleTheme')}
             >
               {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
@@ -161,7 +161,7 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
               onClick={onOpenPrivacyModal}
               className="hidden lg:block p-1.5 radius-btn text-sub hover:text-main hover:bg-surface-ground transition-colors"
               title={t('privacyControls')}
-              aria-label="Privacy Controls"
+              aria-label={t('privacyControls')}
             >
               <Shield className="w-4 h-4" />
             </button>
@@ -170,7 +170,7 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
               onClick={onOpenChatModal}
               className="hidden lg:block p-1.5 radius-btn text-sub hover:text-main hover:bg-surface-ground transition-colors"
               title={t('messaging')}
-              aria-label="Messaging"
+              aria-label={t('messaging')}
             >
               <MessageSquare className="w-4 h-4" />
             </button>
@@ -182,7 +182,7 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
                   onClick={() => setActiveTab('settings')}
                   className="p-1.5 radius-btn text-sub hover:text-main hover:bg-surface-ground transition-colors"
                   title={t('accountSettings')}
-                  aria-label="Settings"
+                  aria-label={t('accountSettings')}
                 >
                   <Settings className="w-4 h-4" />
                 </button>
@@ -190,7 +190,7 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
                 <button
                   onClick={() => setActiveTab('profile')}
                   className="flex items-center gap-1.5 p-0.5 sm:pr-2.5 rounded-full border border-main hover:border-sky-blue transition-colors"
-                  title="My Profile"
+                  title={profile ? t('myProfile') : t('createProfile')}
                 >
                   <div className="w-7 h-7 rounded-full bg-sky-blue text-white font-bold text-xs flex items-center justify-center">
                     {(profile?.full_name || user?.email || 'U')[0].toUpperCase()}
@@ -204,7 +204,7 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
                   onClick={logout}
                   className="hidden sm:block p-1.5 radius-btn text-sub hover:text-main hover:bg-surface-ground transition-colors"
                   title={t('signOut')}
-                  aria-label="Sign Out"
+                  aria-label={t('signOut')}
                 >
                   <LogOut className="w-4 h-4" />
                 </button>

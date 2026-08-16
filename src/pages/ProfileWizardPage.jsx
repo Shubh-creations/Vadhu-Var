@@ -293,16 +293,16 @@ export const ProfileWizardPage = ({ onComplete }) => {
             </div>
 
             <h2 className="font-serif text-2xl font-bold text-main">
-              {existingProfile?.id || existingProfile?.full_name ? 'Profile Changes Saved Successfully!' : 'Profile Saved Successfully!'}
+              {existingProfile?.id || existingProfile?.full_name ? t('profileUpdatedSuccess') : t('profileCreatedSuccess')}
             </h2>
 
             <div className="p-4 bg-surface-ground radius-card border border-main text-left space-y-2">
               <div className="flex items-center gap-2 text-xs font-bold text-main">
                 <Clock className="w-4 h-4 text-amber-500" />
-                <span>What Happens Next?</span>
+                <span>{t('whatHappensNext')}</span>
               </div>
               <p className="text-xs text-sub leading-relaxed">
-                Your profile updates are live. Our team is reviewing your verification documents. <strong>You don't need to wait</strong> — you can start browsing verified matches, saving shortlists, and expressing interest immediately!
+                {t('whatHappensNextDesc')}
               </p>
             </div>
 
@@ -314,7 +314,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
               }}
               className="w-full py-3 radius-btn bg-sky-blue hover:bg-sky-blue/90 text-white font-bold text-xs sm:text-sm shadow-xs transition-colors flex items-center justify-center gap-2"
             >
-              <span>Start Browsing Matches</span>
+              <span>{t('startBrowsing')}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
@@ -328,12 +328,12 @@ export const ProfileWizardPage = ({ onComplete }) => {
           <span>{t('brandSubtitle')}</span>
         </div>
         <h1 className="font-serif text-2xl sm:text-3xl font-extrabold text-main">
-          {existingProfile?.id || existingProfile?.full_name ? 'Update Your Profile' : t('createProfile')}
+          {existingProfile?.id || existingProfile?.full_name ? t('updateYourProfile') : t('createProfile')}
         </h1>
         <p className="text-xs sm:text-sm text-sub mt-1 max-w-md mx-auto">
           {existingProfile?.id || existingProfile?.full_name
-            ? 'Review and edit your candidate details, partner expectations, and verification status.'
-            : 'Submit your candidate info, partner expectations, and verification proof.'}
+            ? t('updateProfileSubtitle')
+            : t('createProfileSubtitle')}
         </p>
 
         {(existingProfile?.id || existingProfile?.full_name) && (
@@ -351,8 +351,8 @@ export const ProfileWizardPage = ({ onComplete }) => {
       {/* Step Progress Bar (Step X of 5) */}
       <div className="mb-6 bg-surface-card radius-card border border-main p-4 space-y-2 shadow-xs">
         <div className="flex items-center justify-between text-xs">
-          <span className="font-bold text-main">Step {step} of 5</span>
-          <span className="text-sub font-medium">{Math.round((step / 5) * 100)}% Completed</span>
+          <span className="font-bold text-main">{t('stepOfFive', { step })}</span>
+          <span className="text-sub font-medium">{t('percentCompleted', { percent: Math.round((step / 5) * 100) })}</span>
         </div>
         <div className="w-full h-2 bg-surface-ground radius-btn overflow-hidden border border-main">
           <div
@@ -366,17 +366,17 @@ export const ProfileWizardPage = ({ onComplete }) => {
       <div className="mb-8 flex items-center justify-between relative px-2">
         <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-0.5 bg-surface-ground -z-0" />
         {[
-          { number: 1, title: 'Basic Info' },
-          { number: 2, title: 'Career & Life' },
-          { number: 3, title: 'Culture & Photo' },
-          { number: 4, title: 'Partner Prefs' },
-          { number: 5, title: 'Verification' }
+          { number: 1, title: t('step1Title') },
+          { number: 2, title: t('step2Title') },
+          { number: 3, title: t('step3Title') },
+          { number: 4, title: t('step4Title') },
+          { number: 5, title: t('step5Title') },
         ].map((s) => (
           <div key={s.number} className="relative z-10 flex flex-col items-center">
             <button
               type="button"
-              onClick={() => handleNextStep(s.number)}
-              className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs transition-all ${
+              onClick={() => setStep(s.number)}
+              className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
                 step === s.number
                   ? 'bg-sky-blue text-white shadow-xs'
                   : step > s.number
@@ -399,7 +399,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
           <div className="space-y-4">
             <h2 className="font-serif text-lg font-bold text-main pb-2 border-b border-main flex items-center gap-2">
               <User className="w-5 h-5 text-sub" />
-              <span>Step 1: Personal Details</span>
+              <span>{t('stepOfFive', { step: 1 })}: {t('step1Title')}</span>
             </h2>
 
             <div>
@@ -508,10 +508,10 @@ export const ProfileWizardPage = ({ onComplete }) => {
             <div className="flex justify-end pt-4">
               <button
                 type="button"
-                onClick={() => handleNextStep(2)}
+                onClick={() => setStep(2)}
                 className="px-6 py-2.5 radius-btn bg-sky-blue hover:bg-sky-blue/90 text-white font-medium text-xs sm:text-sm flex items-center gap-2 shadow-xs"
               >
-                <span>Next: Career & Lifestyle</span>
+                <span>{t('nextStep')}: {t('step2Title')}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
@@ -522,15 +522,15 @@ export const ProfileWizardPage = ({ onComplete }) => {
           <div className="space-y-5">
             <h2 className="font-serif text-lg font-bold text-main pb-2 border-b border-main flex items-center gap-2">
               <Briefcase className="w-5 h-5 text-sub" />
-              <span>Step 2: Career, Education & Lifestyle</span>
+              <span>{t('stepOfFive', { step: 2 })}: {t('step2Title')}</span>
             </h2>
 
             {/* Profession & Education (Explicitly marked Optional) */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs font-semibold text-main">Occupation / Profession</label>
-                  <span className="text-[10px] text-sub bg-surface-ground px-1.5 py-0.5 rounded border border-main">Optional</span>
+                  <label className="text-xs font-semibold text-main">{t('occupation')}</label>
+                  <span className="text-[10px] text-sub bg-surface-ground px-1.5 py-0.5 rounded border border-main">{t('optional')}</span>
                 </div>
                 <input
                   type="text"
@@ -543,8 +543,8 @@ export const ProfileWizardPage = ({ onComplete }) => {
 
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs font-semibold text-main">Education Qualification</label>
-                  <span className="text-[10px] text-sub bg-surface-ground px-1.5 py-0.5 rounded border border-main">Optional</span>
+                  <label className="text-xs font-semibold text-main">{t('educationQualification')}</label>
+                  <span className="text-[10px] text-sub bg-surface-ground px-1.5 py-0.5 rounded border border-main">{t('optional')}</span>
                 </div>
                 <input
                   type="text"
@@ -558,8 +558,8 @@ export const ProfileWizardPage = ({ onComplete }) => {
 
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="text-xs font-semibold text-main">Annual Income (LPA in Lakhs)</label>
-                <span className="text-[10px] text-sub bg-surface-ground px-1.5 py-0.5 rounded border border-main">Optional</span>
+                <label className="text-xs font-semibold text-main">{t('annualIncomeLpa')}</label>
+                <span className="text-[10px] text-sub bg-surface-ground px-1.5 py-0.5 rounded border border-main">{t('optional')}</span>
               </div>
               <input
                 type="number"
@@ -574,7 +574,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-main mb-1">Diet *</label>
+                <label className="block text-xs font-semibold text-main mb-1">{t('diet')} *</label>
                 <select
                   value={formData.diet}
                   onChange={(e) => handleChange('diet', e.target.value)}
@@ -587,7 +587,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-main mb-1">Marital Status *</label>
+                <label className="block text-xs font-semibold text-main mb-1">{t('maritalStatus')} *</label>
                 <select
                   value={formData.marital_status}
                   onChange={(e) => handleChange('marital_status', e.target.value)}
@@ -601,14 +601,14 @@ export const ProfileWizardPage = ({ onComplete }) => {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-main mb-1">Family Type *</label>
+                <label className="block text-xs font-semibold text-main mb-1">{t('familyType')} *</label>
                 <select
                   value={formData.family_type}
                   onChange={(e) => handleChange('family_type', e.target.value)}
                   className="w-full px-3.5 py-2.5 border border-main radius-btn text-sm bg-surface-ground text-main outline-none focus:ring-1 focus:ring-sky-blue"
                 >
-                  <option value="nuclear">Nuclear Family</option>
-                  <option value="joint">Joint Family</option>
+                  <option value="nuclear">{t('nuclearFamily')}</option>
+                  <option value="joint">{t('jointFamily')}</option>
                 </select>
               </div>
             </div>
@@ -695,14 +695,14 @@ export const ProfileWizardPage = ({ onComplete }) => {
           <div className="space-y-4">
             <h2 className="font-serif text-lg font-bold text-main pb-2 border-b border-main flex items-center gap-2">
               <FileText className="w-5 h-5 text-sub" />
-              <span>Step 3: Cultural Background & Profile Photo</span>
+              <span>{t('stepOfFive', { step: 3 })}: {t('step3Title')}</span>
             </h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs font-semibold text-main">Caste</label>
-                  <span className="text-[10px] text-sub bg-surface-ground px-1.5 py-0.5 rounded border border-main">Optional</span>
+                  <label className="text-xs font-semibold text-main">{t('caste')}</label>
+                  <span className="text-[10px] text-sub bg-surface-ground px-1.5 py-0.5 rounded border border-main">{t('optional')}</span>
                 </div>
                 <input
                   type="text"
@@ -715,8 +715,8 @@ export const ProfileWizardPage = ({ onComplete }) => {
 
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs font-semibold text-main">Sub-Caste</label>
-                  <span className="text-[10px] text-sub bg-surface-ground px-1.5 py-0.5 rounded border border-main">Optional</span>
+                  <label className="text-xs font-semibold text-main">{t('subCaste')}</label>
+                  <span className="text-[10px] text-sub bg-surface-ground px-1.5 py-0.5 rounded border border-main">{t('optional')}</span>
                 </div>
                 <input
                   type="text"
@@ -730,8 +730,8 @@ export const ProfileWizardPage = ({ onComplete }) => {
 
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="text-xs font-semibold text-main">Bio (About Me)</label>
-                <span className="text-[10px] text-sub bg-surface-ground px-1.5 py-0.5 rounded border border-main">Optional</span>
+                <label className="text-xs font-semibold text-main">{t('bio')}</label>
+                <span className="text-[10px] text-sub bg-surface-ground px-1.5 py-0.5 rounded border border-main">{t('optional')}</span>
               </div>
               <textarea
                 rows="3"
@@ -745,7 +745,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
 
             {/* Profile Photo Uploader with Integrated Cropper & Inline Spinner */}
             <div className="p-4 border border-main radius-card bg-surface-ground space-y-3">
-              <label className="block text-xs font-semibold text-main">Profile Photo & Cropper</label>
+              <label className="block text-xs font-semibold text-main">{t('profilePhotoAndCropper')}</label>
               
               {photoError && (
                 <div className="p-2.5 radius-btn bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs flex items-center gap-2">
@@ -786,10 +786,10 @@ export const ProfileWizardPage = ({ onComplete }) => {
                     className="inline-flex items-center gap-2 px-4 py-2 radius-btn bg-sky-blue text-white text-xs font-bold hover:bg-sky-blue/90 cursor-pointer shadow-xs transition-colors"
                   >
                     <Crop className="w-4 h-4" />
-                    <span>{formData.photo_url ? 'Re-crop / Change Photo' : 'Upload & Crop Photo'}</span>
+                    <span>{formData.photo_url ? t('changePhoto') : t('uploadPhoto')}</span>
                   </label>
                   <p className="text-[11px] text-sub">
-                    Upload an image to open the crop, zoom, and rotate editor.
+                    {t('dragPhotoHint')}
                   </p>
                 </div>
               </div>
@@ -802,7 +802,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
                 className="px-5 py-2.5 radius-btn border border-main text-sub font-medium text-xs sm:text-sm flex items-center gap-1 hover:bg-surface-ground"
               >
                 <ArrowLeft className="w-4 h-4" />
-                <span>Back</span>
+                <span>{t('backStep')}</span>
               </button>
 
               <button
@@ -810,7 +810,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
                 onClick={() => setStep(4)}
                 className="px-6 py-2.5 radius-btn bg-sky-blue hover:bg-sky-blue/90 text-white font-medium text-xs sm:text-sm flex items-center gap-2 shadow-xs"
               >
-                <span>Next: Partner Preferences</span>
+                <span>{t('nextStep')}: {t('step4Title')}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
@@ -822,11 +822,11 @@ export const ProfileWizardPage = ({ onComplete }) => {
           <div className="space-y-5">
             <h2 className="font-serif text-lg font-bold text-main pb-2 border-b border-main flex items-center gap-2">
               <HeartHandshake className="w-5 h-5 text-sky-blue" />
-              <span>Step 4: Partner Expectations & Remarriage Preferences</span>
+              <span>{t('stepOfFive', { step: 4 })}: {t('step4Title')}</span>
             </h2>
 
             <p className="text-xs text-sub">
-              Define what you are looking for in a partner. These will personalize your match recommendations and compatibility scores.
+              {t('discoverSubtitleRanked')}
             </p>
 
             {/* Accepted Marital Status Multi-Select */}
@@ -835,7 +835,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
                 {t('acceptedMaritalStatus')}
               </label>
               <p className="text-[11px] text-sub">
-                Select relationship backgrounds you are open to connecting with:
+                {t('acceptedMaritalStatusDesc')}
               </p>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
                 {[
@@ -867,7 +867,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
             {/* Preferred Age & Height */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-main mb-1">Preferred Age Range</label>
+                <label className="block text-xs font-semibold text-main mb-1">{t('preferredAgeRange')}</label>
                 <div className="flex items-center gap-2">
                   <input
                     type="number"
@@ -876,9 +876,9 @@ export const ProfileWizardPage = ({ onComplete }) => {
                     value={prefData.age_min}
                     onChange={(e) => handlePrefChange('age_min', Number(e.target.value))}
                     className="w-full px-3 py-2 border border-main radius-btn text-xs bg-surface-ground text-main outline-none"
-                    placeholder="Min"
+                    placeholder={t('minAge')}
                   />
-                  <span className="text-xs text-sub font-bold">to</span>
+                  <span className="text-xs text-sub font-bold">{t('to')}</span>
                   <input
                     type="number"
                     min="18"
@@ -886,24 +886,24 @@ export const ProfileWizardPage = ({ onComplete }) => {
                     value={prefData.age_max}
                     onChange={(e) => handlePrefChange('age_max', Number(e.target.value))}
                     className="w-full px-3 py-2 border border-main radius-btn text-xs bg-surface-ground text-main outline-none"
-                    placeholder="Max"
+                    placeholder={t('maxAge')}
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-main mb-1">Preferred Minimum Income (LPA)</label>
+                <label className="block text-xs font-semibold text-main mb-1">{t('preferredMinIncome')}</label>
                 <select
                   value={prefData.min_income_lpa}
                   onChange={(e) => handlePrefChange('min_income_lpa', e.target.value)}
                   className="w-full px-3 py-2 border border-main radius-btn text-xs bg-surface-ground text-main outline-none"
                 >
                   <option value="all">{t('anyIncome')}</option>
-                  <option value="2.5">2.5+ LPA</option>
-                  <option value="5">5+ LPA</option>
-                  <option value="10">10+ LPA</option>
-                  <option value="15">15+ LPA</option>
-                  <option value="25">25+ LPA</option>
+                  <option value="2.5">{t('income2_5Plus')}</option>
+                  <option value="5">{t('income5Plus')}</option>
+                  <option value="10">{t('income10Plus')}</option>
+                  <option value="15">{t('income15Plus')}</option>
+                  <option value="25">{t('income25Plus')}</option>
                 </select>
               </div>
             </div>
@@ -911,7 +911,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
             {/* Preferred Diet & Location */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-main mb-1">Preferred Diet</label>
+                <label className="block text-xs font-semibold text-main mb-1">{t('preferredDiet')}</label>
                 <select
                   value={prefData.diet}
                   onChange={(e) => handlePrefChange('diet', e.target.value)}
@@ -925,12 +925,12 @@ export const ProfileWizardPage = ({ onComplete }) => {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-main mb-1">Preferred Location / City</label>
+                <label className="block text-xs font-semibold text-main mb-1">{t('preferredLocation')}</label>
                 <input
                   type="text"
                   value={prefData.city}
                   onChange={(e) => handlePrefChange('city', e.target.value)}
-                  placeholder="e.g. Pune, Mumbai, or Any"
+                  placeholder={t('cityPlaceholder')}
                   className="w-full px-3 py-2 border border-main radius-btn text-xs bg-surface-ground text-main outline-none"
                 />
               </div>
@@ -938,15 +938,15 @@ export const ProfileWizardPage = ({ onComplete }) => {
 
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="text-xs font-semibold text-main">Partner Expectations & Notes</label>
-                <span className="text-[10px] text-sub bg-surface-ground px-1.5 py-0.5 rounded border border-main">Optional</span>
+                <label className="text-xs font-semibold text-main">{t('partnerNotes')}</label>
+                <span className="text-[10px] text-sub bg-surface-ground px-1.5 py-0.5 rounded border border-main">{t('optional')}</span>
               </div>
               <textarea
                 rows="2"
                 maxLength="400"
                 value={prefData.notes}
                 onChange={(e) => handlePrefChange('notes', e.target.value)}
-                placeholder="e.g. Looking for a supportive partner with shared values, open to remarriage..."
+                placeholder="e.g. Looking for a supportive partner with shared values..."
                 className="w-full px-3.5 py-2.5 border border-main radius-btn text-xs bg-surface-ground text-main outline-none"
               />
             </div>
@@ -958,7 +958,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
                 className="px-5 py-2.5 radius-btn border border-main text-sub font-medium text-xs sm:text-sm flex items-center gap-1 hover:bg-surface-ground"
               >
                 <ArrowLeft className="w-4 h-4" />
-                <span>Back</span>
+                <span>{t('backStep')}</span>
               </button>
 
               <button
@@ -966,7 +966,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
                 onClick={() => setStep(5)}
                 className="px-6 py-2.5 radius-btn bg-sky-blue hover:bg-sky-blue/90 text-white font-medium text-xs sm:text-sm flex items-center gap-2 shadow-xs"
               >
-                <span>Next: Verification Proof</span>
+                <span>{t('nextStep')}: {t('step5Title')}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
@@ -980,9 +980,9 @@ export const ProfileWizardPage = ({ onComplete }) => {
               <div className="flex items-start gap-3">
                 <ShieldCheck className="w-5 h-5 text-sky-blue flex-shrink-0 mt-0.5" />
                 <div>
-                  <h3 className="font-serif font-bold text-main text-sm">Step 5: Verification Documents</h3>
+                  <h3 className="font-serif font-bold text-main text-sm">{t('stepOfFive', { step: 5 })}: {t('step5Title')}</h3>
                   <p className="text-xs text-sub mt-0.5">
-                    Upload documents to unlock green verified trust badges on your candidate profile.
+                    {t('governmentIdDocDesc')}
                   </p>
                 </div>
               </div>
@@ -992,12 +992,12 @@ export const ProfileWizardPage = ({ onComplete }) => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 font-medium text-main text-sm">
                   <BadgeVerified isIdVerified={true} size="small" />
-                  <span>1. Government ID Document (Aadhaar / License / Voter ID)</span>
+                  <span>{t('governmentIdDoc')}</span>
                 </div>
-                <span className="text-[10px] text-white bg-sky-blue px-2 py-0.5 radius-btn font-bold">Compulsory *</span>
+                <span className="text-[10px] text-white bg-sky-blue px-2 py-0.5 radius-btn font-bold">{t('compulsory')}</span>
               </div>
               <p className="text-xs text-sub">
-                Upload your official photo ID to verify your profile authenticity and earn the ID Verified badge.
+                {t('governmentIdDocDesc')}
               </p>
               <input
                 type="file"
@@ -1008,7 +1008,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
               {formData.id_document_url && (
                 <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
                   <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span>Government ID document attached successfully</span>
+                  <span>{t('attachedSuccess')}</span>
                 </p>
               )}
               {errors.id_document_url && (
@@ -1023,12 +1023,12 @@ export const ProfileWizardPage = ({ onComplete }) => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 font-medium text-main text-sm">
                   <BadgeVerified isFullyVerified={true} size="small" />
-                  <span>2. Family Consent Letter</span>
+                  <span>{t('familyConsentLetter')}</span>
                 </div>
-                <span className="text-[10px] text-sub bg-surface-ground px-1.5 py-0.5 rounded border border-main">Optional</span>
+                <span className="text-[10px] text-sub bg-surface-ground px-1.5 py-0.5 rounded border border-main">{t('optional')}</span>
               </div>
               <p className="text-xs text-sub">
-                Optional document signed by family or parents for 100% Fully Verified trust badge.
+                {t('familyConsentLetterDesc')}
               </p>
               <input
                 type="file"
@@ -1039,7 +1039,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
               {formData.family_consent_document_url && (
                 <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
                   <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span>Family consent document attached</span>
+                  <span>{t('attachedSuccess')}</span>
                 </p>
               )}
             </div>
@@ -1050,7 +1050,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
                   <BadgeVerified isProfessionVerified={true} size="small" />
                   <span>3. {t('careerCertificate')}</span>
                 </div>
-                <span className="text-[10px] text-sub bg-surface-ground px-1.5 py-0.5 rounded border border-main">Optional</span>
+                <span className="text-[10px] text-sub bg-surface-ground px-1.5 py-0.5 rounded border border-main">{t('optional')}</span>
               </div>
               <p className="text-xs text-sub">
                 {t('careerCertDesc')}
@@ -1064,7 +1064,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
               {formData.career_proof_url && (
                 <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
                   <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span>Career certificate attached</span>
+                  <span>{t('attachedSuccess')}</span>
                 </p>
               )}
             </div>
@@ -1076,7 +1076,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
                 className="px-5 py-2.5 radius-btn border border-main text-sub font-medium text-xs sm:text-sm flex items-center gap-1 hover:bg-surface-ground"
               >
                 <ArrowLeft className="w-4 h-4" />
-                <span>Back</span>
+                <span>{t('backStep')}</span>
               </button>
 
               <button
@@ -1089,8 +1089,8 @@ export const ProfileWizardPage = ({ onComplete }) => {
                   {loading
                     ? t('sending')
                     : existingProfile?.id || existingProfile?.full_name
-                    ? 'Save Changes & Update Profile'
-                    : 'Submit Profile & Preferences'}
+                    ? t('saveChangesAndUpdate')
+                    : t('createProfile')}
                 </span>
               </button>
             </div>

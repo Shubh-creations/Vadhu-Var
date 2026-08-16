@@ -68,12 +68,12 @@ export const FilterPanel = ({ appliedFilters, onApply, onReset, totalMatches, is
             </h2>
             {activeAppliedCount > 0 && (
               <span className="px-2 py-0.5 radius-btn text-[10px] font-bold bg-sky-blue text-white">
-                {activeAppliedCount} active
+                {t('activeFiltersCount', { count: activeAppliedCount })}
               </span>
             )}
           </div>
           <p className="text-[11px] text-sub mt-0.5 font-medium">
-            Showing <strong className="text-main">{totalMatches}</strong> candidates
+            {t('showingCandidatesCount', { count: totalMatches })}
           </p>
         </div>
 
@@ -82,7 +82,7 @@ export const FilterPanel = ({ appliedFilters, onApply, onReset, totalMatches, is
             type="button"
             onClick={onReset}
             className="flex items-center gap-1.5 px-2.5 py-1 radius-btn bg-surface-ground hover:bg-main/10 text-sub hover:text-main text-xs font-medium transition-colors border border-main"
-            title="Reset All Filters"
+            title={t('resetAllFilters')}
           >
             <RotateCcw className="w-3 h-3" />
             <span>{t('reset')}</span>
@@ -92,12 +92,12 @@ export const FilterPanel = ({ appliedFilters, onApply, onReset, totalMatches, is
 
       {/* Looking For Gender Filter */}
       <div className="space-y-2">
-        <label className="text-xs font-semibold text-main block">Looking For</label>
+        <label className="text-xs font-semibold text-main block">{t('lookingFor')}</label>
         <div className="grid grid-cols-3 gap-1.5 bg-surface-ground p-1 radius-btn border border-main">
           {[
-            { value: 'all', label: 'All' },
-            { value: 'female', label: 'Brides' },
-            { value: 'male', label: 'Grooms' }
+            { value: 'all', label: t('genderAll') },
+            { value: 'female', label: t('genderBrides') },
+            { value: 'male', label: t('genderGrooms') }
           ].map((g) => (
             <button
               key={g.value}
@@ -118,9 +118,9 @@ export const FilterPanel = ({ appliedFilters, onApply, onReset, totalMatches, is
       {/* 2. Age Range Filter */}
       <div className="space-y-2">
         <div className="flex items-center justify-between text-xs font-semibold text-main">
-          <span>Age Range</span>
+          <span>{t('ageRange')}</span>
           <span className="text-sub font-mono font-bold">
-            {pendingFilters.ageMin || 18} - {pendingFilters.ageMax || 80} yrs
+            {pendingFilters.ageMin || 18} - {pendingFilters.ageMax || 80} {t('yearsOld')}
           </span>
         </div>
         <div className="flex items-center gap-2">
@@ -131,9 +131,9 @@ export const FilterPanel = ({ appliedFilters, onApply, onReset, totalMatches, is
             value={pendingFilters.ageMin || 18}
             onChange={(e) => handleFieldChange('ageMin', Number(e.target.value))}
             className="w-full px-2.5 py-1.5 radius-btn text-xs bg-surface-ground text-main border border-main outline-none focus:border-sky-blue"
-            placeholder="Min Age"
+            placeholder={t('minAge')}
           />
-          <span className="text-xs text-sub font-bold">to</span>
+          <span className="text-xs text-sub font-bold">{t('to')}</span>
           <input
             type="number"
             min="18"
@@ -141,7 +141,7 @@ export const FilterPanel = ({ appliedFilters, onApply, onReset, totalMatches, is
             value={pendingFilters.ageMax || 80}
             onChange={(e) => handleFieldChange('ageMax', Number(e.target.value))}
             className="w-full px-2.5 py-1.5 radius-btn text-xs bg-surface-ground text-main border border-main outline-none focus:border-sky-blue"
-            placeholder="Max Age"
+            placeholder={t('maxAge')}
           />
         </div>
       </div>
@@ -149,7 +149,7 @@ export const FilterPanel = ({ appliedFilters, onApply, onReset, totalMatches, is
       {/* 3. Location & Income Section */}
       <div className="space-y-4 pt-2 border-t border-main">
         <span className="text-[10px] font-bold uppercase tracking-wider text-sub block">
-          Location & Income
+          {t('locationAndIncome')}
         </span>
 
         {/* Annual Income Filter */}
@@ -181,7 +181,9 @@ export const FilterPanel = ({ appliedFilters, onApply, onReset, totalMatches, is
             className="w-full px-3 py-2 radius-btn text-xs bg-surface-ground text-main border border-main outline-none focus:border-sky-blue focus:ring-1 focus:ring-sky-blue transition-colors cursor-pointer"
           >
             {indianStates.map(s => (
-              <option key={s} value={s === 'All States' ? '' : s}>{s}</option>
+              <option key={s} value={s === 'All States' ? '' : s}>
+                {s === 'All States' ? t('allStates') : s}
+              </option>
             ))}
           </select>
         </div>
@@ -194,7 +196,7 @@ export const FilterPanel = ({ appliedFilters, onApply, onReset, totalMatches, is
           </label>
           <input
             type="text"
-            placeholder="e.g. Pune, Delhi, Bengaluru..."
+            placeholder={t('cityPlaceholder')}
             value={pendingFilters.city || ''}
             onChange={(e) => handleFieldChange('city', e.target.value)}
             className="w-full px-3 py-2 radius-btn text-xs bg-surface-ground text-main border border-main outline-none focus:border-sky-blue focus:ring-1 focus:ring-sky-blue transition-colors placeholder:text-sub/60"
@@ -205,7 +207,7 @@ export const FilterPanel = ({ appliedFilters, onApply, onReset, totalMatches, is
       {/* 4. Candidate Background & Preferences */}
       <div className="space-y-4 pt-4 border-t border-main">
         <span className="text-[10px] font-bold uppercase tracking-wider text-sub block">
-          Education & Lifestyle
+          {t('educationAndLifestyle')}
         </span>
 
         {/* Education Filter */}
@@ -220,7 +222,9 @@ export const FilterPanel = ({ appliedFilters, onApply, onReset, totalMatches, is
             className="w-full px-3 py-2 radius-btn text-xs bg-surface-ground text-main border border-main outline-none focus:border-sky-blue focus:ring-1 focus:ring-sky-blue transition-colors cursor-pointer"
           >
             {educationLevels.map(e => (
-              <option key={e} value={e === 'All Education' ? '' : e}>{e}</option>
+              <option key={e} value={e === 'All Education' ? '' : e}>
+                {e === 'All Education' ? t('allEducation') : e}
+              </option>
             ))}
           </select>
         </div>
@@ -277,7 +281,7 @@ export const FilterPanel = ({ appliedFilters, onApply, onReset, totalMatches, is
             className={`w-9 h-5 flex items-center rounded-full p-0.5 transition-colors ${
               pendingFilters.verifiedOnly ? 'bg-sky-blue' : 'bg-surface-card border border-main'
             }`}
-            aria-label="Toggle Verified Profiles Only"
+            aria-label={t('idVerifiedOnly')}
           >
             <div
               className={`w-4 h-4 rounded-full bg-white transition-transform ${
@@ -302,14 +306,14 @@ export const FilterPanel = ({ appliedFilters, onApply, onReset, totalMatches, is
           <Check className="w-4 h-4" />
           <span>
             {hasUnappliedChanges
-              ? `Apply Filters (${unappliedCount} changed)`
-              : 'Apply Filters'}
+              ? t('applyFiltersChanged', { count: unappliedCount })
+              : t('applyFilters')}
           </span>
         </button>
 
         {hasUnappliedChanges && (
           <p className="text-[10px] text-center text-sky-blue font-medium animate-pulse">
-            Click Apply to update matching candidates
+            {t('clickApplyHint')}
           </p>
         )}
       </div>

@@ -163,7 +163,7 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
           </div>
           <p className="text-xs sm:text-sm text-sub mt-1">
             {partnerPreferences
-              ? 'Showing all active profiles, ranked by compatibility with your saved partner preferences.'
+              ? t('discoverSubtitleRanked')
               : t('discoverSubtitle')}
           </p>
         </div>
@@ -177,12 +177,12 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
               className="bg-transparent text-xs font-semibold text-main outline-none cursor-pointer"
-              aria-label="Sort Candidates"
+              aria-label={t('sortBestMatch')}
             >
-              <option value="best_match">Best Match (100-Pt Score)</option>
-              <option value="newest">Recently Joined</option>
-              <option value="age_asc">Age: Low to High</option>
-              <option value="age_desc">Age: High to Low</option>
+              <option value="best_match">{t('sortBestMatch')}</option>
+              <option value="newest">{t('sortRecentlyJoined')}</option>
+              <option value="age_asc">{t('sortAgeLowHigh')}</option>
+              <option value="age_desc">{t('sortAgeHighLow')}</option>
             </select>
           </div>
 
@@ -194,10 +194,10 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
                   ? 'bg-surface-card text-main shadow-xs font-bold'
                   : 'text-sub hover:text-main'
               }`}
-              title="Grid View"
+              title={t('viewGrid')}
             >
               <Grid className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Grid</span>
+              <span className="hidden sm:inline">{t('viewGrid')}</span>
             </button>
             <button
               onClick={() => handleSwitchView('deck')}
@@ -206,10 +206,10 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
                   ? 'bg-surface-card text-main shadow-xs font-bold'
                   : 'text-sub hover:text-main'
               }`}
-              title="Deck View"
+              title={t('viewDeck')}
             >
               <Layers className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Deck</span>
+              <span className="hidden sm:inline">{t('viewDeck')}</span>
             </button>
           </div>
 
@@ -218,7 +218,7 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
             className="md:hidden flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2 radius-btn bg-sky-blue text-white text-xs font-bold shadow-xs active:scale-95 transition-transform"
           >
             <SlidersHorizontal className="w-3.5 h-3.5" />
-            <span>Filters</span>
+            <span>{t('filterTitle')}</span>
           </button>
         </div>
       </div>
@@ -257,8 +257,15 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
               />
             </div>
           ) : (
-            <div className="bg-surface-card radius-card border border-main p-8 text-center text-sub text-xs">
-              No matching candidate found in deck view.
+            <div className="bg-surface-card radius-card border border-main p-8 text-center space-y-4 shadow-sm">
+              <h3 className="font-serif font-bold text-main text-lg">{t('noMatchingProfiles')}</h3>
+              <p className="text-xs text-sub">{t('noMatchingProfilesDesc')}</p>
+              <button
+                onClick={handleResetFilters}
+                className="px-6 py-2 radius-btn bg-sky-blue text-white text-xs font-bold"
+              >
+                {t('resetAllFilters')}
+              </button>
             </div>
           )}
         </div>
@@ -266,27 +273,32 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
         /* Grid Mode with Sidebar Filter */
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {/* Desktop Filter Panel */}
-          <div className="hidden md:block md:col-span-1 sticky top-20">
-            <FilterPanel
-              appliedFilters={appliedFilters}
-              onApply={handleApplyFilters}
-              onReset={handleResetFilters}
-              totalMatches={filteredProfiles.length}
-            />
+          <div className="hidden md:block md:col-span-1">
+            <div className="sticky top-20">
+              <FilterPanel
+                filters={appliedFilters}
+                onApply={handleApplyFilters}
+                onReset={handleResetFilters}
+                totalMatches={filteredProfiles.length}
+              />
+            </div>
           </div>
 
           {/* Mobile Filter Drawer */}
           {filterDrawerOpen && (
-            <div className="md:hidden fixed inset-0 z-50 bg-black/60 p-4 overflow-y-auto">
-              <div className="bg-surface-card radius-card max-w-lg mx-auto p-4 border border-main shadow-2xl">
-                <div className="flex items-center justify-between pb-3 mb-3 border-b border-main">
-                  <h3 className="font-serif font-bold text-main text-base">Filter Profiles</h3>
-                  <button onClick={() => setFilterDrawerOpen(false)} className="p-1 text-sub hover:text-main">
+            <div className="fixed inset-0 z-50 flex bg-black/60 md:hidden animate-fade-in">
+              <div className="w-4/5 max-w-sm bg-surface-card h-full p-4 overflow-y-auto shadow-2xl animate-slide-in">
+                <div className="flex justify-between items-center pb-3 mb-3 border-b border-main">
+                  <h3 className="font-serif font-bold text-main">{t('filterTitle')}</h3>
+                  <button
+                    onClick={() => setFilterDrawerOpen(false)}
+                    className="p-1 radius-btn hover:bg-surface-ground text-sub"
+                  >
                     <X className="w-5 h-5" />
                   </button>
                 </div>
                 <FilterPanel
-                  appliedFilters={appliedFilters}
+                  filters={appliedFilters}
                   onApply={handleApplyFilters}
                   onReset={handleResetFilters}
                   totalMatches={filteredProfiles.length}
@@ -331,10 +343,10 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
                 </div>
                 <div className="space-y-1 max-w-md mx-auto">
                   <h3 className="font-serif font-bold text-main text-lg sm:text-xl">
-                    No Matching Profiles Found
+                    {t('noMatchingProfiles')}
                   </h3>
                   <p className="text-xs text-sub leading-relaxed">
-                    Try adjusting or clearing your filters to discover more verified candidates across India.
+                    {t('noMatchingProfilesDesc')}
                   </p>
                 </div>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
@@ -342,7 +354,7 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
                     onClick={handleResetFilters}
                     className="w-full sm:w-auto px-6 py-2.5 radius-btn bg-sky-blue text-white text-xs font-bold hover:bg-sky-blue/90 transition-colors flex items-center justify-center gap-1.5 shadow-xs"
                   >
-                    <span>Reset All Filters</span>
+                    <span>{t('resetAllFilters')}</span>
                   </button>
                 </div>
               </div>
