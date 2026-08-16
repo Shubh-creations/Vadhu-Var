@@ -24,6 +24,7 @@ export const AuthPage = ({ onSuccess }) => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
@@ -96,9 +97,15 @@ export const AuthPage = ({ onSuccess }) => {
       return;
     }
 
-    if (mode === 'signup' && !fullName.trim()) {
-      setError('Please enter your full name.');
-      return;
+    if (mode === 'signup') {
+      if (!fullName.trim()) {
+        setError('Please enter your full name.');
+        return;
+      }
+      if (!termsAccepted) {
+        setError('Please agree to the Terms of Service and Privacy Policy to continue.');
+        return;
+      }
     }
 
     if (password.length < 6) {
@@ -110,7 +117,12 @@ export const AuthPage = ({ onSuccess }) => {
 
     try {
       if (mode === 'signup') {
-        const res = await signUp(email, password, fullName);
+        const termsTimestamp = new Date().toISOString();
+        localStorage.setItem('vadhu_var_terms_accepted_at', termsTimestamp);
+        const res = await signUp(email, password, { 
+          full_name: fullName,
+          terms_accepted_at: termsTimestamp
+        });
         if (res?.user && !res?.session) {
           setEmailSentScreen(true);
         } else {
@@ -329,6 +341,24 @@ export const AuthPage = ({ onSuccess }) => {
                   className="w-full pl-9 pr-3 py-2.5 border border-main radius-btn text-sm bg-surface-ground text-main outline-none focus:border-sky-blue focus:ring-1 focus:ring-sky-blue transition-colors"
                 />
               </div>
+            </div>
+          )}
+
+          {/* Terms & Privacy Consent Checkbox (Sign Up Mode) */}
+          {mode === 'signup' && (
+            <div className="pt-1">
+              <label className="flex items-start gap-2.5 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  required
+                  checked={termsAccepted}
+                  onChange={(e) => setTermsAccepted(e.target.checked)}
+                  className="mt-0.5 w-4 h-4 rounded border-main text-sky-blue focus:ring-sky-blue accent-sky-blue cursor-pointer"
+                />
+                <span className="text-[11px] sm:text-xs text-sub leading-snug">
+                  I agree to the <a href="#terms" onClick={(e) => { e.preventDefault(); if (window.__onOpenTerms) window.__onOpenTerms(); }} className="text-sky-blue font-semibold hover:underline">Terms of Service</a> and <a href="#privacy" onClick={(e) => { e.preventDefault(); if (window.__onOpenPrivacy) window.__onOpenPrivacy(); }} className="text-sky-blue font-semibold hover:underline">Privacy Policy</a> of Vadhu Var.
+                </span>
+              </label>
             </div>
           )}
 

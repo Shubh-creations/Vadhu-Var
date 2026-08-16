@@ -2,20 +2,23 @@ import React, { useState } from 'react';
 import { 
   User, Pencil, ShieldCheck, HeartHandshake, Eye, EyeOff, Globe, 
   Download, LogOut, UserX, ArrowLeft, CheckCircle2, Sparkles, MapPin, 
-  Briefcase, IndianRupee, ShieldAlert, Smartphone, ChevronRight
+  Briefcase, IndianRupee, ShieldAlert, Smartphone, ChevronRight, Share2, HelpCircle, FileText
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { usePWA } from '../context/PWAContext';
 import BadgeVerified from './BadgeVerified';
 import ProfileWizardPage from '../pages/ProfileWizardPage';
+import ProfileCompletenessCard from './ProfileCompletenessCard';
+import ShareProfileModal from './ShareProfileModal';
 
-export const UserProfileHub = ({ onNavigateToDiscover }) => {
+export const UserProfileHub = ({ onNavigateToDiscover, onOpenHelp, onOpenTerms }) => {
   const { user, profile, partnerPreferences, savePartnerPreferences, updateAccountSettings, logout } = useAuth();
   const { lang, setLang, t } = useLanguage();
   const { isInstalled, triggerInstall } = usePWA();
 
   const [isEditingWizard, setIsEditingWizard] = useState(false);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
   const [isSearchVisible, setIsSearchVisible] = useState(
     profile?.is_visible !== undefined ? profile.is_visible !== false : profile?.is_search_visible !== false
   );
@@ -137,15 +140,27 @@ export const UserProfileHub = ({ onNavigateToDiscover }) => {
                 </p>
               </div>
 
-              {/* Update Profile Button */}
-              <button
-                type="button"
-                onClick={() => setIsEditingWizard(true)}
-                className="px-5 py-2.5 radius-btn bg-sky-blue hover:bg-sky-blue/90 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs transition-all active:scale-95"
-              >
-                <Pencil className="w-4 h-4" />
-                <span>{t('updateYourProfile')}</span>
-              </button>
+              {/* Action Buttons: Update Profile & Share Profile */}
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShareModalOpen(true)}
+                  className="px-3.5 py-2.5 radius-btn bg-surface-ground hover:bg-surface-card border border-main text-main font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition-colors"
+                  title="Share Profile Card"
+                >
+                  <Share2 className="w-4 h-4 text-sky-blue" />
+                  <span>Share Card</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setIsEditingWizard(true)}
+                  className="px-5 py-2.5 radius-btn bg-sky-blue hover:bg-sky-blue/90 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs transition-all active:scale-95"
+                >
+                  <Pencil className="w-4 h-4" />
+                  <span>{t('updateYourProfile')}</span>
+                </button>
+              </div>
             </div>
 
             {/* Badges */}
@@ -182,6 +197,13 @@ export const UserProfileHub = ({ onNavigateToDiscover }) => {
           </div>
         </div>
       </div>
+
+      {/* Dynamic Profile Completeness Indicator Card */}
+      <ProfileCompletenessCard
+        profile={profile}
+        partnerPreferences={partnerPreferences}
+        onUpdateProfile={() => setIsEditingWizard(true)}
+      />
 
       {/* Merged Settings Sections */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -288,6 +310,36 @@ export const UserProfileHub = ({ onNavigateToDiscover }) => {
           </button>
         </div>
 
+        {/* Help & Support & Legal Links */}
+        <div className="bg-surface-card radius-card border border-main p-6 shadow-xs space-y-3">
+          <div className="flex items-center gap-2 pb-2 border-b border-main text-main">
+            <HelpCircle className="w-5 h-5 text-sky-blue" />
+            <h2 className="font-serif font-bold text-main text-base">Help & Legal</h2>
+          </div>
+          <div className="space-y-2">
+            {onOpenHelp && (
+              <button
+                type="button"
+                onClick={onOpenHelp}
+                className="w-full p-2.5 radius-btn bg-surface-ground hover:bg-surface-card border border-main text-left text-xs font-semibold text-main flex items-center justify-between transition-colors"
+              >
+                <span>Help Center & Verification FAQs</span>
+                <ChevronRight className="w-4 h-4 text-sub" />
+              </button>
+            )}
+            {onOpenTerms && (
+              <button
+                type="button"
+                onClick={onOpenTerms}
+                className="w-full p-2.5 radius-btn bg-surface-ground hover:bg-surface-card border border-main text-left text-xs font-semibold text-main flex items-center justify-between transition-colors"
+              >
+                <span>Terms of Service & Due Diligence</span>
+                <ChevronRight className="w-4 h-4 text-sub" />
+              </button>
+            )}
+          </div>
+        </div>
+
         {/* Deactivate Account */}
         <div className="bg-surface-card radius-card border border-main p-6 shadow-xs space-y-4">
           <div className="flex items-center gap-2 pb-3 border-b border-main text-sub">
@@ -307,6 +359,13 @@ export const UserProfileHub = ({ onNavigateToDiscover }) => {
           </button>
         </div>
       </div>
+
+      {/* Share Profile Card Modal */}
+      <ShareProfileModal
+        profile={profile}
+        isOpen={shareModalOpen}
+        onClose={() => setShareModalOpen(false)}
+      />
     </div>
   );
 };

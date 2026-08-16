@@ -4,7 +4,7 @@ import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import BadgeVerified from '../components/BadgeVerified';
 
-export const InterestsPage = ({ onViewProfile, onOpenChat }) => {
+export const InterestsPage = ({ onViewProfile, onOpenChat, onNavigateToDiscover }) => {
   const { user, profile } = useAuth();
   const { interests, profiles, respondInterest } = useData();
   const [activeTab, setActiveTab] = useState('received');
@@ -115,12 +115,26 @@ export const InterestsPage = ({ onViewProfile, onOpenChat }) => {
               );
             })
           ) : (
-            <div className="bg-surface-card radius-card border border-main p-12 text-center text-sub space-y-3 shadow-xs">
-              <Heart className="w-10 h-10 text-sub/40 mx-auto" />
-              <h3 className="font-serif font-bold text-main text-base">No Received Interests Yet</h3>
-              <p className="text-xs text-sub max-w-sm mx-auto">
-                When other verified members view your profile and express interest, their connection requests will appear here.
-              </p>
+            <div className="bg-surface-card radius-card border border-main p-10 sm:p-14 text-center text-sub space-y-4 shadow-xs">
+              <div className="w-14 h-14 rounded-full bg-sky-blue/10 text-sky-blue flex items-center justify-center mx-auto">
+                <Heart className="w-7 h-7" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="font-serif font-bold text-main text-base sm:text-lg">No Received Interests Yet</h3>
+                <p className="text-xs text-sub max-w-sm mx-auto">
+                  When other verified members view your profile and send proposal requests, they will appear here for you to review and accept.
+                </p>
+              </div>
+              {onNavigateToDiscover && (
+                <button
+                  type="button"
+                  onClick={onNavigateToDiscover}
+                  className="px-6 py-2.5 radius-btn bg-sky-blue hover:bg-sky-blue/90 text-white font-bold text-xs shadow-xs transition-colors inline-flex items-center gap-1.5"
+                >
+                  <span>Explore Discover Matches</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -170,12 +184,26 @@ export const InterestsPage = ({ onViewProfile, onOpenChat }) => {
               );
             })
           ) : (
-            <div className="bg-surface-card radius-card border border-main p-12 text-center text-sub space-y-3 shadow-xs">
-              <Heart className="w-10 h-10 text-sub/40 mx-auto" />
-              <h3 className="font-serif font-bold text-main text-base">No Sent Interests Yet</h3>
-              <p className="text-xs text-sub max-w-sm mx-auto">
-                Explore candidate profiles in Discover and tap "Express Interest" to send matrimonial connection requests.
-              </p>
+            <div className="bg-surface-card radius-card border border-main p-10 sm:p-14 text-center text-sub space-y-4 shadow-xs">
+              <div className="w-14 h-14 rounded-full bg-sky-blue/10 text-sky-blue flex items-center justify-center mx-auto">
+                <Heart className="w-7 h-7" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="font-serif font-bold text-main text-base sm:text-lg">No Sent Interests Yet</h3>
+                <p className="text-xs text-sub max-w-sm mx-auto">
+                  Browse verified candidate profiles across India and tap "Express Interest" to send matrimonial connection requests.
+                </p>
+              </div>
+              {onNavigateToDiscover && (
+                <button
+                  type="button"
+                  onClick={onNavigateToDiscover}
+                  className="px-6 py-2.5 radius-btn bg-sky-blue hover:bg-sky-blue/90 text-white font-bold text-xs shadow-xs transition-colors inline-flex items-center gap-1.5"
+                >
+                  <span>Find Matches on Discover</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              )}
             </div>
           )}
         </div>

@@ -1,7 +1,8 @@
-import React, { useState, useMemo } from 'react';
-import { Search, SlidersHorizontal, Grid, Layers, Sparkles, Filter, ShieldCheck, Heart, UserPlus, ArrowRight, X, ArrowUpDown, Loader2 } from 'lucide-react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { Search, SlidersHorizontal, Grid, Layers, Sparkles, Filter, ShieldCheck, Heart, UserPlus, ArrowRight, X, ArrowUpDown, Loader2, Star } from 'lucide-react';
 import ProfileCard from '../components/ProfileCard';
 import FilterPanel from '../components/FilterPanel';
+import DiscoverOnboardingModal from '../components/DiscoverOnboardingModal';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -20,7 +21,7 @@ const defaultFilters = {
   verifiedOnly: false
 };
 
-export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToProfile, onAuthRequired, showShortlistedOnly = false }) => {
+export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToProfile, onAuthRequired, onNavigateToDiscover, showShortlistedOnly = false }) => {
   const { profiles, shortlistedIds } = useData();
   const { profile: myProfile, partnerPreferences, user } = useAuth();
   const { t } = useLanguage();
@@ -30,6 +31,17 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
   const [discoveryView, setDiscoveryView] = useState('grid');
   const [isLoadingFeed, setIsLoadingFeed] = useState(false);
   const [sortBy, setSortBy] = useState('best_match');
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  useEffect(() => {
+    // Show onboarding tour once to signed-in users on their first visit to Discover
+    if (user && !showShortlistedOnly) {
+      const seen = localStorage.getItem('vadhu_var_discover_intro_seen');
+      if (!seen) {
+        setShowOnboarding(true);
+      }
+    }
+  }, [user, showShortlistedOnly]);
 
   // Applied filters state (only updates when user explicitly clicks "Apply Filters" or "Reset")
   const [appliedFilters, setAppliedFilters] = useState(defaultFilters);
@@ -336,8 +348,35 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
                   />
                 ))}
               </div>
+            ) : showShortlistedOnly ? (
+              /* Shortlisted Empty State */
+              <div className="bg-surface-card radius-card border border-main p-8 sm:p-14 text-center my-2 space-y-4 shadow-xs">
+                <div className="w-14 h-14 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto">
+                  <Star className="w-7 h-7 fill-amber-500/20" />
+                </div>
+                <div className="space-y-1 max-w-md mx-auto">
+                  <h3 className="font-serif font-bold text-main text-lg sm:text-xl">
+                    {t('noShortlistedProfiles')}
+                  </h3>
+                  <p className="text-xs text-sub leading-relaxed">
+                    {t('noShortlistedProfilesDesc')}
+                  </p>
+                </div>
+                {onNavigateToDiscover && (
+                  <div className="pt-2">
+                    <button
+                      onClick={onNavigateToDiscover}
+                      className="px-6 py-2.5 radius-btn bg-sky-blue text-white text-xs font-bold hover:bg-sky-blue/90 transition-colors inline-flex items-center gap-1.5 shadow-xs"
+                    >
+                      <span>{t('exploreAllCandidates')}</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+              </div>
             ) : (
-              <div className="bg-surface-card radius-card border border-main p-8 sm:p-12 text-center my-2 space-y-4 shadow-sm">
+              /* Zero Filter Search Results Empty State */
+              <div className="bg-surface-card radius-card border border-main p-8 sm:p-12 text-center my-2 space-y-4 shadow-xs">
                 <div className="w-14 h-14 radius-btn bg-sky-blue/10 text-sky-blue flex items-center justify-center mx-auto">
                   <UserPlus className="w-7 h-7" />
                 </div>
@@ -362,6 +401,12 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
           </div>
         </div>
       )}
+
+      {/* First-Time Discover Onboarding Tour */}
+      <DiscoverOnboardingModal
+        isOpen={showOnboarding}
+        onClose={() => setShowOnboarding(false)}
+      />
     </div>
   );
 };

@@ -3,7 +3,7 @@ import { Lock } from 'lucide-react';
 import { Logo } from './Logo';
 import { useLanguage } from '../context/LanguageContext';
 
-export const Footer = ({ onOpenPrivacy }) => {
+export const Footer = ({ onOpenPrivacy, onOpenTerms, onOpenHelp }) => {
   const { t } = useLanguage();
 
   return (
@@ -26,7 +26,19 @@ export const Footer = ({ onOpenPrivacy }) => {
               <span>{t('privacyPolicy')}</span>
             </button>
             <span>•</span>
-            <span>Delhi • Mumbai • Bengaluru • Pune • Hyderabad • Kolkata</span>
+            <button
+              onClick={onOpenTerms}
+              className="hover:text-main transition-colors"
+            >
+              <span>{t('termsOfService')}</span>
+            </button>
+            <span>•</span>
+            <button
+              onClick={onOpenHelp}
+              className="hover:text-main transition-colors"
+            >
+              <span>{t('helpFaq')}</span>
+            </button>
           </div>
         </div>
       </div>

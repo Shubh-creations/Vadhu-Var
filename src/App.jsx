@@ -18,6 +18,8 @@ import BrowsePage from './pages/BrowsePage';
 import ProfileDetailPage from './pages/ProfileDetailPage';
 import InterestsPage from './pages/InterestsPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
+import TermsOfServicePage from './pages/TermsOfServicePage';
+import HelpPage from './pages/HelpPage';
 import AccountSettingsPage from './pages/AccountSettingsPage';
 
 import ErrorBoundary from './components/ErrorBoundary';
@@ -62,7 +64,17 @@ function AppContent() {
     };
     handleCheckRecovery();
     window.addEventListener('hashchange', handleCheckRecovery);
-    return () => window.removeEventListener('hashchange', handleCheckRecovery);
+
+    window.__onOpenTerms = () => setActiveTab('terms');
+    window.__onOpenPrivacy = () => setActiveTab('privacy');
+    window.__onOpenHelp = () => setActiveTab('help');
+
+    return () => {
+      window.removeEventListener('hashchange', handleCheckRecovery);
+      delete window.__onOpenTerms;
+      delete window.__onOpenPrivacy;
+      delete window.__onOpenHelp;
+    };
   }, []);
   const [selectedProfile, setSelectedProfile] = useState(null);
 
@@ -120,6 +132,8 @@ function AppContent() {
         {activeTab === 'profile' && (
           <UserProfileHub
             onNavigateToDiscover={() => setActiveTab('browse')}
+            onOpenHelp={() => setActiveTab('help')}
+            onOpenTerms={() => setActiveTab('terms')}
           />
         )}
 
@@ -128,6 +142,7 @@ function AppContent() {
             onViewProfile={handleViewProfileDetail}
             onOpenCompatibility={(p) => setCompatibilityCandidate(p)}
             onNavigateToProfile={() => setActiveTab('profile')}
+            onNavigateToDiscover={() => setActiveTab('browse')}
             onAuthRequired={() => setActiveTab('auth')}
             showShortlistedOnly={false}
           />
@@ -138,6 +153,7 @@ function AppContent() {
             onViewProfile={handleViewProfileDetail}
             onOpenCompatibility={(p) => setCompatibilityCandidate(p)}
             onNavigateToProfile={() => setActiveTab('profile')}
+            onNavigateToDiscover={() => setActiveTab('browse')}
             onAuthRequired={() => setActiveTab('auth')}
             showShortlistedOnly={true}
           />
@@ -158,11 +174,24 @@ function AppContent() {
           <InterestsPage
             onViewProfile={handleViewProfileDetail}
             onOpenChat={(p) => setChatCandidate(p)}
+            onNavigateToDiscover={() => setActiveTab('browse')}
           />
         )}
 
         {activeTab === 'privacy' && (
           <PrivacyPolicyPage
+            onBack={() => setActiveTab('browse')}
+          />
+        )}
+
+        {activeTab === 'terms' && (
+          <TermsOfServicePage
+            onBack={() => setActiveTab('browse')}
+          />
+        )}
+
+        {activeTab === 'help' && (
+          <HelpPage
             onBack={() => setActiveTab('browse')}
           />
         )}
@@ -211,6 +240,8 @@ function AppContent() {
       {/* Footer */}
       <Footer
         onOpenPrivacy={() => setActiveTab('privacy')}
+        onOpenTerms={() => setActiveTab('terms')}
+        onOpenHelp={() => setActiveTab('help')}
       />
     </div>
   );
