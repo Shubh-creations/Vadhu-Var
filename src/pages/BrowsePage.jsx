@@ -1,12 +1,24 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { Search, SlidersHorizontal, Grid, Layers, Sparkles, Filter, ShieldCheck, Heart, UserPlus, ArrowRight, X, ArrowUpDown } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { Search, SlidersHorizontal, Grid, Layers, Sparkles, Filter, ShieldCheck, Heart, UserPlus, ArrowRight, X, ArrowUpDown, Loader2 } from 'lucide-react';
 import ProfileCard from '../components/ProfileCard';
 import FilterPanel from '../components/FilterPanel';
-import CompatibilityModal from '../components/CompatibilityModal';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import calculateCompatibilityEstimate from '../lib/compatibilityCalculator';
+
+const defaultFilters = {
+  ageMin: 18,
+  ageMax: 80,
+  gender: 'all',
+  city: '',
+  state: '',
+  education: '',
+  diet: '',
+  maritalStatus: '',
+  incomeBracket: 'all',
+  verifiedOnly: false
+};
 
 export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToProfile, onAuthRequired, showShortlistedOnly = false }) => {
   const { profiles, shortlistedIds } = useData();
@@ -19,46 +31,27 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
   const [isLoadingFeed, setIsLoadingFeed] = useState(false);
   const [sortBy, setSortBy] = useState('best_match');
 
-  const [filters, setFilters] = useState({
-    ageMin: partnerPreferences?.age_min || 18,
-    ageMax: partnerPreferences?.age_max || 60,
-    gender: 'all',
-    city: partnerPreferences?.city || '',
-    state: partnerPreferences?.state && partnerPreferences.state !== 'any' ? partnerPreferences.state : '',
-    education: partnerPreferences?.education && partnerPreferences.education !== 'any' ? partnerPreferences.education : '',
-    diet: partnerPreferences?.diet && partnerPreferences.diet !== 'any' ? partnerPreferences.diet : '',
-    maritalStatus: '',
-    incomeBracket: partnerPreferences?.min_income_lpa && partnerPreferences.min_income_lpa !== 'all' ? partnerPreferences.min_income_lpa : 'all',
-    verifiedOnly: false
-  });
+  // Applied filters state (only updates when user explicitly clicks "Apply Filters" or "Reset")
+  const [appliedFilters, setAppliedFilters] = useState(defaultFilters);
 
-  // Auto-set opposite gender match preference if user is logged in
-  useEffect(() => {
-    if (myProfile?.gender) {
-      const preferredGender = myProfile.gender === 'female' ? 'male' : 'female';
-      setFilters(prev => ({ ...prev, gender: preferredGender }));
-    }
-  }, [myProfile?.gender]);
-
-  const handleFilterChange = (key, value) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
+  const handleApplyFilters = (newFilters) => {
+    setIsLoadingFeed(true);
+    setAppliedFilters(newFilters);
+    setFilterDrawerOpen(false);
+    setTimeout(() => {
+      setIsLoadingFeed(false);
+    }, 250);
   };
 
   const handleResetFilters = () => {
-    setFilters({
-      ageMin: 18,
-      ageMax: 60,
-      gender: myProfile?.gender ? (myProfile.gender === 'female' ? 'male' : 'female') : 'all',
-      city: '',
-      state: '',
-      education: '',
-      diet: '',
-      maritalStatus: '',
-      incomeBracket: 'all',
-      verifiedOnly: false
-    });
+    setIsLoadingFeed(true);
+    setAppliedFilters(defaultFilters);
     setSearchQuery('');
     setSortBy('best_match');
+    setFilterDrawerOpen(false);
+    setTimeout(() => {
+      setIsLoadingFeed(false);
+    }, 150);
   };
 
   const handleSwitchView = (newView) => {
@@ -71,34 +64,40 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
   const filteredProfiles = useMemo(() => {
     const currentUserId = myProfile?.id || user?.id;
 
-    // 1. Hard Filtering
+    // 1. Hard Filtering (Applied only via appliedFilters)
     const matching = profiles.filter((p) => {
-      // Exclude hidden or deactivated profiles
+      // Exclude deactivated or search-hidden profiles
       if (p.is_active === false) return false;
       if (p.is_search_visible === false && p.id !== currentUserId) return false;
 
-      if (showShortlistedOnly && !shortlistedIds.includes(p.id)) return false;
+      // Exclude viewer's own profile from discover feed
       if (currentUserId && p.id === currentUserId) return false;
-      if (filters.verifiedOnly && !p.is_id_verified && !p.is_fully_verified) return false;
-      if (filters.gender !== 'all' && p.gender !== filters.gender) return false;
-      if (p.age < filters.ageMin || p.age > filters.ageMax) return false;
-      if (filters.city && !p.city?.toLowerCase().includes(filters.city.toLowerCase())) return false;
-      if (filters.state && p.state && p.state.toLowerCase() !== filters.state.toLowerCase()) return false;
-      if (filters.education && p.education_level?.toLowerCase() !== filters.education.toLowerCase()) return false;
-      if (filters.diet && p.diet !== filters.diet) return false;
-      if (filters.maritalStatus && p.marital_status !== filters.maritalStatus) return false;
+
+      // Shortlisted filter toggle
+      if (showShortlistedOnly && !shortlistedIds.includes(p.id)) return false;
+
+      // Manual Applied Filters
+      if (appliedFilters.verifiedOnly && !p.is_id_verified && !p.is_fully_verified) return false;
+      if (appliedFilters.gender !== 'all' && p.gender !== appliedFilters.gender) return false;
+      if (p.age < appliedFilters.ageMin || p.age > appliedFilters.ageMax) return false;
+      if (appliedFilters.city && !p.city?.toLowerCase().includes(appliedFilters.city.toLowerCase())) return false;
+      if (appliedFilters.state && p.state && p.state.toLowerCase() !== appliedFilters.state.toLowerCase()) return false;
+      if (appliedFilters.education && p.education_level?.toLowerCase() !== appliedFilters.education.toLowerCase()) return false;
+      if (appliedFilters.diet && p.diet !== appliedFilters.diet) return false;
+      if (appliedFilters.maritalStatus && p.marital_status !== appliedFilters.maritalStatus) return false;
 
       // Income Bracket Filter (Starting 2.5 LPA+)
-      if (filters.incomeBracket && filters.incomeBracket !== 'all') {
+      if (appliedFilters.incomeBracket && appliedFilters.incomeBracket !== 'all') {
         const income = p.annual_income_lpa || 0;
-        if (filters.incomeBracket === '2.5-5' && (income < 2.5 || income > 5)) return false;
-        if (filters.incomeBracket === '5-10' && (income < 5 || income > 10)) return false;
-        if (filters.incomeBracket === '10-15' && (income < 10 || income > 15)) return false;
-        if (filters.incomeBracket === '15-25' && (income < 15 || income > 25)) return false;
-        if (filters.incomeBracket === '25-50' && (income < 25 || income > 50)) return false;
-        if (filters.incomeBracket === '50+' && income < 50) return false;
+        if (appliedFilters.incomeBracket === '2.5-5' && (income < 2.5 || income > 5)) return false;
+        if (appliedFilters.incomeBracket === '5-10' && (income < 5 || income > 10)) return false;
+        if (appliedFilters.incomeBracket === '10-15' && (income < 10 || income > 15)) return false;
+        if (appliedFilters.incomeBracket === '15-25' && (income < 15 || income > 25)) return false;
+        if (appliedFilters.incomeBracket === '25-50' && (income < 25 || income > 50)) return false;
+        if (appliedFilters.incomeBracket === '50+' && income < 50) return false;
       }
 
+      // Keyword Search
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase();
         const matchesName = p.full_name?.toLowerCase().includes(query);
@@ -120,11 +119,11 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
 
     return scoredList.sort((a, b) => {
       if (sortBy === 'best_match') {
-        // Primary: Match Score descending
+        // Primary: Match Score descending (Uses saved partner preferences if present)
         const scoreDiff = b.computedMatchScore - a.computedMatchScore;
         if (scoreDiff !== 0) return scoreDiff;
 
-        // Tie-breaker 1: Verification Tier (100% Verified > ID Verified > Unverified)
+        // Tie-breaker 1: Verification Tier (100% Fully Verified > ID Verified > Unverified)
         const getTier = (item) => item.is_fully_verified ? 3 : item.is_id_verified ? 2 : 1;
         const tierDiff = getTier(b) - getTier(a);
         if (tierDiff !== 0) return tierDiff;
@@ -147,7 +146,7 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
 
       return 0;
     });
-  }, [profiles, filters, searchQuery, myProfile, partnerPreferences, user, showShortlistedOnly, shortlistedIds, sortBy]);
+  }, [profiles, appliedFilters, searchQuery, myProfile, partnerPreferences, user, showShortlistedOnly, shortlistedIds, sortBy]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-8">
@@ -163,7 +162,9 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
             </span>
           </div>
           <p className="text-xs sm:text-sm text-sub mt-1">
-            {t('discoverSubtitle')}
+            {partnerPreferences
+              ? 'Showing all active profiles, ranked by compatibility with your saved partner preferences.'
+              : t('discoverSubtitle')}
           </p>
         </div>
 
@@ -267,8 +268,8 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
           {/* Desktop Filter Panel */}
           <div className="hidden md:block md:col-span-1 sticky top-20">
             <FilterPanel
-              filters={filters}
-              onFilterChange={handleFilterChange}
+              appliedFilters={appliedFilters}
+              onApply={handleApplyFilters}
               onReset={handleResetFilters}
               totalMatches={filteredProfiles.length}
             />
@@ -285,10 +286,11 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
                   </button>
                 </div>
                 <FilterPanel
-                  filters={filters}
-                  onFilterChange={handleFilterChange}
+                  appliedFilters={appliedFilters}
+                  onApply={handleApplyFilters}
                   onReset={handleResetFilters}
                   totalMatches={filteredProfiles.length}
+                  isMobileDrawer={true}
                 />
               </div>
             </div>
@@ -329,25 +331,18 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
                 </div>
                 <div className="space-y-1 max-w-md mx-auto">
                   <h3 className="font-serif font-bold text-main text-lg sm:text-xl">
-                    Be the First Verified Profile
+                    No Matching Profiles Found
                   </h3>
                   <p className="text-xs text-sub leading-relaxed">
-                    Complete your candidate details to get discovered by verified matches across India.
+                    Try adjusting or clearing your filters to discover more verified candidates across India.
                   </p>
                 </div>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
                   <button
-                    onClick={user || myProfile ? onNavigateToProfile : onAuthRequired}
+                    onClick={handleResetFilters}
                     className="w-full sm:w-auto px-6 py-2.5 radius-btn bg-sky-blue text-white text-xs font-bold hover:bg-sky-blue/90 transition-colors flex items-center justify-center gap-1.5 shadow-xs"
                   >
-                    <span>{myProfile ? 'Update Profile' : 'Create Your Profile'}</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={handleResetFilters}
-                    className="w-full sm:w-auto px-5 py-2.5 radius-btn bg-surface-ground border border-main text-sub text-xs font-medium hover:text-main transition-colors"
-                  >
-                    {t('reset')}
+                    <span>Reset All Filters</span>
                   </button>
                 </div>
               </div>
