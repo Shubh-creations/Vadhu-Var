@@ -33,7 +33,7 @@ serve(async (req: Request) => {
           Authorization: `Bearer ${RESEND_API_KEY}`,
         },
         body: JSON.stringify({
-          from: "Vadhu Var Matrimony <notifications@vadhu-var.vercel.app>",
+          from: Deno.env.get("RESEND_FROM_EMAIL") || "Vadhu Var Matrimony <onboarding@resend.dev>",
           to: [email],
           subject: `🎉 Congratulations ${candidateName}! Your Profile is Active on Vadhu Var`,
           html: `
