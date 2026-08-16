@@ -183,8 +183,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
   };
 
   const validateStep5 = () => {
-    const hasExistingDoc = Boolean(existingProfile?.is_id_verified || existingProfile?.id_document_url);
-    if (!formData.id_document_url && !hasExistingDoc) {
+    if (!formData.id_document_url) {
       setErrors(prev => ({
         ...prev,
         id_document_url: 'Government ID Document (Aadhaar / Driving License / Voter ID / Passport) is strictly compulsory to submit registration.'
@@ -259,8 +258,8 @@ export const ProfileWizardPage = ({ onComplete }) => {
       await savePartnerPreferences(prefData);
 
       // 3. Submit verification request strictly with real uploaded document
-      const docUrl = formData.id_document_url || existingProfile?.id_document_url || null;
-      const familyUrl = formData.family_consent_document_url || existingProfile?.family_consent_document_url || null;
+      const docUrl = formData.id_document_url;
+      const familyUrl = formData.family_consent_document_url || null;
       if (docUrl) {
         await submitVerificationRequest(savedProfile.id, docUrl, familyUrl);
       }

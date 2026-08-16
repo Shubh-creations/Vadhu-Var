@@ -1,11 +1,15 @@
-const CACHE_NAME = 'vadhu-var-v2.1.0';
-const STATIC_ASSETS_CACHE = 'vadhu-var-assets-v2.1.0';
+const CACHE_NAME = 'vadhu-var-v3.0.0';
+const STATIC_ASSETS_CACHE = 'vadhu-var-assets-v3.0.0';
 
 const APP_SHELL = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/favicon.svg'
+  '/app-icon.png',
+  '/icon-192.png',
+  '/icon-512.png',
+  '/apple-touch-icon.png',
+  '/favicon.png'
 ];
 
 // 1. INSTALL EVENT
@@ -18,13 +22,14 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// 2. ACTIVATE EVENT: Delete obsolete caches & claim clients
+// 2. ACTIVATE EVENT: Delete obsolete caches & claim clients immediately
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cache) => {
           if (cache !== CACHE_NAME && cache !== STATIC_ASSETS_CACHE) {
+            console.log('Purging legacy PWA cache:', cache);
             return caches.delete(cache);
           }
         })
@@ -56,7 +61,7 @@ self.addEventListener('fetch', (event) => {
 
   // Strategy A: Supabase REST API & Storage -> NETWORK-ONLY (Never Cache API Data)
   if (url.hostname.includes('supabase.co') || url.pathname.includes('/rest/v1/')) {
-    return; // Default browser fetch handling
+    return;
   }
 
   // Strategy B: Hashed Static Assets (Vite build /assets/*.js, *.css) -> CACHE-FIRST
