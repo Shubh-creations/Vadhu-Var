@@ -221,12 +221,29 @@ export const AuthProvider = ({ children }) => {
 
   // Save or update user profile
   const saveProfile = async (profileData) => {
+    // Separate document upload fields which are persisted in the verification_requests table
+    const { 
+      id_document_url, 
+      family_consent_document_url, 
+      career_proof_url, 
+      computedMatchScore,
+      ...profileColumns 
+    } = profileData;
+
     const fullProfile = {
       ...profileData,
       id: user?.id || `user-${Date.now()}`,
       is_active: profileData.is_active !== undefined ? profileData.is_active : true,
       is_visible: profileData.is_visible !== undefined ? profileData.is_visible : (profileData.is_search_visible !== undefined ? profileData.is_search_visible : true),
       created_at: profileData.created_at || new Date().toISOString()
+    };
+
+    const dbPayload = {
+      ...profileColumns,
+      id: user?.id || `user-${Date.now()}`,
+      is_active: fullProfile.is_active,
+      is_visible: fullProfile.is_visible,
+      created_at: fullProfile.created_at
     };
 
     setProfile(fullProfile);
@@ -236,15 +253,16 @@ export const AuthProvider = ({ children }) => {
       try {
         const { data, error } = await supabase
           .from('profiles')
-          .upsert({ ...fullProfile, id: user.id })
+          .upsert({ ...dbPayload, id: user.id })
           .select()
           .single();
 
         if (error) throw error;
         if (data) {
-          setProfile(data);
-          localStorage.setItem('vadhu_var_profile', JSON.stringify(data));
-          return data;
+          const merged = { ...fullProfile, ...data };
+          setProfile(merged);
+          localStorage.setItem('vadhu_var_profile', JSON.stringify(merged));
+          return merged;
         }
       } catch (err) {
         console.error('Supabase profile save error:', err);
