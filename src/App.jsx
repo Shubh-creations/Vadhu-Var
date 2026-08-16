@@ -80,7 +80,10 @@ function AppContent() {
 
         {activeTab === 'auth' && (
           <AuthPage
-            onSuccess={() => setActiveTab('profile')}
+            onSuccess={() => {
+              const hasProf = localStorage.getItem('vadhu_var_profile');
+              setActiveTab(hasProf ? 'browse' : 'profile');
+            }}
           />
         )}
 

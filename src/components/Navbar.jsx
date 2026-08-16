@@ -1,5 +1,5 @@
 import React from 'react';
-import { Heart, Search, User, Download, LogOut, Star, MessageSquare, Shield, Sun, Moon, Globe, Settings } from 'lucide-react';
+import { Home, Heart, Search, User, Download, LogOut, Star, MessageSquare, Shield, Sun, Moon, Globe, Settings } from 'lucide-react';
 import { Logo } from './Logo';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
@@ -20,6 +20,7 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
   ).length;
 
   const navItems = [
+    { id: 'landing', label: 'Home', icon: Home },
     { id: 'browse', label: t('discover'), icon: Search },
     { 
       id: 'interests', 
@@ -39,12 +40,13 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
     <header className="sticky top-0 z-40 bg-surface-card border-b border-main shadow-xs">
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-14 sm:h-16 gap-2">
-          {/* Brand Logo with 1st Image Website Icon */}
+          {/* Brand Logo with 1st Image Website Icon - Navigates directly to Home */}
           <div className="flex items-center gap-3">
             <button
-              onClick={() => setActiveTab('browse')}
-              className="flex items-center gap-2 text-left focus:outline-none"
-              aria-label="Go to Discover"
+              onClick={() => setActiveTab('landing')}
+              className="flex items-center gap-2 text-left focus:outline-none hover:opacity-90 transition-opacity"
+              aria-label="Go to Home"
+              title="Vadhu Var Home"
             >
               <Logo type="icon" size="medium" />
               <div className="flex flex-col">

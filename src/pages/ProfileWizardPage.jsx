@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { ShieldCheck, User, Briefcase, GraduationCap, FileText, CheckCircle2, ArrowRight, ArrowLeft, Camera, IndianRupee, Crop, AlertCircle, HeartHandshake, Baby, Clock, Sparkles } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { ShieldCheck, User, Briefcase, GraduationCap, FileText, CheckCircle2, ArrowRight, ArrowLeft, Camera, IndianRupee, Crop, AlertCircle, HeartHandshake, Baby, Clock, Sparkles, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -9,13 +9,18 @@ import { compressImage } from '../lib/imageCompressor';
 
 export const ProfileWizardPage = ({ onComplete }) => {
   const { user, profile: existingProfile, partnerPreferences: existingPref, saveProfile, savePartnerPreferences } = useAuth();
-  const { submitVerificationRequest, addOrUpdateProfile } = useData();
+  const { submitVerificationRequest, addOrUpdateProfile, refreshProfiles } = useData();
   const { t } = useLanguage();
 
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [photoUploading, setPhotoUploading] = useState(false);
+  const [photoError, setPhotoError] = useState('');
   const [successModal, setSuccessModal] = useState(false);
   const [errors, setErrors] = useState({});
+
+  // Guard ref: Prevents re-render or auth changes from wiping out user's typed inputs
+  const isInitializedRef = useRef(false);
 
   // Image Cropper State
   const [cropperOpen, setCropperOpen] = useState(false);
@@ -62,7 +67,10 @@ export const ProfileWizardPage = ({ onComplete }) => {
     notes: ''
   });
 
+  // Seed form data ONLY ONCE on mount to ensure user typing is never lost
   useEffect(() => {
+    if (isInitializedRef.current) return;
+
     if (existingProfile) {
       setFormData(prev => ({
         ...prev,
@@ -78,11 +86,13 @@ export const ProfileWizardPage = ({ onComplete }) => {
         children_count: existingProfile.children_count || '',
         children_living_status: existingProfile.children_living_status || 'living_together'
       }));
+      isInitializedRef.current = true;
     } else if (user?.user_metadata?.full_name) {
       setFormData(prev => ({
         ...prev,
         full_name: user.user_metadata.full_name
       }));
+      isInitializedRef.current = true;
     }
 
     if (existingPref) {
@@ -108,6 +118,9 @@ export const ProfileWizardPage = ({ onComplete }) => {
   const handleMaritalStatusToggle = (status) => {
     setPrefData(prev => {
       const current = prev.accepted_marital_statuses || [];
+      if (status === 'all') {
+        return { ...prev, accepted_marital_statuses: ['never_married', 'divorced', 'widowed', 'awaiting_divorce'] };
+      }
       const updated = current.includes(status)
         ? current.filter(s => s !== status)
         : [...current, status];
@@ -132,25 +145,39 @@ export const ProfileWizardPage = ({ onComplete }) => {
     setStep(targetStep);
   };
 
-  // Open Cropper on file pick
+  // Open Cropper on file pick without submitting form or resetting step
   const handlePhotoFileSelect = (e) => {
+    setPhotoError('');
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > 10 * 1024 * 1024) {
+        setPhotoError('Image file is too large (max 10MB). Please select a smaller photo.');
+        return;
+      }
       const reader = new FileReader();
       reader.onload = (event) => {
         setRawPhotoSrc(event.target.result);
         setCropperOpen(true);
       };
+      reader.onerror = () => {
+        setPhotoError('Could not read image file. Please try another image.');
+      };
       reader.readAsDataURL(file);
     }
+    // Clear input value so selecting the same photo again triggers change
+    e.target.value = '';
   };
 
   const handleCropComplete = async (croppedDataUrl) => {
+    setPhotoUploading(true);
+    setPhotoError('');
     try {
       const compressed = await compressImage(croppedDataUrl, 600, 600, 0.85);
       setFormData(prev => ({ ...prev, photo_url: compressed }));
     } catch (err) {
       setFormData(prev => ({ ...prev, photo_url: croppedDataUrl }));
+    } finally {
+      setPhotoUploading(false);
     }
   };
 
@@ -191,7 +218,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
   };
 
   const handleSubmitProfile = async (e) => {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
 
     if (!validateStep1()) {
       setStep(1);
@@ -201,19 +228,26 @@ export const ProfileWizardPage = ({ onComplete }) => {
     setLoading(true);
 
     try {
+      // 1. Save profile to Supabase
       const savedProfile = await saveProfile(formData);
       addOrUpdateProfile(savedProfile);
 
-      // Save partner preferences
+      // 2. Save partner preferences
       await savePartnerPreferences(prefData);
 
+      // 3. Submit verification request if documents attached
       const docUrl = formData.id_document_url || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80';
       const familyUrl = formData.family_consent_document_url || null;
-
       await submitVerificationRequest(savedProfile.id, docUrl, familyUrl);
+
+      // 4. Immediately trigger live profiles refresh so profile appears on Discover
+      if (refreshProfiles) {
+        await refreshProfiles();
+      }
+
       setSuccessModal(true);
     } catch (err) {
-      alert(err.message || 'Error saving profile');
+      alert(`Error saving profile: ${err.message || 'Please check your connection and try again.'}`);
     } finally {
       setLoading(false);
     }
@@ -254,6 +288,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
             </div>
 
             <button
+              type="button"
               onClick={() => {
                 setSuccessModal(false);
                 if (onComplete) onComplete();
@@ -318,6 +353,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
         ].map((s) => (
           <div key={s.number} className="relative z-10 flex flex-col items-center">
             <button
+              type="button"
               onClick={() => handleNextStep(s.number)}
               className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs transition-all ${
                 step === s.number
@@ -686,11 +722,23 @@ export const ProfileWizardPage = ({ onComplete }) => {
               />
             </div>
 
-            {/* Profile Photo Uploader with Integrated Cropper */}
+            {/* Profile Photo Uploader with Integrated Cropper & Inline Spinner */}
             <div className="p-4 border border-main radius-card bg-surface-ground space-y-3">
               <label className="block text-xs font-semibold text-main">Profile Photo & Cropper</label>
+              
+              {photoError && (
+                <div className="p-2.5 radius-btn bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                  <span>{photoError}</span>
+                </div>
+              )}
+
               <div className="flex items-center gap-4">
-                {formData.photo_url ? (
+                {photoUploading ? (
+                  <div className="w-20 h-20 rounded-full bg-surface-card flex items-center justify-center text-sky-blue border border-main shadow-xs">
+                    <Loader2 className="w-8 h-8 animate-spin" />
+                  </div>
+                ) : formData.photo_url ? (
                   <div className="relative group">
                     <img
                       src={formData.photo_url}

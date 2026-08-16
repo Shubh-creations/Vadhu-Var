@@ -244,9 +244,11 @@ export const AuthProvider = ({ children }) => {
         if (data) {
           setProfile(data);
           localStorage.setItem('vadhu_var_profile', JSON.stringify(data));
+          return data;
         }
       } catch (err) {
         console.error('Supabase profile save error:', err);
+        throw new Error(err.message || 'Database error: Could not save profile to Supabase.');
       }
     }
     return fullProfile;
@@ -275,9 +277,11 @@ export const AuthProvider = ({ children }) => {
         if (data) {
           setPartnerPreferences(data);
           localStorage.setItem('vadhu_var_partner_preferences', JSON.stringify(data));
+          return data;
         }
       } catch (err) {
         console.error('Supabase partner preferences save error:', err);
+        throw new Error(err.message || 'Database error: Could not save partner preferences.');
       }
     }
     return fullPref;

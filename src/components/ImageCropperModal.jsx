@@ -96,7 +96,7 @@ export const ImageCropperModal = ({ isOpen, imageSrc, onCropComplete, onClose })
             <Crop className="w-5 h-5 text-sky-blue" />
             <h3 className="font-serif font-bold text-main text-lg">Crop & Edit Profile Photo</h3>
           </div>
-          <button onClick={onClose} className="p-1 text-sub hover:text-main radius-btn">
+          <button type="button" onClick={onClose} className="p-1 text-sub hover:text-main radius-btn">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -150,6 +150,7 @@ export const ImageCropperModal = ({ isOpen, imageSrc, onCropComplete, onClose })
           {/* Action Buttons */}
           <div className="flex items-center justify-between gap-3 pt-3 border-t border-main">
             <button
+              type="button"
               onClick={handleRotate}
               className="flex items-center gap-1.5 px-3 py-2 radius-btn bg-surface-ground border border-main text-sub hover:text-main text-xs font-medium transition-colors"
             >
@@ -159,12 +160,14 @@ export const ImageCropperModal = ({ isOpen, imageSrc, onCropComplete, onClose })
 
             <div className="flex gap-2">
               <button
+                type="button"
                 onClick={onClose}
                 className="px-4 py-2 radius-btn border border-main text-sub font-medium text-xs hover:bg-surface-ground"
               >
                 Cancel
               </button>
               <button
+                type="button"
                 onClick={handleCropSave}
                 className="px-5 py-2 radius-btn bg-sky-blue hover:bg-sky-blue/90 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition-colors"
               >
