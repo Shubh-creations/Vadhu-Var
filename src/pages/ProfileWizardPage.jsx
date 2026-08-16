@@ -183,10 +183,11 @@ export const ProfileWizardPage = ({ onComplete }) => {
   };
 
   const validateStep5 = () => {
-    if (!formData.id_document_url && !existingProfile?.is_id_verified) {
+    const hasExistingDoc = Boolean(existingProfile?.is_id_verified || existingProfile?.id_document_url);
+    if (!formData.id_document_url && !hasExistingDoc) {
       setErrors(prev => ({
         ...prev,
-        id_document_url: 'Government ID Document (Aadhaar / Driving License / Voter ID) is required to complete registration.'
+        id_document_url: 'Government ID Document (Aadhaar / Driving License / Voter ID / Passport) is strictly compulsory to submit registration.'
       }));
       return false;
     }
@@ -199,9 +200,11 @@ export const ProfileWizardPage = ({ onComplete }) => {
       try {
         const compressedDataUrl = await compressImage(file, 1200, 1200, 0.8);
         setFormData(prev => ({ ...prev, id_document_url: compressedDataUrl }));
-        if (errors.id_document_url) {
-          setErrors(prev => ({ ...prev, id_document_url: null }));
-        }
+        setErrors(prev => {
+          const next = { ...prev };
+          delete next.id_document_url;
+          return next;
+        });
       } catch (err) {
         alert('Could not process ID document upload');
       }
@@ -255,10 +258,12 @@ export const ProfileWizardPage = ({ onComplete }) => {
       // 2. Save partner preferences
       await savePartnerPreferences(prefData);
 
-      // 3. Submit verification request with compulsory ID and optional family doc
-      const docUrl = formData.id_document_url || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80';
-      const familyUrl = formData.family_consent_document_url || null;
-      await submitVerificationRequest(savedProfile.id, docUrl, familyUrl);
+      // 3. Submit verification request strictly with real uploaded document
+      const docUrl = formData.id_document_url || existingProfile?.id_document_url || null;
+      const familyUrl = formData.family_consent_document_url || existingProfile?.family_consent_document_url || null;
+      if (docUrl) {
+        await submitVerificationRequest(savedProfile.id, docUrl, familyUrl);
+      }
 
       // 4. Immediately trigger live profiles refresh so profile appears on Discover
       if (refreshProfiles) {
@@ -392,7 +397,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
           <div key={s.number} className="relative z-10 flex flex-col items-center">
             <button
               type="button"
-              onClick={() => setStep(s.number)}
+              onClick={() => handleNextStep(s.number)}
               className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
                 step === s.number
                   ? 'bg-sky-blue text-white shadow-xs'
@@ -525,7 +530,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
             <div className="flex justify-end pt-4">
               <button
                 type="button"
-                onClick={() => setStep(2)}
+                onClick={() => handleNextStep(2)}
                 className="px-6 py-2.5 radius-btn bg-sky-blue hover:bg-sky-blue/90 text-white font-medium text-xs sm:text-sm flex items-center gap-2 shadow-xs"
               >
                 <span>{t('nextStep')}: {t('step2Title')}</span>
