@@ -385,34 +385,60 @@ export const ProfileWizardPage = ({ onComplete }) => {
       </div>
 
       {/* Steps Navigation Bar */}
-      <div className="mb-8 flex items-center justify-between relative px-2">
-        <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-0.5 bg-surface-ground -z-0" />
-        {[
-          { number: 1, title: t('step1Title') },
-          { number: 2, title: t('step2Title') },
-          { number: 3, title: t('step3Title') },
-          { number: 4, title: t('step4Title') },
-          { number: 5, title: t('step5Title') },
-        ].map((s) => (
-          <div key={s.number} className="relative z-10 flex flex-col items-center">
-            <button
-              type="button"
-              onClick={() => handleNextStep(s.number)}
-              className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                step === s.number
-                  ? 'bg-sky-blue text-white shadow-xs'
-                  : step > s.number
-                  ? 'bg-surface-ground text-main border border-main'
-                  : 'bg-surface-card border border-main text-sub'
-              }`}
-            >
-              {step > s.number ? <CheckCircle2 className="w-4 h-4 text-sub" /> : s.number}
-            </button>
-            <span className="text-[10px] font-medium text-sub mt-1 hidden sm:block">
-              {s.title}
-            </span>
-          </div>
-        ))}
+      <div className="mb-8 relative px-1 sm:px-4">
+        {/* Background Step Connector Line (Centered on 36px circles at top-[18px]) */}
+        <div className="absolute left-[10%] right-[10%] top-[18px] h-0.5 bg-surface-ground border-t border-main -z-0">
+          <div
+            className="h-full bg-sky-blue transition-all duration-300"
+            style={{ width: `${((step - 1) / 4) * 100}%` }}
+          />
+        </div>
+
+        {/* Step Circles & Centered Labels */}
+        <div className="flex items-start justify-between relative z-10">
+          {[
+            { number: 1, title: t('step1Title') },
+            { number: 2, title: t('step2Title') },
+            { number: 3, title: t('step3Title') },
+            { number: 4, title: t('step4Title') },
+            { number: 5, title: t('step5Title') },
+          ].map((s) => (
+            <div key={s.number} className="flex-1 flex flex-col items-center text-center max-w-[130px]">
+              <button
+                type="button"
+                onClick={() => handleNextStep(s.number)}
+                className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold transition-all shadow-xs ${
+                  step === s.number
+                    ? 'bg-sky-blue text-white ring-4 ring-sky-blue/20 shadow-md scale-105'
+                    : step > s.number
+                    ? 'bg-surface-card text-emerald-600 dark:text-emerald-400 border-2 border-emerald-500/80 font-bold'
+                    : 'bg-surface-card border border-main text-sub hover:border-sky-blue hover:text-main'
+                }`}
+                title={`Step ${s.number}: ${s.title}`}
+              >
+                {step > s.number ? <CheckCircle2 className="w-4 h-4" /> : s.number}
+              </button>
+              <span
+                className={`text-[10px] sm:text-[11px] font-semibold mt-2 text-center leading-tight transition-colors hidden sm:block px-1 ${
+                  step === s.number
+                    ? 'text-main font-bold'
+                    : step > s.number
+                    ? 'text-emerald-600 dark:text-emerald-400 font-medium'
+                    : 'text-sub'
+                }`}
+              >
+                {s.title}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        {/* Mobile Active Step Subtitle */}
+        <div className="sm:hidden text-center mt-3">
+          <span className="text-xs font-bold text-main bg-surface-ground px-3 py-1 radius-btn border border-main inline-block">
+            {step}. {[t('step1Title'), t('step2Title'), t('step3Title'), t('step4Title'), t('step5Title')][step - 1]}
+          </span>
+        </div>
       </div>
 
       {/* Form Steps Container */}
