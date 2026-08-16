@@ -276,7 +276,7 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
           <div className="hidden md:block md:col-span-1">
             <div className="sticky top-20">
               <FilterPanel
-                filters={appliedFilters}
+                appliedFilters={appliedFilters}
                 onApply={handleApplyFilters}
                 onReset={handleResetFilters}
                 totalMatches={filteredProfiles.length}

@@ -20,6 +20,8 @@ import InterestsPage from './pages/InterestsPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import AccountSettingsPage from './pages/AccountSettingsPage';
 
+import ErrorBoundary from './components/ErrorBoundary';
+
 // Modals
 import CompatibilityModal from './components/CompatibilityModal';
 import PrivacySettingsModal from './components/PrivacySettingsModal';
@@ -187,16 +189,18 @@ function AppContent() {
 
 export default function App() {
   return (
-    <ThemeProvider>
-      <LanguageProvider>
-        <AuthProvider>
-          <DataProvider>
-            <PWAProvider>
-              <AppContent />
-            </PWAProvider>
-          </DataProvider>
-        </AuthProvider>
-      </LanguageProvider>
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <LanguageProvider>
+          <AuthProvider>
+            <DataProvider>
+              <PWAProvider>
+                <AppContent />
+              </PWAProvider>
+            </DataProvider>
+          </AuthProvider>
+        </LanguageProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }

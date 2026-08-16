@@ -13,13 +13,14 @@ export const LanguageProvider = ({ children }) => {
   }, [lang]);
 
   const t = (key, params) => {
-    let text = translations[lang]?.[key] || translations.en?.[key] || key;
-    if (params && typeof params === 'object') {
+    if (!key) return '';
+    let text = translations?.[lang]?.[key] || translations?.en?.[key] || key;
+    if (typeof text === 'string' && params && typeof params === 'object') {
       Object.entries(params).forEach(([paramKey, paramVal]) => {
-        text = text.replace(new RegExp(`\\{${paramKey}\\}`, 'g'), paramVal);
+        text = text.replace(new RegExp(`\\{${paramKey}\\}`, 'g'), String(paramVal ?? ''));
       });
     }
-    return text;
+    return typeof text === 'string' ? text : String(text ?? '');
   };
 
   return (

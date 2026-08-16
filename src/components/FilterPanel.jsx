@@ -2,39 +2,41 @@ import React, { useState, useEffect } from 'react';
 import { Filter, RotateCcw, ShieldCheck, MapPin, IndianRupee, GraduationCap, Utensils, Heart, Check, Sparkles } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
-export const FilterPanel = ({ appliedFilters, onApply, onReset, totalMatches, isMobileDrawer = false }) => {
+export const FilterPanel = ({ appliedFilters, filters, onApply, onReset, totalMatches = 0, isMobileDrawer = false }) => {
   const { t } = useLanguage();
 
+  const safeApplied = appliedFilters || filters || {};
+
   // Local pending filter state — adjusts controls without updating parent grid until "Apply"
-  const [pendingFilters, setPendingFilters] = useState(appliedFilters);
+  const [pendingFilters, setPendingFilters] = useState(safeApplied);
 
   // Synchronize pendingFilters whenever appliedFilters changes (e.g. after Reset)
   useEffect(() => {
-    setPendingFilters(appliedFilters);
-  }, [appliedFilters]);
+    setPendingFilters(safeApplied);
+  }, [appliedFilters, filters]);
 
   const handleFieldChange = (key, value) => {
-    setPendingFilters(prev => ({ ...prev, [key]: value }));
+    setPendingFilters(prev => ({ ...(prev || {}), [key]: value }));
   };
 
   // Compare pendingFilters vs appliedFilters to count unapplied changes
-  const unappliedCount = Object.keys(pendingFilters).filter(
-    key => pendingFilters[key] !== appliedFilters[key]
+  const unappliedCount = Object.keys(pendingFilters || {}).filter(
+    key => (pendingFilters || {})[key] !== (safeApplied || {})[key]
   ).length;
 
   const hasUnappliedChanges = unappliedCount > 0;
 
   // Count active filters currently applied
   const activeAppliedCount = [
-    appliedFilters.gender && appliedFilters.gender !== 'all',
-    appliedFilters.incomeBracket && appliedFilters.incomeBracket !== 'all',
-    Boolean(appliedFilters.state),
-    Boolean(appliedFilters.city),
-    Boolean(appliedFilters.education),
-    Boolean(appliedFilters.diet),
-    Boolean(appliedFilters.maritalStatus),
-    appliedFilters.verifiedOnly,
-    (appliedFilters.ageMin && appliedFilters.ageMin > 18) || (appliedFilters.ageMax && appliedFilters.ageMax < 80)
+    safeApplied.gender && safeApplied.gender !== 'all',
+    safeApplied.incomeBracket && safeApplied.incomeBracket !== 'all',
+    Boolean(safeApplied.state),
+    Boolean(safeApplied.city),
+    Boolean(safeApplied.education),
+    Boolean(safeApplied.diet),
+    Boolean(safeApplied.maritalStatus),
+    safeApplied.verifiedOnly,
+    (safeApplied.ageMin && safeApplied.ageMin > 18) || (safeApplied.ageMax && safeApplied.ageMax < 80)
   ].filter(Boolean).length;
 
   const indianStates = [
