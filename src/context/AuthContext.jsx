@@ -304,13 +304,19 @@ export const AuthProvider = ({ children }) => {
       ...profileColumns 
     } = profileData;
 
+    const hasKids = (profileColumns.has_children === 'yes' || profileColumns.has_children === true) && (profileColumns.marital_status !== 'never_married');
+    const cleanChildrenCount = hasKids ? sanitizeNumeric(profileColumns.children_count) : null;
+    const cleanChildrenStatus = hasKids ? (profileColumns.children_living_status || null) : null;
+
     const fullProfile = {
       ...profileData,
       id: user?.id || `user-${Date.now()}`,
       age: sanitizeNumeric(profileData.age) || 26,
       height_cm: sanitizeNumeric(profileData.height_cm),
       annual_income_lpa: sanitizeNumeric(profileData.annual_income_lpa),
-      children_count: sanitizeNumeric(profileData.children_count),
+      has_children: hasKids,
+      children_count: cleanChildrenCount,
+      children_living_status: cleanChildrenStatus,
       is_active: profileData.is_active !== undefined ? profileData.is_active : true,
       is_visible: profileData.is_visible !== undefined ? profileData.is_visible : (profileData.is_search_visible !== undefined ? profileData.is_search_visible : true),
       created_at: profileData.created_at || new Date().toISOString()
@@ -322,7 +328,9 @@ export const AuthProvider = ({ children }) => {
       age: sanitizeNumeric(profileColumns.age) || 26,
       height_cm: sanitizeNumeric(profileColumns.height_cm),
       annual_income_lpa: sanitizeNumeric(profileColumns.annual_income_lpa),
-      children_count: sanitizeNumeric(profileColumns.children_count),
+      has_children: hasKids,
+      children_count: cleanChildrenCount,
+      children_living_status: cleanChildrenStatus,
       diet: (profileColumns.diet || 'veg').toLowerCase().trim(),
       marital_status: (profileColumns.marital_status || 'never_married').toLowerCase().trim(),
       family_type: (profileColumns.family_type || 'nuclear').toLowerCase().trim(),

@@ -42,7 +42,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
     marital_status: 'never_married',
     has_children: 'no', // Optional
     children_count: '',
-    children_living_status: 'living_together',
+    children_living_status: null,
     family_type: 'nuclear',
     caste: '',
     sub_caste: '',
