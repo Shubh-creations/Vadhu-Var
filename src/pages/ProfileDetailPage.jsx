@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, ShieldCheck, Heart, MapPin, Briefcase, GraduationCap, Ruler, Utensils, Users, CheckCircle2, User, FileText, Sparkles, Pencil } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, Heart, MapPin, Briefcase, GraduationCap, Ruler, Utensils, Users, CheckCircle2, User, FileText, Sparkles, Pencil, MessageSquare } from 'lucide-react';
 import BadgeVerified from '../components/BadgeVerified';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
@@ -17,10 +17,16 @@ export const ProfileDetailPage = ({ profile, onBack, onOpenCompatibility, onOpen
 
   const currentUserId = myProfile?.id || user?.id;
   const isOwnProfile = currentUserId === profile.id;
-  const existingInterest = interests.find(
+  const existingSentInterest = interests.find(
     i => i.sender_id === currentUserId && i.receiver_id === profile.id
   );
-  const hasExpressedInterest = interestSent || Boolean(existingInterest);
+  const existingReceivedInterest = interests.find(
+    i => i.sender_id === profile.id && i.receiver_id === currentUserId
+  );
+  
+  const mutualAcceptedInterest = (existingSentInterest?.status === 'accepted' || existingReceivedInterest?.status === 'accepted');
+  const isAcceptedMatch = Boolean(mutualAcceptedInterest);
+  const hasExpressedInterest = interestSent || Boolean(existingSentInterest);
   const matchScore = calculateCompatibilityEstimate(myProfile, profile, partnerPreferences);
 
   const handleExpressInterest = async () => {
@@ -115,8 +121,8 @@ export const ProfileDetailPage = ({ profile, onBack, onOpenCompatibility, onOpen
               )}
             </div>
 
-            {/* Action Buttons: Edit Profile for Own Profile / Express Interest for Candidates */}
-            <div className="flex items-center justify-center sm:justify-start gap-3">
+            {/* Action Buttons: Edit Profile for Own Profile / Chat for Accepted Matches / Express Interest for Candidates */}
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3">
               {isOwnProfile ? (
                 <button
                   type="button"
@@ -126,6 +132,21 @@ export const ProfileDetailPage = ({ profile, onBack, onOpenCompatibility, onOpen
                   <Pencil className="w-4 h-4" />
                   <span>{t('editYourProfile')}</span>
                 </button>
+              ) : isAcceptedMatch ? (
+                <>
+                  <div className="px-5 py-2.5 radius-btn bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-xs font-bold flex items-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>Mutual Match Accepted</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => onOpenChat && onOpenChat(profile)}
+                    className="px-8 py-3 radius-btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-xs transition-all flex items-center gap-2 active:scale-95"
+                  >
+                    <MessageSquare className="w-4 h-4" />
+                    <span>Chat & Plan Proposal</span>
+                  </button>
+                </>
               ) : (
                 <button
                   onClick={handleExpressInterest}

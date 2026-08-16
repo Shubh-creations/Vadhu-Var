@@ -166,27 +166,9 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
               <Shield className="w-4 h-4" />
             </button>
 
-            <button
-              onClick={onOpenChatModal}
-              className="hidden lg:block p-1.5 radius-btn text-sub hover:text-main hover:bg-surface-ground transition-colors"
-              title={t('messaging')}
-              aria-label={t('messaging')}
-            >
-              <MessageSquare className="w-4 h-4" />
-            </button>
-
-            {/* User Profile & Account Settings or Sign In */}
+            {/* User Profile & Sign Out or Sign In */}
             {user || profile ? (
               <div className="flex items-center gap-1 sm:gap-2">
-                <button
-                  onClick={() => setActiveTab('settings')}
-                  className="p-1.5 radius-btn text-sub hover:text-main hover:bg-surface-ground transition-colors"
-                  title={t('accountSettings')}
-                  aria-label={t('accountSettings')}
-                >
-                  <Settings className="w-4 h-4" />
-                </button>
-
                 <button
                   onClick={() => setActiveTab('profile')}
                   className="flex items-center gap-1.5 p-0.5 sm:pr-2.5 rounded-full border border-main hover:border-sky-blue transition-colors"

@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { Heart, Check, X, ShieldCheck, ArrowRight, UserCheck } from 'lucide-react';
+import { Heart, Check, X, ShieldCheck, ArrowRight, UserCheck, MessageSquare } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import BadgeVerified from '../components/BadgeVerified';
 
-export const InterestsPage = ({ onViewProfile }) => {
+export const InterestsPage = ({ onViewProfile, onOpenChat }) => {
   const { user, profile } = useAuth();
   const { interests, profiles, respondInterest } = useData();
   const [activeTab, setActiveTab] = useState('received');
@@ -89,6 +89,14 @@ export const InterestsPage = ({ onViewProfile }) => {
                           <X className="w-4 h-4" />
                         </button>
                       </>
+                    ) : item.status === 'accepted' ? (
+                      <button
+                        onClick={() => onOpenChat && onOpenChat(sender)}
+                        className="px-4 py-2 radius-btn bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors"
+                      >
+                        <MessageSquare className="w-3.5 h-3.5" />
+                        <span>Chat & Connect</span>
+                      </button>
                     ) : (
                       <span className="px-3 py-1 radius-btn bg-surface-ground text-sub text-xs font-medium capitalize border border-main">
                         {item.status}
@@ -98,6 +106,7 @@ export const InterestsPage = ({ onViewProfile }) => {
                     <button
                       onClick={() => onViewProfile(sender)}
                       className="px-3 py-2 radius-btn border border-main text-sub text-xs hover:text-main"
+                      title="View Full Profile"
                     >
                       <ArrowRight className="w-4 h-4" />
                     </button>
@@ -136,12 +145,23 @@ export const InterestsPage = ({ onViewProfile }) => {
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <span className="px-3 py-1 radius-btn bg-surface-ground text-sub text-xs font-medium capitalize border border-main">
-                      Status: {item.status}
-                    </span>
+                    {item.status === 'accepted' ? (
+                      <button
+                        onClick={() => onOpenChat && onOpenChat(receiver)}
+                        className="px-4 py-2 radius-btn bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors"
+                      >
+                        <MessageSquare className="w-3.5 h-3.5" />
+                        <span>Chat & Connect</span>
+                      </button>
+                    ) : (
+                      <span className="px-3 py-1 radius-btn bg-surface-ground text-sub text-xs font-medium capitalize border border-main">
+                        Status: {item.status}
+                      </span>
+                    )}
                     <button
                       onClick={() => onViewProfile(receiver)}
                       className="px-3 py-2 radius-btn border border-main text-sub text-xs hover:text-main"
+                      title="View Full Profile"
                     >
                       <ArrowRight className="w-4 h-4" />
                     </button>

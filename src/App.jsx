@@ -28,6 +28,8 @@ import PrivacySettingsModal from './components/PrivacySettingsModal';
 import ChatAndCallModal from './components/ChatAndCallModal';
 import BlockReportModal from './components/BlockReportModal';
 
+import UserProfileHub from './components/UserProfileHub';
+
 function AppContent() {
   const { user, profile } = useAuth();
   const { toast, clearToast } = useData();
@@ -90,8 +92,8 @@ function AppContent() {
         )}
 
         {activeTab === 'profile' && (
-          <ProfileWizardPage
-            onComplete={() => setActiveTab('browse')}
+          <UserProfileHub
+            onNavigateToDiscover={() => setActiveTab('browse')}
           />
         )}
 
@@ -129,6 +131,7 @@ function AppContent() {
         {activeTab === 'interests' && (
           <InterestsPage
             onViewProfile={handleViewProfileDetail}
+            onOpenChat={(p) => setChatCandidate(p)}
           />
         )}
 
