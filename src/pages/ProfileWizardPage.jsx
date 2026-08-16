@@ -264,6 +264,18 @@ export const ProfileWizardPage = ({ onComplete }) => {
         await refreshProfiles();
       }
 
+      // 5. Send automated profile completion email in background (non-blocking)
+      const candidateEmail = user?.email || formData.email;
+      if (candidateEmail && supabase) {
+        supabase.functions.invoke('send-profile-complete-email', {
+          body: {
+            email: candidateEmail,
+            full_name: savedProfile.full_name,
+            profile_id: savedProfile.id
+          }
+        }).catch(e => console.warn('Background email trigger:', e));
+      }
+
       setSuccessModal(true);
     } catch (err) {
       alert(`Error saving profile: ${err.message || 'Please check your connection and try again.'}`);
