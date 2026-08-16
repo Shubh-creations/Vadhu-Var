@@ -62,10 +62,20 @@ export const DataProvider = ({ children }) => {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
+        .eq('is_active', true)
+        .eq('is_visible', true)
+        .neq('full_name', 'Deleted User')
         .order('created_at', { ascending: false });
 
       if (!error && data) {
-        const cleanProfiles = data.filter(p => !p.id?.startsWith('cand-'));
+        const cleanProfiles = data.filter(p => 
+          !p.id?.startsWith('cand-') && 
+          p.is_active !== false && 
+          p.is_visible !== false && 
+          p.full_name && 
+          p.full_name !== 'Deleted User' &&
+          !p.full_name.toLowerCase().startsWith('test ')
+        );
         setProfiles(cleanProfiles);
         localStorage.setItem('mh_matrimony_profiles', JSON.stringify(cleanProfiles));
       }

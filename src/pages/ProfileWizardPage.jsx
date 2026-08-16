@@ -7,6 +7,7 @@ import { supabase } from '../lib/supabaseClient';
 import BadgeVerified from '../components/BadgeVerified';
 import ImageCropperModal from '../components/ImageCropperModal';
 import { compressImage } from '../lib/imageCompressor';
+import { performOcrPreCheck } from '../lib/ocrScanner';
 
 export const ProfileWizardPage = ({ onComplete }) => {
   const { user, profile: existingProfile, partnerPreferences: existingPref, saveProfile, savePartnerPreferences } = useAuth();
@@ -17,6 +18,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
   const [loading, setLoading] = useState(false);
   const [photoUploading, setPhotoUploading] = useState(false);
   const [photoError, setPhotoError] = useState('');
+  const [ocrStatus, setOcrStatus] = useState({ scanning: false, result: null });
   const [successModal, setSuccessModal] = useState(false);
   const [errors, setErrors] = useState({});
 
@@ -197,6 +199,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
     const file = e.target.files?.[0];
     if (file) {
       try {
+        setOcrStatus({ scanning: true, result: null });
         const compressedDataUrl = await compressImage(file, 1200, 1200, 0.8);
         setFormData(prev => ({ ...prev, id_document_url: compressedDataUrl }));
         setErrors(prev => {
@@ -204,7 +207,20 @@ export const ProfileWizardPage = ({ onComplete }) => {
           delete next.id_document_url;
           return next;
         });
+
+        // Run automated OCR pre-check asynchronously
+        performOcrPreCheck(compressedDataUrl, {
+          fullName: formData.full_name,
+          age: formData.age,
+          gender: formData.gender
+        }).then(result => {
+          setOcrStatus({ scanning: false, result });
+        }).catch(err => {
+          console.warn('OCR error:', err);
+          setOcrStatus({ scanning: false, result: null });
+        });
       } catch (err) {
+        setOcrStatus({ scanning: false, result: null });
         alert('Could not process ID document upload');
       }
     }
@@ -1052,7 +1068,39 @@ export const ProfileWizardPage = ({ onComplete }) => {
                 onChange={handleIdDocUpload}
                 className="block w-full text-xs text-sub file:py-2 file:px-4 file:radius-btn file:border-0 file:text-xs file:font-medium file:bg-surface-ground file:text-main cursor-pointer"
               />
-              {formData.id_document_url && (
+
+              {/* Live Automated OCR Pre-Check Status */}
+              {ocrStatus.scanning && (
+                <div className="p-3 bg-sky-blue/10 border border-sky-blue/30 radius-btn flex items-center gap-2.5 text-xs text-sky-blue animate-pulse">
+                  <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" />
+                  <span>Running automated AI OCR pre-check on document...</span>
+                </div>
+              )}
+
+              {ocrStatus.result && (
+                <div className={`p-3 radius-btn border text-xs space-y-1.5 ${
+                  ocrStatus.result.status === 'verified_match'
+                    ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-800 dark:text-emerald-300'
+                    : 'bg-amber-500/10 border-amber-500/30 text-amber-800 dark:text-amber-300'
+                }`}>
+                  <div className="flex items-center justify-between font-bold">
+                    <span className="flex items-center gap-1.5">
+                      <Sparkles className="w-4 h-4 text-sky-blue" />
+                      <span>AI OCR Pre-Check: {ocrStatus.result.docType}</span>
+                    </span>
+                    <span className="text-[10px] px-2 py-0.5 radius-btn bg-surface-ground border border-main">
+                      {ocrStatus.result.nameMatchConfidence}% Name Match
+                    </span>
+                  </div>
+                  <p className="text-[11px] leading-relaxed">
+                    {ocrStatus.result.status === 'verified_match'
+                      ? `✓ High-trust document match detected for candidate. Ready for instant admin verification.`
+                      : `ℹ️ Document attached. Admin will cross-verify profile details with the submitted document.`}
+                  </p>
+                </div>
+              )}
+
+              {formData.id_document_url && !ocrStatus.scanning && !ocrStatus.result && (
                 <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
                   <CheckCircle2 className="w-3.5 h-3.5" />
                   <span>{t('attachedSuccess')}</span>
