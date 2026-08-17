@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Heart, Check, X, ShieldCheck, ArrowRight, UserCheck, MessageSquare } from 'lucide-react';
+import { Heart, Check, X, ArrowRight, MessageSquare } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import BadgeVerified from '../components/BadgeVerified';
+import CandidateAvatar from '../components/CandidateAvatar';
 
 export const InterestsPage = ({ onViewProfile, onOpenChat, onNavigateToDiscover }) => {
   const { user, profile } = useAuth();
@@ -18,37 +19,30 @@ export const InterestsPage = ({ onViewProfile, onOpenChat, onNavigateToDiscover 
     <div className="max-w-5xl mx-auto px-4 py-8">
       {/* Header */}
       <div className="text-center mb-8">
-        <div className="w-12 h-12 radius-btn bg-sky-blue text-white flex items-center justify-center mx-auto mb-2 font-bold shadow-xs">
-          <Heart className="w-6 h-6 fill-white/20" />
-        </div>
-        <h1 className="font-serif text-2xl sm:text-3xl font-extrabold text-main">Interest Requests</h1>
-        <p className="text-xs sm:text-sm text-sub mt-1 max-w-md mx-auto">
-          Manage proposal interest requests sent and received.
-        </p>
+        <h1 className="font-serif text-2xl sm:text-3xl font-bold text-main">Interests & Proposals</h1>
+        <p className="text-xs sm:text-sm text-sub mt-1">Manage connection requests and accepted proposal chats.</p>
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-main mb-6">
-        <button
-          onClick={() => setActiveTab('received')}
-          className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors ${
-            activeTab === 'received'
-              ? 'border-sky-blue text-main'
-              : 'border-transparent text-sub hover:text-main'
-          }`}
-        >
-          Received ({receivedInterests.length})
-        </button>
-        <button
-          onClick={() => setActiveTab('sent')}
-          className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors ${
-            activeTab === 'sent'
-              ? 'border-sky-blue text-main'
-              : 'border-transparent text-sub hover:text-main'
-          }`}
-        >
-          Sent ({sentInterests.length})
-        </button>
+      <div className="flex justify-center mb-6">
+        <div className="bg-surface-card border border-main radius-btn p-1 flex gap-1 shadow-2xs">
+          <button
+            onClick={() => setActiveTab('received')}
+            className={`px-6 py-2 radius-btn text-xs font-bold transition-colors ${
+              activeTab === 'received' ? 'bg-sky-blue text-white shadow-xs' : 'text-sub hover:text-main'
+            }`}
+          >
+            Received ({receivedInterests.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('sent')}
+            className={`px-6 py-2 radius-btn text-xs font-bold transition-colors ${
+              activeTab === 'sent' ? 'bg-sky-blue text-white shadow-xs' : 'text-sub hover:text-main'
+            }`}
+          >
+            Sent ({sentInterests.length})
+          </button>
+        </div>
       </div>
 
       {/* Received Tab */}
@@ -62,12 +56,17 @@ export const InterestsPage = ({ onViewProfile, onOpenChat, onNavigateToDiscover 
               return (
                 <div key={item.id} className="bg-surface-card radius-card border border-main p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex items-center gap-4">
-                    <img src={sender.photo_url} alt={sender.full_name} className="w-14 h-14 radius-btn object-cover border border-main" />
+                    <CandidateAvatar
+                      src={sender.photo_url}
+                      name={sender.full_name}
+                      size="md"
+                      shape="rounded"
+                    />
                     <div>
                       <h3 className="font-serif font-bold text-main text-base">{sender.full_name}, {sender.age}</h3>
-                      <p className="text-xs text-sub">{sender.occupation} • {sender.city}</p>
+                      <p className="text-xs text-sub">{sender.occupation || 'Candidate'} • {sender.city || 'Maharashtra'}</p>
                       <div className="mt-1">
-                        <BadgeVerified size="small" isIdVerified={sender.is_id_verified} isFullyVerified={sender.is_fully_verified} />
+                        <BadgeVerified profile={sender} size="small" />
                       </div>
                     </div>
                   </div>
@@ -151,10 +150,15 @@ export const InterestsPage = ({ onViewProfile, onOpenChat, onNavigateToDiscover 
               return (
                 <div key={item.id} className="bg-surface-card radius-card border border-main p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex items-center gap-4">
-                    <img src={receiver.photo_url} alt={receiver.full_name} className="w-14 h-14 radius-btn object-cover border border-main" />
+                    <CandidateAvatar
+                      src={receiver.photo_url}
+                      name={receiver.full_name}
+                      size="md"
+                      shape="rounded"
+                    />
                     <div>
                       <h3 className="font-serif font-bold text-main text-base">{receiver.full_name}, {receiver.age}</h3>
-                      <p className="text-xs text-sub">{receiver.occupation || 'Candidate'} • {receiver.city}</p>
+                      <p className="text-xs text-sub">{receiver.occupation || 'Candidate'} • {receiver.city || 'Maharashtra'}</p>
                     </div>
                   </div>
 

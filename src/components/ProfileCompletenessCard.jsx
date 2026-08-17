@@ -64,7 +64,7 @@ export const ProfileCompletenessCard = ({ profile, partnerPreferences, onUpdateP
           <div className="space-y-1.5">
             {missingItems.slice(0, 3).map((item) => (
               <div
-                key={item.key}
+                key={item.id || item.label}
                 className="flex items-center justify-between p-2.5 radius-btn bg-surface-ground border border-main text-xs"
               >
                 <div className="flex items-center gap-2 text-main font-medium">

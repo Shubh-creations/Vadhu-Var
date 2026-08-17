@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Heart, Star, Sparkles, MapPin, Briefcase, GraduationCap, Play, Pause, ChevronLeft, ChevronRight, MessageCircle, ShieldCheck, User } from 'lucide-react';
 import BadgeVerified from './BadgeVerified';
+import CandidateAvatar from './CandidateAvatar';
 import { useData } from '../context/DataContext';
 
 export const HingeCardDeck = ({ profiles, onViewDetails, onOpenCompatibility, onAuthRequired }) => {
@@ -52,18 +53,27 @@ export const HingeCardDeck = ({ profiles, onViewDetails, onOpenCompatibility, on
 
       {/* Main Card */}
       <div className="bg-surface-card border border-main radius-card shadow-md overflow-hidden relative">
-        <div className="relative h-80 sm:h-96 w-full">
-          <img
-            src={candidate.photo_url}
-            alt={candidate.full_name}
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+        <div className="relative h-80 sm:h-96 w-full flex items-center justify-center bg-surface-ground">
+          {candidate.photo_url ? (
+            <img
+              src={candidate.photo_url}
+              alt={candidate.full_name}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <CandidateAvatar
+              name={candidate.full_name}
+              size="hero"
+              shape="rounded"
+              showNoPhotoText={true}
+            />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
 
           {/* Top Badges */}
           <div className="absolute top-4 left-4 right-4 flex items-center justify-between">
             <div className="flex items-center gap-1.5 flex-wrap">
-              {candidate.is_id_verified && <BadgeVerified size="small" type="govt_id" />}
+              <BadgeVerified profile={candidate} size="small" />
             </div>
 
             <button

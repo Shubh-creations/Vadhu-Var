@@ -2,6 +2,7 @@ import React from 'react';
 import { ShieldCheck, Heart, Users, CheckCircle, Search, ArrowRight, Lock, UserCheck, Sparkles, Download, Smartphone } from 'lucide-react';
 import { Logo } from '../components/Logo';
 import BadgeVerified from '../components/BadgeVerified';
+import CandidateAvatar from '../components/CandidateAvatar';
 import { useData } from '../context/DataContext';
 import { usePWA } from '../context/PWAContext';
 
@@ -154,10 +155,10 @@ export const LandingPage = ({ onGetStarted, onBrowse }) => {
                 className="bg-surface-card radius-card border border-main p-5 hover:border-sky-blue transition-all cursor-pointer shadow-xs space-y-3"
               >
                 <div className="flex items-center gap-3">
-                  <img
-                    src={p.photo_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'}
-                    alt={p.full_name}
-                    className="w-14 h-14 rounded-full object-cover border border-main"
+                  <CandidateAvatar
+                    src={p.photo_url}
+                    name={p.full_name}
+                    size="md"
                   />
                   <div>
                     <h3 className="font-serif font-bold text-main text-base">
@@ -169,11 +170,7 @@ export const LandingPage = ({ onGetStarted, onBrowse }) => {
                   </div>
                 </div>
                 <div>
-                  <BadgeVerified
-                    isFullyVerified={p.is_fully_verified}
-                    isIdVerified={p.is_id_verified}
-                    isProfessionVerified={p.is_profession_verified}
-                  />
+                  <BadgeVerified profile={p} />
                 </div>
               </div>
             ))}

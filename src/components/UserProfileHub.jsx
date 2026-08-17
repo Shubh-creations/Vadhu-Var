@@ -12,6 +12,7 @@ import ProfileWizardPage from '../pages/ProfileWizardPage';
 import ProfileCompletenessCard from './ProfileCompletenessCard';
 import ShareProfileModal from './ShareProfileModal';
 import DeleteAccountModal from './DeleteAccountModal';
+import CandidateAvatar from './CandidateAvatar';
 
 export const UserProfileHub = ({ onNavigateToDiscover, onOpenHelp, onOpenTerms, onNavigateHome }) => {
   const { user, profile, partnerPreferences, savePartnerPreferences, updateAccountSettings, logout } = useAuth();
@@ -119,17 +120,13 @@ export const UserProfileHub = ({ onNavigateToDiscover, onOpenHelp, onOpenTerms, 
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
           {/* Avatar / Photo */}
           <div className="relative">
-            {profile.photo_url ? (
-              <img
-                src={profile.photo_url}
-                alt={profile.full_name}
-                className="w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover border-4 border-sky-blue shadow-md"
-              />
-            ) : (
-              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-sky-blue/10 text-sky-blue flex items-center justify-center font-bold text-3xl border-4 border-sky-blue">
-                {(profile.full_name || 'U')[0].toUpperCase()}
-              </div>
-            )}
+            <CandidateAvatar
+              src={profile.photo_url}
+              name={profile.full_name}
+              size="xl"
+              shape="circle"
+              showNoPhotoText={true}
+            />
           </div>
 
           {/* Profile Details & Badges */}
@@ -138,20 +135,20 @@ export const UserProfileHub = ({ onNavigateToDiscover, onOpenHelp, onOpenTerms, 
               <div>
                 <h1 className="font-serif text-2xl font-bold text-main">{profile.full_name}</h1>
                 <p className="text-xs text-sub mt-0.5">
-                  {profile.age} yrs • {profile.gender === 'male' ? 'Groom' : 'Bride'} • {profile.city}, {profile.state}
+                  {profile.age} Yrs • {profile.city || 'Pune'}, {profile.state || 'Maharashtra'}
                 </p>
               </div>
 
-              {/* Action Buttons: Update Profile & Share Profile */}
-              <div className="flex items-center gap-2">
+              {/* Action Buttons */}
+              <div className="flex items-center justify-center sm:justify-end gap-2 pt-2 sm:pt-0">
                 <button
                   type="button"
                   onClick={() => setShareModalOpen(true)}
-                  className="px-3.5 py-2.5 radius-btn bg-surface-ground hover:bg-surface-card border border-main text-main font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition-colors"
-                  title="Share Profile Card"
+                  className="px-4 py-2.5 radius-btn bg-surface-ground hover:bg-surface-card border border-main text-main hover:text-sky-blue font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
+                  title="Share Bio-Data Card"
                 >
                   <Share2 className="w-4 h-4 text-sky-blue" />
-                  <span>Share Card</span>
+                  <span>Share Bio-Data</span>
                 </button>
 
                 <button
@@ -168,10 +165,8 @@ export const UserProfileHub = ({ onNavigateToDiscover, onOpenHelp, onOpenTerms, 
             {/* Badges */}
             <div className="pt-2 flex flex-wrap items-center justify-center sm:justify-start gap-2">
               <BadgeVerified
-                isFullyVerified={profile.is_fully_verified}
-                isIdVerified={profile.is_id_verified}
-                isProfessionVerified={profile.is_profession_verified}
-                isPending={!profile.is_id_verified}
+                profile={profile}
+                size="normal"
               />
             </div>
 

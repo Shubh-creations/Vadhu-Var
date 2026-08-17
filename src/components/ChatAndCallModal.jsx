@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, Send, ShieldAlert, Phone, Video } from 'lucide-react';
+import CandidateAvatar from './CandidateAvatar';
 
 export const ChatAndCallModal = ({ candidate, isOpen, onClose, onOpenBlockReport }) => {
   const [messages, setMessages] = useState([
@@ -10,7 +11,6 @@ export const ChatAndCallModal = ({ candidate, isOpen, onClose, onOpenBlockReport
   if (!isOpen) return null;
 
   const candidateName = candidate?.full_name || 'Verified Candidate';
-  const candidatePhoto = candidate?.photo_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80';
 
   const handleSend = (e) => {
     e.preventDefault();
@@ -29,7 +29,12 @@ export const ChatAndCallModal = ({ candidate, isOpen, onClose, onOpenBlockReport
         {/* Header */}
         <div className="p-4 border-b border-main flex items-center justify-between bg-surface-ground radius-card">
           <div className="flex items-center gap-3">
-            <img src={candidatePhoto} alt={candidateName} className="w-10 h-10 radius-btn object-cover border border-main" />
+            <CandidateAvatar
+              src={candidate?.photo_url}
+              name={candidateName}
+              size="sm"
+              shape="rounded"
+            />
             <div>
               <h3 className="font-serif font-bold text-main text-sm">{candidateName}</h3>
               <span className="text-[10px] text-sub">Verified Proposal Connect</span>

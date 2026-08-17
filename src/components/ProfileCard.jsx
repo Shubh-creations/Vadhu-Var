@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Heart, MapPin, Briefcase, GraduationCap, Ruler, Utensils, CheckCircle2, User, ExternalLink, Star, IndianRupee } from 'lucide-react';
 import BadgeVerified from './BadgeVerified';
+import CandidateAvatar from './CandidateAvatar';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -73,17 +74,13 @@ export const ProfileCard = ({ profile, onViewDetails, onOpenCompatibility, onAut
         {/* Hero Header: Avatar + Candidate Name (Serif Lora Font) + Badges */}
         <div className="flex items-start gap-4 mb-5">
           <div className="relative flex-shrink-0">
-            {profile.photo_url ? (
-              <img
-                src={profile.photo_url}
-                alt={profile.full_name || 'Candidate photo'}
-                className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg object-cover border border-main group-hover:scale-105 transition-transform duration-200"
-              />
-            ) : (
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg bg-surface-ground text-sub font-extrabold text-xl flex items-center justify-center border border-main">
-                {initials}
-              </div>
-            )}
+            <CandidateAvatar
+              src={profile.photo_url}
+              name={profile.full_name}
+              size="lg"
+              shape="rounded"
+              className="group-hover:scale-105 transition-transform duration-200"
+            />
           </div>
 
           <div className="flex-1 min-w-0">
@@ -91,12 +88,10 @@ export const ProfileCard = ({ profile, onViewDetails, onOpenCompatibility, onAut
               {profile.full_name}, <span className="font-sans font-normal text-sub text-base">{profile.age}</span>
             </h3>
 
-            {/* Verification Badges */}
+            {/* Verification Badges & Profile Completeness */}
             <div className="mt-1.5 flex items-center gap-1.5 flex-wrap">
               <BadgeVerified
-                isFullyVerified={profile.is_fully_verified}
-                isIdVerified={profile.is_id_verified}
-                isProfessionVerified={profile.is_profession_verified}
+                profile={profile}
                 size="small"
               />
             </div>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ArrowLeft, ShieldCheck, Heart, MapPin, Briefcase, GraduationCap, Ruler, Utensils, Users, CheckCircle2, User, FileText, Sparkles, Pencil, MessageSquare } from 'lucide-react';
 import BadgeVerified from '../components/BadgeVerified';
+import CandidateAvatar from '../components/CandidateAvatar';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -47,10 +48,6 @@ export const ProfileDetailPage = ({ profile, onBack, onOpenCompatibility, onOpen
     }
   };
 
-  const initials = profile.full_name
-    ? profile.full_name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
-    : 'MV';
-
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
       {/* Back Button */}
@@ -67,17 +64,13 @@ export const ProfileDetailPage = ({ profile, onBack, onOpenCompatibility, onOpen
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
           {/* Avatar / Photo */}
           <div className="relative flex-shrink-0">
-            {profile.photo_url ? (
-              <img
-                src={profile.photo_url}
-                alt={profile.full_name}
-                className="w-28 h-28 sm:w-32 sm:h-32 rounded-full object-cover border-2 border-main shadow-xs"
-              />
-            ) : (
-              <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-surface-ground border-2 border-main flex items-center justify-center text-main font-serif text-3xl font-bold">
-                {initials}
-              </div>
-            )}
+            <CandidateAvatar
+              src={profile.photo_url}
+              name={profile.full_name}
+              size="hero"
+              shape="circle"
+              showNoPhotoText={true}
+            />
           </div>
 
           {/* Name & Primary Attributes */}
@@ -93,13 +86,11 @@ export const ProfileDetailPage = ({ profile, onBack, onOpenCompatibility, onOpen
               </div>
             </div>
 
-            {/* Verification Badge */}
+            {/* Verification Badge & Profile Completeness */}
             <div className="mb-4 flex items-center justify-center sm:justify-start gap-2 flex-wrap">
               <BadgeVerified
-                isFullyVerified={profile.is_fully_verified}
-                isIdVerified={profile.is_id_verified}
-                isProfessionVerified={profile.is_profession_verified}
-                isPending={isOwnProfile && !profile.is_id_verified && !profile.is_fully_verified}
+                profile={profile}
+                size="normal"
               />
             </div>
 
