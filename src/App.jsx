@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { DataProvider, useData } from './context/DataContext';
 import { ThemeProvider } from './context/ThemeContext';
-import { LanguageProvider } from './context/LanguageContext';
+import { LanguageProvider, useLanguage } from './context/LanguageContext';
 import { PWAProvider } from './context/PWAContext';
 import Navbar from './components/Navbar';
 import MobileBottomNav from './components/MobileBottomNav';
@@ -35,7 +35,8 @@ import UserProfileHub from './components/UserProfileHub';
 
 function AppContent() {
   const { user, profile, isPasswordRecovery, isAccountDeactivated } = useAuth();
-  const { toast, clearToast } = useData();
+  const { toast, clearToast, showToast } = useData();
+  const { t } = useLanguage();
 
   if (isAccountDeactivated) {
     return (
@@ -43,58 +44,184 @@ function AppContent() {
     );
   }
 
+  // Initial tab resolution from URL hash or storage
   const [activeTab, setActiveTab] = useState(() => {
     if (typeof window !== 'undefined') {
-      const hash = window.location.hash || '';
+      const hash = window.location.hash ? window.location.hash.replace('#', '') : '';
       const search = window.location.search || '';
       if (hash.includes('type=recovery') || search.includes('type=recovery')) {
         return 'auth';
       }
+      if (hash && ['landing', 'auth', 'browse', 'shortlists', 'interests', 'profile', 'detail', 'privacy', 'terms', 'help', 'settings'].includes(hash)) {
+        return hash;
+      }
     }
-    // If user has local token/profile, open in browse mode; otherwise landing page
     return localStorage.getItem('vadhu_var_user') || localStorage.getItem('vadhu_var_profile') ? 'browse' : 'landing';
   });
 
-  useEffect(() => {
-    if (isPasswordRecovery) {
-      setActiveTab('auth');
-    }
-  }, [isPasswordRecovery]);
-
-  useEffect(() => {
-    const handleCheckRecovery = () => {
-      const hash = window.location.hash || '';
-      const search = window.location.search || '';
-      if (hash.includes('type=recovery') || search.includes('type=recovery')) {
-        setActiveTab('auth');
-      }
-    };
-    handleCheckRecovery();
-    window.addEventListener('hashchange', handleCheckRecovery);
-
-    window.__onOpenTerms = () => setActiveTab('terms');
-    window.__onOpenPrivacy = () => setActiveTab('privacy');
-    window.__onOpenHelp = () => setActiveTab('help');
-
-    return () => {
-      window.removeEventListener('hashchange', handleCheckRecovery);
-      delete window.__onOpenTerms;
-      delete window.__onOpenPrivacy;
-      delete window.__onOpenHelp;
-    };
-  }, []);
   const [selectedProfile, setSelectedProfile] = useState(null);
 
-  // Modal State Triggers
+  // Modal States
   const [compatibilityCandidate, setCompatibilityCandidate] = useState(null);
   const [privacyModalOpen, setPrivacyModalOpen] = useState(false);
   const [chatCandidate, setChatCandidate] = useState(null);
   const [blockReportCandidate, setBlockReportCandidate] = useState(null);
 
-  const handleViewProfileDetail = (p) => {
-    setSelectedProfile(p);
-    setActiveTab('detail');
+  // Double-Back to Exit timestamp tracking ref
+  const lastBackPressRef = useRef(0);
+  const isNavigatingRef = useRef(false);
+
+  // Navigation function with History Push State
+  const navigateToTab = useCallback((newTab, options = {}) => {
+    const { profileData = null, replace = false } = options;
+    setActiveTab(newTab);
+
+    if (newTab === 'detail' && profileData) {
+      setSelectedProfile(profileData);
+    } else if (newTab !== 'detail') {
+      setSelectedProfile(null);
+    }
+
+    const state = {
+      tab: newTab,
+      profile: profileData ? { id: profileData.id, full_name: profileData.full_name } : null
+    };
+
+    if (typeof window !== 'undefined') {
+      isNavigatingRef.current = true;
+      if (replace) {
+        window.history.replaceState(state, '', `#${newTab}`);
+      } else {
+        window.history.pushState(state, '', `#${newTab}`);
+      }
+      setTimeout(() => {
+        isNavigatingRef.current = false;
+      }, 50);
+    }
+  }, []);
+
+  // Modal open helpers with history push so browser back closes modals
+  const handleOpenPrivacyModal = () => {
+    setPrivacyModalOpen(true);
+    if (typeof window !== 'undefined') {
+      window.history.pushState({ modal: 'privacy', tab: activeTab }, '', window.location.hash || `#${activeTab}`);
+    }
   };
+
+  const handleOpenChatModal = (candidate) => {
+    setChatCandidate(candidate || selectedProfile || null);
+    if (typeof window !== 'undefined') {
+      window.history.pushState({ modal: 'chat', tab: activeTab }, '', window.location.hash || `#${activeTab}`);
+    }
+  };
+
+  const handleOpenCompatibilityModal = (candidate) => {
+    setCompatibilityCandidate(candidate);
+    if (typeof window !== 'undefined') {
+      window.history.pushState({ modal: 'compatibility', tab: activeTab }, '', window.location.hash || `#${activeTab}`);
+    }
+  };
+
+  const handleOpenBlockReportModal = (candidate) => {
+    setBlockReportCandidate(candidate);
+    if (typeof window !== 'undefined') {
+      window.history.pushState({ modal: 'blockReport', tab: activeTab }, '', window.location.hash || `#${activeTab}`);
+    }
+  };
+
+  const handleViewProfileDetail = (p) => {
+    navigateToTab('detail', { profileData: p });
+  };
+
+  const handleGoBack = () => {
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      window.history.back();
+    } else {
+      navigateToTab(user || profile ? 'browse' : 'landing');
+    }
+  };
+
+  // Password Recovery handler
+  useEffect(() => {
+    if (isPasswordRecovery) {
+      navigateToTab('auth', { replace: true });
+    }
+  }, [isPasswordRecovery, navigateToTab]);
+
+  // Window Popstate & Global Event Listeners (Back Button Handling)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    // Ensure root history state is set
+    const currentHash = window.location.hash ? window.location.hash.replace('#', '') : activeTab;
+    window.history.replaceState({ tab: currentHash, isRoot: currentHash === 'browse' || currentHash === 'landing' }, '', `#${currentHash}`);
+
+    const handlePopState = (event) => {
+      // 1. If any modal is currently open, dismiss modal on Back
+      if (chatCandidate || privacyModalOpen || compatibilityCandidate || blockReportCandidate) {
+        setChatCandidate(null);
+        setPrivacyModalOpen(false);
+        setCompatibilityCandidate(null);
+        setBlockReportCandidate(null);
+        return;
+      }
+
+      // 2. If history state contains a tab, transition to it
+      if (event.state && event.state.tab) {
+        setActiveTab(event.state.tab);
+        if (event.state.tab !== 'detail') {
+          setSelectedProfile(null);
+        }
+        return;
+      }
+
+      // 3. If on a sub-view (e.g. detail, help, terms, privacy, settings, auth, profile), go back to main browse/landing
+      const isRootTab = activeTab === 'browse' || activeTab === 'landing';
+      if (!isRootTab) {
+        const rootTarget = user || profile ? 'browse' : 'landing';
+        setActiveTab(rootTarget);
+        setSelectedProfile(null);
+        window.history.pushState({ tab: rootTarget, isRoot: true }, '', `#${rootTarget}`);
+        return;
+      }
+
+      // 4. If already on root screen ('browse' or 'landing'), implement Double-Back to Exit
+      const now = Date.now();
+      if (now - lastBackPressRef.current < 2000) {
+        // Second back press within 2s -> Allow exit (let browser or PWA quit)
+        lastBackPressRef.current = 0;
+      } else {
+        // First back press -> Prevent sudden exit, keep in app, and show localized toast
+        lastBackPressRef.current = now;
+        window.history.pushState({ tab: activeTab, isRoot: true }, '', `#${activeTab}`);
+        showToast(t('pressBackAgainToExit') || 'Press back again to exit app', 'info');
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+
+    window.__onOpenTerms = () => navigateToTab('terms');
+    window.__onOpenPrivacy = () => navigateToTab('privacy');
+    window.__onOpenHelp = () => navigateToTab('help');
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      delete window.__onOpenTerms;
+      delete window.__onOpenPrivacy;
+      delete window.__onOpenHelp;
+    };
+  }, [
+    activeTab, 
+    chatCandidate, 
+    privacyModalOpen, 
+    compatibilityCandidate, 
+    blockReportCandidate, 
+    user, 
+    profile, 
+    navigateToTab, 
+    showToast, 
+    t
+  ]);
 
   return (
     <div className="min-h-screen flex flex-col transition-colors duration-200 pb-16 md:pb-0">
@@ -104,13 +231,10 @@ function AppContent() {
       {/* Top Navbar */}
       <Navbar
         activeTab={activeTab}
-        setActiveTab={(tab) => {
-          setActiveTab(tab);
-          if (tab !== 'detail') setSelectedProfile(null);
-        }}
-        onOpenAuth={() => setActiveTab('auth')}
-        onOpenPrivacyModal={() => setPrivacyModalOpen(true)}
-        onOpenChatModal={() => setChatCandidate(selectedProfile || null)}
+        setActiveTab={(tab) => navigateToTab(tab)}
+        onOpenAuth={() => navigateToTab('auth')}
+        onOpenPrivacyModal={handleOpenPrivacyModal}
+        onOpenChatModal={() => handleOpenChatModal(selectedProfile)}
       />
 
       {/* Toast Notifications & PWA Update Banner */}
@@ -122,8 +246,8 @@ function AppContent() {
       <main className="flex-1">
         {activeTab === 'landing' && (
           <LandingPage
-            onGetStarted={() => setActiveTab(user || profile ? 'profile' : 'auth')}
-            onBrowse={() => setActiveTab('browse')}
+            onGetStarted={() => navigateToTab(user || profile ? 'profile' : 'auth')}
+            onBrowse={() => navigateToTab('browse')}
           />
         )}
 
@@ -131,26 +255,27 @@ function AppContent() {
           <AuthPage
             onSuccess={() => {
               const hasProf = localStorage.getItem('vadhu_var_profile');
-              setActiveTab(hasProf ? 'browse' : 'profile');
+              navigateToTab(hasProf ? 'browse' : 'profile', { replace: true });
             }}
           />
         )}
 
         {activeTab === 'profile' && (
           <UserProfileHub
-            onNavigateToDiscover={() => setActiveTab('browse')}
-            onOpenHelp={() => setActiveTab('help')}
-            onOpenTerms={() => setActiveTab('terms')}
+            onNavigateToDiscover={() => navigateToTab('browse')}
+            onOpenHelp={() => navigateToTab('help')}
+            onOpenTerms={() => navigateToTab('terms')}
+            onNavigateHome={() => navigateToTab(user || profile ? 'browse' : 'landing')}
           />
         )}
 
         {activeTab === 'browse' && (
           <BrowsePage
             onViewProfile={handleViewProfileDetail}
-            onOpenCompatibility={(p) => setCompatibilityCandidate(p)}
-            onNavigateToProfile={() => setActiveTab('profile')}
-            onNavigateToDiscover={() => setActiveTab('browse')}
-            onAuthRequired={() => setActiveTab('auth')}
+            onOpenCompatibility={handleOpenCompatibilityModal}
+            onNavigateToProfile={() => navigateToTab('profile')}
+            onNavigateToDiscover={() => navigateToTab('browse')}
+            onAuthRequired={() => navigateToTab('auth')}
             showShortlistedOnly={false}
           />
         )}
@@ -158,10 +283,10 @@ function AppContent() {
         {activeTab === 'shortlists' && (
           <BrowsePage
             onViewProfile={handleViewProfileDetail}
-            onOpenCompatibility={(p) => setCompatibilityCandidate(p)}
-            onNavigateToProfile={() => setActiveTab('profile')}
-            onNavigateToDiscover={() => setActiveTab('browse')}
-            onAuthRequired={() => setActiveTab('auth')}
+            onOpenCompatibility={handleOpenCompatibilityModal}
+            onNavigateToProfile={() => navigateToTab('profile')}
+            onNavigateToDiscover={() => navigateToTab('browse')}
+            onAuthRequired={() => navigateToTab('auth')}
             showShortlistedOnly={true}
           />
         )}
@@ -169,44 +294,44 @@ function AppContent() {
         {activeTab === 'detail' && (
           <ProfileDetailPage
             profile={selectedProfile}
-            onBack={() => setActiveTab('browse')}
-            onOpenCompatibility={(p) => setCompatibilityCandidate(p)}
-            onOpenChat={(p) => setChatCandidate(p)}
-            onEditProfile={() => setActiveTab('profile')}
-            onAuthRequired={() => setActiveTab('auth')}
+            onBack={handleGoBack}
+            onOpenCompatibility={handleOpenCompatibilityModal}
+            onOpenChat={handleOpenChatModal}
+            onEditProfile={() => navigateToTab('profile')}
+            onAuthRequired={() => navigateToTab('auth')}
           />
         )}
 
         {activeTab === 'interests' && (
           <InterestsPage
             onViewProfile={handleViewProfileDetail}
-            onOpenChat={(p) => setChatCandidate(p)}
-            onNavigateToDiscover={() => setActiveTab('browse')}
+            onOpenChat={handleOpenChatModal}
+            onNavigateToDiscover={() => navigateToTab('browse')}
           />
         )}
 
         {activeTab === 'privacy' && (
           <PrivacyPolicyPage
-            onBack={() => setActiveTab('browse')}
+            onBack={handleGoBack}
           />
         )}
 
         {activeTab === 'terms' && (
           <TermsOfServicePage
-            onBack={() => setActiveTab('browse')}
+            onBack={handleGoBack}
           />
         )}
 
         {activeTab === 'help' && (
           <HelpPage
-            onBack={() => setActiveTab('browse')}
+            onBack={handleGoBack}
           />
         )}
 
         {activeTab === 'settings' && (
           <AccountSettingsPage
-            onBack={() => setActiveTab('browse')}
-            onNavigateToProfile={() => setActiveTab('profile')}
+            onBack={handleGoBack}
+            onNavigateToProfile={() => navigateToTab('profile')}
           />
         )}
       </main>
@@ -214,10 +339,7 @@ function AppContent() {
       {/* Mobile Bottom Navigation Bar */}
       <MobileBottomNav
         activeTab={activeTab}
-        setActiveTab={(tab) => {
-          setActiveTab(tab);
-          if (tab !== 'detail') setSelectedProfile(null);
-        }}
+        setActiveTab={(tab) => navigateToTab(tab)}
       />
 
       {/* Modals */}
@@ -235,7 +357,7 @@ function AppContent() {
         candidate={chatCandidate}
         isOpen={Boolean(chatCandidate)}
         onClose={() => setChatCandidate(null)}
-        onOpenBlockReport={(c) => setBlockReportCandidate(c)}
+        onOpenBlockReport={handleOpenBlockReportModal}
       />
 
       <BlockReportModal
@@ -246,9 +368,9 @@ function AppContent() {
 
       {/* Footer */}
       <Footer
-        onOpenPrivacy={() => setActiveTab('privacy')}
-        onOpenTerms={() => setActiveTab('terms')}
-        onOpenHelp={() => setActiveTab('help')}
+        onOpenPrivacy={() => navigateToTab('privacy')}
+        onOpenTerms={() => navigateToTab('terms')}
+        onOpenHelp={() => navigateToTab('help')}
       />
     </div>
   );

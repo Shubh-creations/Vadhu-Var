@@ -180,7 +180,8 @@ export const translations = {
     supportContact: "Support",
     deleteAccountTitle: "Delete Account & Data",
     deleteAccountWarning: "This permanently removes your profile, photos, and verification documents, and closes your account. This action cannot be undone.",
-    permanentlyDelete: "Permanently Delete"
+    permanentlyDelete: "Permanently Delete",
+    pressBackAgainToExit: "Press back again to exit app"
   },
   hi: {
     brandName: "वर वधु",
@@ -360,7 +361,8 @@ export const translations = {
     supportContact: "सहायता",
     deleteAccountTitle: "खाता और डेटा हटाएं",
     deleteAccountWarning: "यह आपकी प्रोफाइल, फोटो और सत्यापन दस्तावेजों को हमेशा के लिए हटा देगा और आपका खाता बंद कर देगा। इसे पूर्ववत नहीं किया जा सकता।",
-    permanentlyDelete: "हमेशा के लिए हटाएं"
+    permanentlyDelete: "हमेशा के लिए हटाएं",
+    pressBackAgainToExit: "ऐप से बाहर निकलने के लिए फिर से बैक दबाएं"
   },
   mr: {
     brandName: "वधू वर",
@@ -540,7 +542,8 @@ export const translations = {
     supportContact: "मदत व संपर्क",
     deleteAccountTitle: "खाते आणि डेटा कायमचा हटवा",
     deleteAccountWarning: "हे तुमची प्रोफाईल, फोटो आणि पडताळणी कागदपत्रे कायमची काढून टाकेल आणि खाते बंद करेल. ही कृती पूर्ववत करता येणार नाही.",
-    permanentlyDelete: "कायमचे हटवा"
+    permanentlyDelete: "कायमचे हटवा",
+    pressBackAgainToExit: "अ‍ॅपमधून बाहेर पडण्यासाठी पुन्हा मागे दाबा"
   }
 };
 
