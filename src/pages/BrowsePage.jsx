@@ -49,7 +49,7 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
     setFilterDrawerOpen(false);
     setTimeout(() => {
       setIsLoadingFeed(false);
-    }, 250);
+    }, 200);
   };
 
   const handleResetFilters = () => {
@@ -61,6 +61,12 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
     setTimeout(() => {
       setIsLoadingFeed(false);
     }, 150);
+  };
+
+  const handleRemoveFilter = (key, defaultVal = '') => {
+    setIsLoadingFeed(true);
+    setAppliedFilters(prev => ({ ...prev, [key]: defaultVal }));
+    setTimeout(() => setIsLoadingFeed(false), 150);
   };
 
   const handleSwitchView = (newView) => {
@@ -81,17 +87,66 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
       if (currentUserId && p.id === currentUserId) return false;
       if (showShortlistedOnly && !shortlistedIds.includes(p.id)) return false;
 
+      // 1. Verified Only Filter
       if (appliedFilters.verifiedOnly && !p.is_id_verified && !p.is_fully_verified) return false;
-      if (appliedFilters.gender !== 'all' && p.gender !== appliedFilters.gender) return false;
-      if (p.age < appliedFilters.ageMin || p.age > appliedFilters.ageMax) return false;
-      if (appliedFilters.city && !p.city?.toLowerCase().includes(appliedFilters.city.toLowerCase())) return false;
-      if (appliedFilters.state && p.state && p.state.toLowerCase() !== appliedFilters.state.toLowerCase()) return false;
-      if (appliedFilters.education && p.education_level?.toLowerCase() !== appliedFilters.education.toLowerCase()) return false;
-      if (appliedFilters.diet && p.diet !== appliedFilters.diet) return false;
-      if (appliedFilters.maritalStatus && p.marital_status !== appliedFilters.maritalStatus) return false;
 
+      // 2. Gender Filter
+      if (appliedFilters.gender && appliedFilters.gender !== 'all') {
+        const pGender = (p.gender || '').trim().toLowerCase();
+        const fGender = appliedFilters.gender.trim().toLowerCase();
+        if (pGender !== fGender) return false;
+      }
+
+      // 3. Age Range Filter
+      const ageNum = Number(p.age);
+      if (ageNum) {
+        const minAge = Number(appliedFilters.ageMin || 18);
+        const maxAge = Number(appliedFilters.ageMax || 80);
+        if (ageNum < minAge || ageNum > maxAge) return false;
+      }
+
+      // 4. City Filter
+      if (appliedFilters.city?.trim()) {
+        const targetCity = appliedFilters.city.trim().toLowerCase();
+        const pCity = (p.city || '').trim().toLowerCase();
+        if (!pCity.includes(targetCity)) return false;
+      }
+
+      // 5. State Filter
+      if (appliedFilters.state?.trim() && appliedFilters.state !== 'All States') {
+        const targetState = appliedFilters.state.trim().toLowerCase();
+        const pState = (p.state || '').trim().toLowerCase();
+        if (!pState.includes(targetState)) return false;
+      }
+
+      // 6. Education Filter
+      if (appliedFilters.education?.trim() && appliedFilters.education !== 'All Education') {
+        const targetEdu = appliedFilters.education.trim().toLowerCase();
+        const pEdu = (p.education_level || '').trim().toLowerCase();
+        const isEduMatch = pEdu.includes(targetEdu) || targetEdu.includes(pEdu) ||
+          (targetEdu.includes('b.tech') && (pEdu.includes('b.e') || pEdu.includes('engineering') || pEdu.includes('tech'))) ||
+          (targetEdu.includes('mbbs') && (pEdu.includes('doctor') || pEdu.includes('medical') || pEdu.includes('md'))) ||
+          (targetEdu.includes('graduate') && pEdu.includes('bachelor'));
+        if (!isEduMatch) return false;
+      }
+
+      // 7. Diet Filter
+      if (appliedFilters.diet?.trim()) {
+        const targetDiet = appliedFilters.diet.trim().toLowerCase();
+        const pDiet = (p.diet || '').trim().toLowerCase();
+        if (pDiet !== targetDiet) return false;
+      }
+
+      // 8. Marital Status Filter
+      if (appliedFilters.maritalStatus?.trim()) {
+        const targetStatus = appliedFilters.maritalStatus.trim().toLowerCase();
+        const pStatus = (p.marital_status || '').trim().toLowerCase();
+        if (pStatus !== targetStatus) return false;
+      }
+
+      // 9. Income Bracket Filter
       if (appliedFilters.incomeBracket && appliedFilters.incomeBracket !== 'all') {
-        const income = p.annual_income_lpa || 0;
+        const income = Number(p.annual_income_lpa) || 0;
         if (appliedFilters.incomeBracket === '2.5-5' && (income < 2.5 || income > 5)) return false;
         if (appliedFilters.incomeBracket === '5-10' && (income < 5 || income > 10)) return false;
         if (appliedFilters.incomeBracket === '10-15' && (income < 10 || income > 15)) return false;
@@ -100,14 +155,14 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
         if (appliedFilters.incomeBracket === '50+' && income < 50) return false;
       }
 
+      // 10. Search Query Filter (Matches Name, City, State, Occupation, Education, Caste, Bio)
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim();
-        const matchesName = p.full_name?.toLowerCase().includes(q);
-        const matchesCity = p.city?.toLowerCase().includes(q);
-        const matchesOccupation = p.occupation?.toLowerCase().includes(q);
-        const matchesEducation = p.education_level?.toLowerCase().includes(q);
-        const matchesCaste = p.caste?.toLowerCase().includes(q);
-        if (!matchesName && !matchesCity && !matchesOccupation && !matchesEducation && !matchesCaste) {
+        const searchableFields = [
+          p.full_name, p.city, p.state, p.occupation, p.education_level, p.caste, p.sub_caste, p.bio
+        ].filter(Boolean).map(f => String(f).toLowerCase());
+        const matchesAny = searchableFields.some(field => field.includes(q));
+        if (!matchesAny) {
           return false;
         }
       }
@@ -128,14 +183,90 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
         return timeB - timeA;
       }
       if (sortBy === 'age_asc') {
-        return (a.age || 0) - (b.age || 0);
+        return (Number(a.age) || 0) - (Number(b.age) || 0);
       }
       if (sortBy === 'age_desc') {
-        return (b.age || 0) - (a.age || 0);
+        return (Number(b.age) || 0) - (Number(a.age) || 0);
       }
       return 0;
     });
   }, [profiles, shortlistedIds, appliedFilters, searchQuery, sortBy, myProfile, user, partnerPreferences, showShortlistedOnly]);
+
+  // Dynamic active filter tags for quick removal
+  const activeFilterTags = useMemo(() => {
+    const tags = [];
+    if (appliedFilters.gender && appliedFilters.gender !== 'all') {
+      tags.push({
+        key: 'gender',
+        label: appliedFilters.gender === 'female' ? t('genderBrides') : t('genderGrooms'),
+        onRemove: () => handleRemoveFilter('gender', 'all')
+      });
+    }
+    if ((appliedFilters.ageMin && appliedFilters.ageMin > 18) || (appliedFilters.ageMax && appliedFilters.ageMax < 80)) {
+      tags.push({
+        key: 'age',
+        label: `Age: ${appliedFilters.ageMin || 18}-${appliedFilters.ageMax || 80} Yrs`,
+        onRemove: () => setAppliedFilters(prev => ({ ...prev, ageMin: 18, ageMax: 80 }))
+      });
+    }
+    if (appliedFilters.state) {
+      tags.push({
+        key: 'state',
+        label: `State: ${appliedFilters.state}`,
+        onRemove: () => handleRemoveFilter('state', '')
+      });
+    }
+    if (appliedFilters.city) {
+      tags.push({
+        key: 'city',
+        label: `City: ${appliedFilters.city}`,
+        onRemove: () => handleRemoveFilter('city', '')
+      });
+    }
+    if (appliedFilters.education) {
+      tags.push({
+        key: 'education',
+        label: `Edu: ${appliedFilters.education}`,
+        onRemove: () => handleRemoveFilter('education', '')
+      });
+    }
+    if (appliedFilters.diet) {
+      tags.push({
+        key: 'diet',
+        label: `Diet: ${appliedFilters.diet.toUpperCase()}`,
+        onRemove: () => handleRemoveFilter('diet', '')
+      });
+    }
+    if (appliedFilters.maritalStatus) {
+      tags.push({
+        key: 'maritalStatus',
+        label: `Status: ${appliedFilters.maritalStatus.replace('_', ' ')}`,
+        onRemove: () => handleRemoveFilter('maritalStatus', '')
+      });
+    }
+    if (appliedFilters.incomeBracket && appliedFilters.incomeBracket !== 'all') {
+      tags.push({
+        key: 'income',
+        label: `Income: ${appliedFilters.incomeBracket} LPA`,
+        onRemove: () => handleRemoveFilter('incomeBracket', 'all')
+      });
+    }
+    if (appliedFilters.verifiedOnly) {
+      tags.push({
+        key: 'verifiedOnly',
+        label: 'ID Verified Only',
+        onRemove: () => handleRemoveFilter('verifiedOnly', false)
+      });
+    }
+    if (searchQuery.trim()) {
+      tags.push({
+        key: 'search',
+        label: `"${searchQuery.trim()}"`,
+        onRemove: () => setSearchQuery('')
+      });
+    }
+    return tags;
+  }, [appliedFilters, searchQuery, t]);
 
   // 4. Effects (Running after declarations)
   useEffect(() => {
@@ -294,7 +425,40 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
       {/* Main Discover Layout */}
       {discoveryView === 'deck' ? (
         /* Interactive Deck Mode */
-        <div className="max-w-md mx-auto py-2 sm:py-4">
+        <div className="max-w-md mx-auto py-2 sm:py-4 space-y-4">
+          {/* Active Filter Chips Bar */}
+          {activeFilterTags.length > 0 && (
+            <div className="flex flex-wrap items-center gap-1.5 p-2.5 bg-surface-card radius-card border border-main text-xs shadow-2xs animate-fade-in">
+              <span className="text-[11px] font-bold text-sub flex items-center gap-1 mr-1">
+                <Filter className="w-3 h-3 text-sky-blue" />
+                <span>Filters:</span>
+              </span>
+              {activeFilterTags.map((tag) => (
+                <span
+                  key={tag.key}
+                  className="inline-flex items-center gap-1 px-2 py-0.5 radius-btn bg-surface-ground border border-main text-main font-semibold shadow-2xs text-[11px]"
+                >
+                  <span>{tag.label}</span>
+                  <button
+                    type="button"
+                    onClick={tag.onRemove}
+                    className="text-sub hover:text-rose-500 transition-colors p-0.5"
+                    title="Remove filter"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              ))}
+              <button
+                type="button"
+                onClick={handleResetFilters}
+                className="text-[11px] font-bold text-rose-600 dark:text-rose-400 hover:underline ml-auto pl-1"
+              >
+                Clear All
+              </button>
+            </div>
+          )}
+
           {filteredProfiles.length === 0 ? (
             <div className="bg-surface-card radius-card border border-main p-8 text-center space-y-4 shadow-sm">
               <h3 className="font-serif font-bold text-main text-lg">{t('noMatchingProfiles')}</h3>
@@ -445,7 +609,42 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
           )}
 
           {/* Grid Feed */}
-          <div className="md:col-span-3">
+          <div className="md:col-span-3 space-y-4">
+            {/* Active Filter Chips Bar */}
+            {activeFilterTags.length > 0 && (
+              <div className="flex flex-wrap items-center gap-2 p-3 bg-surface-card radius-card border border-main text-xs shadow-2xs animate-fade-in">
+                <span className="text-[11px] font-bold text-sub flex items-center gap-1.5 mr-1">
+                  <Filter className="w-3.5 h-3.5 text-sky-blue" />
+                  <span>Applied Filters:</span>
+                </span>
+                {activeFilterTags.map((tag) => (
+                  <span
+                    key={tag.key}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 radius-btn bg-surface-ground border border-main text-main font-semibold shadow-2xs text-[11px]"
+                  >
+                    <span>{tag.label}</span>
+                    <button
+                      type="button"
+                      onClick={tag.onRemove}
+                      className="text-sub hover:text-rose-500 transition-colors p-0.5"
+                      title="Remove filter"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                ))}
+                {activeFilterTags.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={handleResetFilters}
+                    className="text-[11px] font-bold text-rose-600 dark:text-rose-400 hover:underline ml-auto pl-2"
+                  >
+                    Clear All
+                  </button>
+                )}
+              </div>
+            )}
+
             {isLoadingFeed ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 {[1, 2, 3, 4, 5, 6].map((n) => (
