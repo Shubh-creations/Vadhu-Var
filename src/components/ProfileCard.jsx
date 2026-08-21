@@ -71,8 +71,8 @@ export const ProfileCard = ({ profile, onViewDetails, onOpenCompatibility, onAut
           </button>
         </div>
 
-        {/* Hero Header: Avatar + Candidate Name (Serif Lora Font) + Badges */}
-        <div className="flex items-start gap-4 mb-5">
+        {/* Hero Header: Avatar + Candidate Name + Badges */}
+        <div className="flex items-start gap-3.5 mb-4">
           <div className="relative flex-shrink-0">
             <CandidateAvatar
               src={profile.photo_url}
@@ -84,12 +84,15 @@ export const ProfileCard = ({ profile, onViewDetails, onOpenCompatibility, onAut
           </div>
 
           <div className="flex-1 min-w-0">
-            <h3 className="font-serif font-semibold text-main text-lg sm:text-xl truncate group-hover:text-sky-blue transition-colors tracking-tight leading-snug">
-              {profile.full_name}, <span className="font-sans font-normal text-sub text-base">{profile.age}</span>
+            <h3 
+              className="font-serif font-bold text-main text-base sm:text-lg truncate group-hover:text-sky-blue transition-colors tracking-tight leading-snug"
+              title={`${profile.full_name}, ${profile.age}`}
+            >
+              {profile.full_name}, <span className="font-sans font-normal text-sub text-sm">{profile.age}</span>
             </h3>
 
             {/* Verification Badges & Profile Completeness */}
-            <div className="mt-1.5 flex items-center gap-1.5 flex-wrap">
+            <div className="mt-1 min-h-[22px] flex items-center gap-1.5 flex-wrap">
               <BadgeVerified
                 profile={profile}
                 size="small"
@@ -97,23 +100,23 @@ export const ProfileCard = ({ profile, onViewDetails, onOpenCompatibility, onAut
             </div>
 
             {/* Occupation & Location */}
-            <div className="flex items-center text-xs text-sub gap-1.5 mt-2 truncate">
+            <div className="flex items-center text-xs text-sub gap-1.5 mt-1.5 truncate" title={profile.occupation || 'Not specified'}>
               <Briefcase className="w-3.5 h-3.5 text-sub flex-shrink-0" />
               <span className="truncate">{profile.occupation || 'Not specified'}</span>
             </div>
 
-            <div className="flex items-center text-xs text-sub gap-1.5 mt-1 truncate">
+            <div className="flex items-center text-xs text-sub gap-1.5 mt-0.5 truncate" title={`${profile.city || ''}${profile.state ? `, ${profile.state}` : ''}`}>
               <MapPin className="w-3.5 h-3.5 text-sub flex-shrink-0" />
-              <span>{profile.city}{profile.state ? `, ${profile.state}` : ''}</span>
+              <span className="truncate">{profile.city || 'Maharashtra'}{profile.state ? `, ${profile.state}` : ''}</span>
             </div>
           </div>
         </div>
 
         {/* Compatibility Progress Line with Breakdown Link */}
-        <div className="mb-5 space-y-1">
+        <div className="mb-4 pt-1 space-y-1.5">
           <div className="flex items-center justify-between text-xs text-sub">
             <span className="font-medium text-main">{t('matchCompatibility')}</span>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <span className="font-extrabold text-sky-blue">{matchScore}%</span>
               {onOpenCompatibility && (
                 <button
@@ -122,7 +125,7 @@ export const ProfileCard = ({ profile, onViewDetails, onOpenCompatibility, onAut
                     e.stopPropagation();
                     onOpenCompatibility(profile);
                   }}
-                  className="text-[11px] font-semibold text-sky-blue hover:underline hover:opacity-80 transition-opacity"
+                  className="text-[11px] font-semibold text-sky-blue hover:underline transition-opacity pl-1"
                   title="View detailed factor breakdown"
                 >
                   Breakdown →
@@ -138,26 +141,26 @@ export const ProfileCard = ({ profile, onViewDetails, onOpenCompatibility, onAut
           </div>
         </div>
 
-        {/* Info Row (Plain text metadata with neutral gray icons) */}
-        <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-xs text-sub mb-6 pt-2">
-          <div className="flex items-center gap-2 truncate">
-            <GraduationCap className="w-4 h-4 text-sub flex-shrink-0" />
+        {/* Info Grid (Fixed row heights for straight horizontal alignment) */}
+        <div className="grid grid-cols-2 gap-y-2.5 gap-x-3 text-xs text-sub mb-4 pt-2 border-t border-main/40">
+          <div className="h-5 flex items-center gap-1.5 truncate" title={profile.education_level || 'N/A'}>
+            <GraduationCap className="w-3.5 h-3.5 text-sub flex-shrink-0" />
             <span className="truncate">{profile.education_level || 'N/A'}</span>
           </div>
 
-          <div className="flex items-center gap-2 truncate">
-            <IndianRupee className="w-4 h-4 text-sub flex-shrink-0" />
-            <span>{profile.annual_income_lpa ? `${profile.annual_income_lpa} LPA` : 'N/A'}</span>
+          <div className="h-5 flex items-center gap-1.5 truncate" title={profile.annual_income_lpa ? `${profile.annual_income_lpa} LPA` : 'N/A'}>
+            <IndianRupee className="w-3.5 h-3.5 text-sub flex-shrink-0" />
+            <span className="truncate">{profile.annual_income_lpa ? `${profile.annual_income_lpa} LPA` : 'N/A'}</span>
           </div>
 
-          <div className="flex items-center gap-2 truncate">
-            <Ruler className="w-4 h-4 text-sub flex-shrink-0" />
-            <span>{profile.height_cm ? `${profile.height_cm} cm` : 'N/A'}</span>
+          <div className="h-5 flex items-center gap-1.5 truncate" title={profile.height_cm ? `${profile.height_cm} cm` : 'N/A'}>
+            <Ruler className="w-3.5 h-3.5 text-sub flex-shrink-0" />
+            <span className="truncate">{profile.height_cm ? `${profile.height_cm} cm` : 'N/A'}</span>
           </div>
 
-          <div className="flex items-center gap-2 capitalize truncate">
-            <Utensils className="w-4 h-4 text-sub flex-shrink-0" />
-            <span>{profile.diet || 'Veg'}</span>
+          <div className="h-5 flex items-center gap-1.5 capitalize truncate" title={profile.diet || 'Veg'}>
+            <Utensils className="w-3.5 h-3.5 text-sub flex-shrink-0" />
+            <span className="truncate">{profile.diet || 'Veg'}</span>
           </div>
         </div>
       </div>

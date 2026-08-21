@@ -68,15 +68,22 @@ export const DataProvider = ({ children }) => {
         .order('created_at', { ascending: false });
 
       if (!error && data) {
-        const cleanProfiles = data.filter(p => 
-          !p.id?.startsWith('cand-') && 
-          p.id !== 'c56a06d9-449b-4183-8844-fdbaa372e421' &&
-          p.is_active !== false && 
-          p.is_visible !== false && 
-          p.full_name && 
-          p.full_name !== 'Deleted User' &&
-          !p.full_name.toLowerCase().startsWith('test ')
-        );
+        const cleanProfiles = data
+          .filter(p => 
+            !p.id?.startsWith('cand-') && 
+            p.id !== 'c56a06d9-449b-4183-8844-fdbaa372e421' &&
+            p.is_active !== false && 
+            p.is_visible !== false && 
+            p.full_name && 
+            p.full_name !== 'Deleted User' &&
+            !p.full_name.toLowerCase().startsWith('test ')
+          )
+          .map(p => {
+            if (p.id === '884e0a8b-ba38-4ee7-843a-a081365c3fc5' || p.full_name?.toLowerCase().includes('rishikesh')) {
+              return { ...p, gender: 'male' };
+            }
+            return p;
+          });
         setProfiles(cleanProfiles);
         localStorage.setItem('mh_matrimony_profiles', JSON.stringify(cleanProfiles));
       }
