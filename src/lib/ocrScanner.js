@@ -1,11 +1,18 @@
 import { createWorker } from 'tesseract.js';
 
 /**
- * Normalizes strings for fuzzy comparison
+ * Normalizes strings and strips common Indian/academic prefixes for fuzzy comparison
  */
 function cleanString(str) {
   if (!str) return '';
-  return str.toLowerCase().replace(/[^a-z0-9\s]/gi, '').replace(/\s+/g, ' ').trim();
+  let cleaned = str.toLowerCase().replace(/[^a-z0-9\s]/gi, ' ').replace(/\s+/g, ' ').trim();
+  // Strip common prefixes
+  const prefixes = ['dr', 'prof', 'er', 'adv', 'mr', 'mrs', 'ms', 'miss', 'shri', 'shree', 'smt', 'kumar', 'kumari'];
+  const words = cleaned.split(' ');
+  if (words.length > 1 && prefixes.includes(words[0])) {
+    cleaned = words.slice(1).join(' ');
+  }
+  return cleaned;
 }
 
 /**
@@ -19,9 +26,10 @@ function computeNameMatch(fullName, rawText) {
 
   // Direct substring inclusion
   if (cleanOCR.includes(cleanTarget)) {
-    return { match: true, confidence: 98 };
+    return { match: true, confidence: 99 };
   }
 
+  // Filter meaningful name parts (minimum 2 characters)
   const nameParts = cleanTarget.split(' ').filter(p => p.length >= 2);
   if (nameParts.length === 0) return { match: false, confidence: 0 };
 
@@ -33,10 +41,12 @@ function computeNameMatch(fullName, rawText) {
   }
 
   const ratio = matchedParts / nameParts.length;
-  const confidence = Math.round(ratio * 95);
+  // If at least 2 parts or >= 66% of name matches, mark as verified match
+  const isMatch = ratio >= 0.5 || (matchedParts >= 2 && nameParts.length >= 2);
+  const confidence = Math.min(100, Math.round(ratio * 95) + (matchedParts >= 2 ? 5 : 0));
 
   return {
-    match: ratio >= 0.5,
+    match: isMatch,
     confidence: confidence
   };
 }

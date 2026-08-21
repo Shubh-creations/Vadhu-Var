@@ -5,18 +5,56 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-async function inspectProfilesData() {
-  const { data, error } = await supabase.from('profiles').select('*');
-  console.log('Total profiles:', data.length);
-  for (const p of data) {
-    console.log(`\n--- ${p.full_name} (${p.id}) ---`);
-    console.log(`• Photo URL: ${p.photo_url ? (p.photo_url.startsWith('data:') ? 'base64 image' : p.photo_url) : 'NULL/BLANK'}`);
-    console.log(`• is_id_verified: ${p.is_id_verified}`);
-    console.log(`• is_fully_verified: ${p.is_fully_verified}`);
-    console.log(`• is_profession_verified: ${p.is_profession_verified}`);
-    console.log(`• is_active: ${p.is_active}, is_visible: ${p.is_visible}`);
-    console.log(`• bio: ${p.bio ? 'present' : 'NULL'}, occupation: ${p.occupation}, education: ${p.education_level}`);
+async function inspectAllProfiles() {
+  console.log('--- Fetching all profiles from Supabase ---');
+  const { data: profiles, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching profiles:', error);
+    return;
+  }
+
+  console.log(`Total profiles found: ${profiles?.length || 0}`);
+  for (const p of profiles || []) {
+    console.log({
+      id: p.id,
+      full_name: p.full_name,
+      gender: p.gender,
+      age: p.age,
+      city: p.city,
+      state: p.state,
+      occupation: p.occupation,
+      is_active: p.is_active,
+      is_visible: p.is_visible,
+      is_id_verified: p.is_id_verified,
+      is_fully_verified: p.is_fully_verified,
+      photo_url: p.photo_url ? (p.photo_url.substring(0, 40) + '...') : null,
+      id_document_url: p.id_document_url ? 'PRESENT' : 'NULL',
+      created_at: p.created_at,
+      updated_at: p.updated_at
+    });
+  }
+
+  // Also inspect verification_requests table
+  const { data: vReqs, error: vErr } = await supabase
+    .from('verification_requests')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  console.log(`\nTotal verification requests: ${vReqs?.length || 0}`);
+  for (const r of vReqs || []) {
+    console.log({
+      id: r.id,
+      user_id: r.user_id,
+      document_type: r.document_type,
+      document_url: r.document_url ? 'PRESENT' : 'NULL',
+      status: r.status,
+      created_at: r.created_at
+    });
   }
 }
 
-inspectProfilesData();
+inspectAllProfiles();
