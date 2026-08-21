@@ -70,6 +70,7 @@ export const DataProvider = ({ children }) => {
       if (!error && data) {
         const cleanProfiles = data.filter(p => 
           !p.id?.startsWith('cand-') && 
+          p.id !== 'c56a06d9-449b-4183-8844-fdbaa372e421' &&
           p.is_active !== false && 
           p.is_visible !== false && 
           p.full_name && 
