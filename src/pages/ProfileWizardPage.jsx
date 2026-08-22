@@ -287,13 +287,15 @@ export const ProfileWizardPage = ({ onComplete }) => {
 
       // 5. Send automated profile completion email in background (non-blocking)
       try {
-        const candidateEmail = user?.email || formData.email;
-        if (candidateEmail && supabase?.functions) {
+        const candidateEmail = (user?.email || formData.email || '').trim();
+        const candidateFullName = (savedProfile.full_name || formData.full_name || user?.user_metadata?.full_name || '').trim();
+        if (candidateEmail && candidateFullName && supabase?.functions) {
           supabase.functions.invoke('send-profile-complete-email', {
             body: {
               email: candidateEmail,
-              full_name: savedProfile.full_name,
-              profile_id: savedProfile.id
+              full_name: candidateFullName,
+              profile_id: savedProfile.id,
+              type: 'profile_completed'
             }
           }).catch(e => console.warn('Background email trigger:', e));
         }
