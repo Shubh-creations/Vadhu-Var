@@ -12,6 +12,7 @@ export const ImageCropperModal = ({ isOpen, imageSrc, onCropComplete, onClose })
 
   const canvasRef = useRef(null);
   const imgRef = useRef(null);
+  const viewportRef = useRef(null);
 
   useEffect(() => {
     if (imageSrc) {
@@ -27,9 +28,6 @@ export const ImageCropperModal = ({ isOpen, imageSrc, onCropComplete, onClose })
   }, [imageSrc]);
 
   if (!isOpen || !imageSrc) return null;
-
-  // Viewport ref to measure exact rendered circle dimensions
-  const viewportRef = useRef(null);
 
   // Mouse Drag Handlers
   const handleMouseDown = (e) => {
