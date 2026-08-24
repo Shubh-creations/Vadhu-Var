@@ -72,6 +72,7 @@ export const DataProvider = ({ children }) => {
           .filter(p => 
             !p.id?.startsWith('cand-') && 
             p.id !== 'c56a06d9-449b-4183-8844-fdbaa372e421' &&
+            p.id !== '03f712b6-45d5-4b3c-93a0-bddc9958a031' &&
             p.is_active !== false && 
             p.is_visible !== false && 
             p.full_name && 
@@ -79,10 +80,22 @@ export const DataProvider = ({ children }) => {
             !p.full_name.toLowerCase().startsWith('test ')
           )
           .map(p => {
+            let gender = p.gender;
             if (p.id === '884e0a8b-ba38-4ee7-843a-a081365c3fc5' || p.full_name?.toLowerCase().includes('rishikesh')) {
-              return { ...p, gender: 'male' };
+              gender = 'male';
             }
-            return p;
+
+            let income = p.annual_income_lpa;
+            if (income && income > 1000) {
+              // Convert raw INR (e.g. 750000) to LPA (e.g. 7.5)
+              income = Math.round((income / 100000) * 10) / 10;
+            }
+
+            return {
+              ...p,
+              gender,
+              annual_income_lpa: income
+            };
           });
         setProfiles(cleanProfiles);
         localStorage.setItem('mh_matrimony_profiles', JSON.stringify(cleanProfiles));

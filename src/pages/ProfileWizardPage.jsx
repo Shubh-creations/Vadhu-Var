@@ -148,24 +148,27 @@ export const ProfileWizardPage = ({ onComplete }) => {
     setStep(targetStep);
   };
 
-  // Open Cropper on file pick without submitting form or resetting step
-  const handlePhotoFileSelect = (e) => {
+  // Open Cropper on file pick with auto-compression for high-res camera photos
+  const handlePhotoFileSelect = async (e) => {
     setPhotoError('');
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 10 * 1024 * 1024) {
-        setPhotoError('Image file is too large (max 10MB). Please select a smaller photo.');
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setRawPhotoSrc(event.target.result);
-        setCropperOpen(true);
-      };
-      reader.onerror = () => {
+      setPhotoUploading(true);
+      try {
+        // Auto-compress high-resolution smartphone camera pictures
+        const optimizedSrc = await compressImage(file, 1200, 1200, 0.88);
+        if (optimizedSrc) {
+          setRawPhotoSrc(optimizedSrc);
+          setCropperOpen(true);
+        } else {
+          setPhotoError('Could not process selected image. Please try another photo.');
+        }
+      } catch (err) {
+        console.warn('Photo processing error:', err);
         setPhotoError('Could not read image file. Please try another image.');
-      };
-      reader.readAsDataURL(file);
+      } finally {
+        setPhotoUploading(false);
+      }
     }
     // Clear input value so selecting the same photo again triggers change
     e.target.value = '';
@@ -175,8 +178,8 @@ export const ProfileWizardPage = ({ onComplete }) => {
     setPhotoUploading(true);
     setPhotoError('');
     try {
-      const compressed = await compressImage(croppedDataUrl, 600, 600, 0.85);
-      setFormData(prev => ({ ...prev, photo_url: compressed }));
+      const compressed = await compressImage(croppedDataUrl, 600, 600, 0.82);
+      setFormData(prev => ({ ...prev, photo_url: compressed || croppedDataUrl }));
     } catch (err) {
       setFormData(prev => ({ ...prev, photo_url: croppedDataUrl }));
     } finally {

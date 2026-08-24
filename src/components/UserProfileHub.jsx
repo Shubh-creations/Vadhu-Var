@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   User, Pencil, ShieldCheck, HeartHandshake, Eye, EyeOff, Globe, 
   Download, LogOut, UserX, ArrowLeft, CheckCircle2, Sparkles, MapPin, 
-  Briefcase, IndianRupee, ShieldAlert, Smartphone, ChevronRight, Share2, HelpCircle, FileText, Trash2
+  Briefcase, IndianRupee, ShieldAlert, Smartphone, ChevronRight, Share2, HelpCircle, FileText, Trash2,
+  Camera, Loader2
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useData } from '../context/DataContext';
 import { useLanguage } from '../context/LanguageContext';
 import { usePWA } from '../context/PWAContext';
 import BadgeVerified from './BadgeVerified';
@@ -13,11 +15,19 @@ import ProfileCompletenessCard from './ProfileCompletenessCard';
 import ShareProfileModal from './ShareProfileModal';
 import DeleteAccountModal from './DeleteAccountModal';
 import CandidateAvatar from './CandidateAvatar';
+import ImageCropperModal from './ImageCropperModal';
+import compressImage from '../lib/imageCompressor';
 
 export const UserProfileHub = ({ onNavigateToDiscover, onOpenHelp, onOpenTerms, onNavigateHome }) => {
-  const { user, profile, partnerPreferences, savePartnerPreferences, updateAccountSettings, logout } = useAuth();
+  const { user, profile, saveProfile, partnerPreferences, savePartnerPreferences, updateAccountSettings, logout } = useAuth();
+  const { refreshProfiles } = useData();
   const { lang, setLang, t } = useLanguage();
   const { isInstalled, triggerInstall } = usePWA();
+
+  const fileInputRef = useRef(null);
+  const [cropperOpen, setCropperOpen] = useState(false);
+  const [rawPhotoSrc, setRawPhotoSrc] = useState('');
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
   const [isEditingWizard, setIsEditingWizard] = useState(false);
   const [shareModalOpen, setShareModalOpen] = useState(false);
@@ -77,6 +87,49 @@ export const UserProfileHub = ({ onNavigateToDiscover, onOpenHelp, onOpenTerms, 
     );
   }
 
+  const handleAvatarFileSelect = async (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setUploadingPhoto(true);
+      try {
+        const optimized = await compressImage(file, 1200, 1200, 0.88);
+        if (optimized) {
+          setRawPhotoSrc(optimized);
+          setCropperOpen(true);
+        } else {
+          alert('Could not process selected image. Please try another photo.');
+        }
+      } catch (err) {
+        console.warn('Avatar photo load error:', err);
+        alert('Could not process photo. Please try another image.');
+      } finally {
+        setUploadingPhoto(false);
+      }
+    }
+    e.target.value = '';
+  };
+
+  const handleCropComplete = async (croppedDataUrl) => {
+    setUploadingPhoto(true);
+    try {
+      const finalPhoto = await compressImage(croppedDataUrl, 600, 600, 0.82) || croppedDataUrl;
+      const updated = await saveProfile({
+        ...profile,
+        photo_url: finalPhoto
+      });
+      if (refreshProfiles) {
+        await refreshProfiles();
+      }
+      setSuccessMsg('Profile photo updated successfully!');
+      setTimeout(() => setSuccessMsg(''), 3500);
+    } catch (err) {
+      console.error('Error saving photo:', err);
+      alert('Failed to save profile photo. Please try again.');
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
   const handleToggleVisibility = async () => {
     const nextVal = !isSearchVisible;
     setIsSearchVisible(nextVal);
@@ -118,14 +171,35 @@ export const UserProfileHub = ({ onNavigateToDiscover, onOpenHelp, onOpenTerms, 
       {/* Main Candidate Card Overview */}
       <div className="bg-surface-card radius-card border border-main p-6 sm:p-8 shadow-xs relative overflow-hidden">
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
-          {/* Avatar / Photo */}
-          <div className="relative">
+          {/* Avatar / Photo with Direct 1-Click Upload Button */}
+          <div className="relative group">
             <CandidateAvatar
               src={profile.photo_url}
               name={profile.full_name}
               size="xl"
               shape="circle"
               showNoPhotoText={true}
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploadingPhoto}
+              className="absolute bottom-0 right-0 p-2.5 rounded-full bg-sky-blue hover:bg-sky-blue/90 text-white shadow-md border-2 border-surface-card transition-transform active:scale-90 flex items-center justify-center cursor-pointer"
+              title="Upload or change profile photo"
+              aria-label="Upload profile photo"
+            >
+              {uploadingPhoto ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Camera className="w-4 h-4" />
+              )}
+            </button>
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept="image/*"
+              onChange={handleAvatarFileSelect}
+              className="hidden"
             />
           </div>
 
@@ -369,6 +443,14 @@ export const UserProfileHub = ({ onNavigateToDiscover, onOpenHelp, onOpenTerms, 
         profile={profile}
         isOpen={shareModalOpen}
         onClose={() => setShareModalOpen(false)}
+      />
+
+      {/* Direct Photo Cropper Modal */}
+      <ImageCropperModal
+        isOpen={cropperOpen}
+        imageSrc={rawPhotoSrc}
+        onCropComplete={handleCropComplete}
+        onClose={() => setCropperOpen(false)}
       />
 
       {/* Delete Account & Data Modal */}
