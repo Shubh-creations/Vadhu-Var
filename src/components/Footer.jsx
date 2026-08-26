@@ -7,12 +7,12 @@ export const Footer = ({ onOpenPrivacy, onOpenTerms, onOpenHelp }) => {
   const { t } = useLanguage();
 
   return (
-    <footer className="bg-surface-card border-t border-main py-8 mt-16 transition-colors">
+    <footer className="bg-surface-card border-t border-main py-6 mt-12 pb-24 md:pb-8 transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-6">
           <div className="flex flex-col items-center sm:items-start gap-1">
-            <Logo size="normal" />
-            <p className="text-xs text-sub font-medium mt-1">
+            <Logo variant="nav" />
+            <p className="text-xs text-sub font-medium mt-0.5">
               Finding Your Perfect Match.
             </p>
           </div>

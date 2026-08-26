@@ -41,16 +41,16 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-14 sm:h-16 gap-2">
           {/* Brand Logo with 1st Image Website Icon - Navigates directly to Home */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center flex-shrink-0">
             <button
               onClick={() => setActiveTab('landing')}
-              className="flex items-center gap-2 text-left focus:outline-none hover:opacity-90 transition-opacity"
+              className="flex items-center gap-2 text-left focus:outline-none hover:opacity-90 transition-opacity flex-shrink-0"
               aria-label={t('home')}
               title={`${t('brandName')} ${t('home')}`}
             >
-              <Logo type="icon" size="medium" />
+              <Logo variant="icon" size="small" />
               <div className="flex flex-col">
-                <span className="font-serif text-lg sm:text-xl font-black text-main leading-tight tracking-tight">
+                <span className="font-serif text-base sm:text-lg font-black text-main whitespace-nowrap tracking-tight leading-tight">
                   {t('brandName')}
                 </span>
                 <span className="text-[10px] text-sub font-medium leading-none hidden sm:inline">
