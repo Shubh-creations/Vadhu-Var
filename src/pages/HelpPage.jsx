@@ -121,18 +121,20 @@ export const HelpPage = ({ onBack }) => {
           <p>
             Our dedicated matrimonial support team is available 7 days a week to assist you with profile verification, account inquiries, or technical support:
           </p>
-          <div className="p-4 bg-surface-ground radius-btn border border-main space-y-2">
-            <div className="flex items-center gap-2 text-main font-bold">
-              <Mail className="w-4 h-4 text-sky-blue" />
-              <span>Email Support: </span>
+          <div className="p-4 bg-surface-ground radius-btn border border-main space-y-2.5">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-2 text-xs sm:text-sm">
+              <span className="text-main font-bold flex items-center gap-1.5">
+                <Mail className="w-4 h-4 text-sky-blue flex-shrink-0" />
+                <span>Email Support:</span>
+              </span>
               <a
                 href="mailto:vadhuvar.matrimonyapp@gmail.com"
-                className="text-sky-blue hover:underline font-bold"
+                className="text-sky-blue hover:underline font-bold break-all"
               >
                 vadhuvar.matrimonyapp@gmail.com
               </a>
             </div>
-            <p className="text-xs text-sub">
+            <p className="text-[11px] sm:text-xs text-sub">
               Typical response time: Under 4 hours during business hours (9:00 AM – 8:00 PM IST).
             </p>
           </div>
@@ -205,18 +207,22 @@ export const HelpPage = ({ onBack }) => {
         </div>
 
         {/* Support Banner */}
-        <div className="p-6 radius-card bg-sky-blue/10 border border-sky-blue/20 text-center space-y-3">
-          <h3 className="font-serif font-bold text-main text-base">Still have questions or need assistance?</h3>
-          <p className="text-xs text-sub max-w-md mx-auto">
+        <div className="p-6 sm:p-8 radius-card bg-sky-blue/10 border border-sky-blue/20 text-center space-y-3">
+          <h3 className="font-serif font-bold text-main text-base sm:text-lg">
+            Still have questions or need assistance?
+          </h3>
+          <p className="text-xs text-sub max-w-md mx-auto leading-relaxed">
             Our verification and matrimonial support team is happy to help you via email.
           </p>
-          <a
-            href="mailto:vadhuvar.matrimonyapp@gmail.com"
-            className="inline-flex items-center gap-2 px-6 py-2.5 radius-btn bg-sky-blue hover:bg-sky-blue/90 text-white font-bold text-xs shadow-xs transition-colors"
-          >
-            <Mail className="w-4 h-4" />
-            <span>Email vadhuvar.matrimonyapp@gmail.com</span>
-          </a>
+          <div className="pt-2 flex justify-center">
+            <a
+              href="mailto:vadhuvar.matrimonyapp@gmail.com"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 radius-btn bg-sky-blue hover:bg-sky-blue/90 text-white font-bold text-xs sm:text-sm shadow-xs transition-colors"
+            >
+              <Mail className="w-4 h-4 flex-shrink-0" />
+              <span className="break-all">vadhuvar.matrimonyapp@gmail.com</span>
+            </a>
+          </div>
         </div>
       </div>
     </div>
