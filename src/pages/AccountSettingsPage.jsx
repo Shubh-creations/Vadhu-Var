@@ -93,39 +93,39 @@ export const AccountSettingsPage = ({ onBack, onNavigateToProfile }) => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-10 animate-fade-in">
       {/* Header */}
-      <div className="flex items-center justify-between pb-4 mb-6 border-b border-main">
+      <div className="flex items-center justify-between pb-4 mb-6 border-b border-white/10">
         <div className="flex items-center gap-3">
-          <button onClick={onBack} className="p-1.5 radius-btn text-sub hover:text-main">
-            <ArrowLeft className="w-5 h-5" />
+          <button onClick={onBack} className="p-2 radius-btn glass-card border border-white/10 text-zinc-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer">
+            <ArrowLeft className="w-5 h-5 text-gold-400" />
           </button>
           <div>
-            <h1 className="font-serif text-2xl font-bold text-main">{t('accountSettings')}</h1>
-            <p className="text-xs text-sub">Manage partner preferences, privacy visibility, app installation, and account options.</p>
+            <h1 className="font-serif text-2xl sm:text-3xl font-bold gold-gradient-text">{t('accountSettings')}</h1>
+            <p className="text-xs text-zinc-400 mt-0.5">Manage partner preferences, privacy visibility, app installation, and account options.</p>
           </div>
         </div>
       </div>
 
       {successMsg && (
-        <div className="mb-6 p-4 radius-card bg-surface-ground border border-main text-main text-xs font-bold flex items-center gap-2 shadow-xs">
-          <CheckCircle2 className="w-4 h-4 text-sky-blue" />
+        <div className="mb-6 p-4 radius-card glass-card border border-emerald-500/30 text-emerald-300 text-xs font-bold flex items-center gap-2 shadow-lg">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
           <span>{successMsg}</span>
         </div>
       )}
 
       <div className="space-y-8">
         {/* Section 1: Partner Preferences Editor */}
-        <div className="bg-surface-card radius-card border border-main p-6 shadow-xs space-y-5">
-          <div className="flex items-center gap-2 pb-3 border-b border-main">
-            <HeartHandshake className="w-5 h-5 text-sky-blue" />
-            <h2 className="font-serif font-bold text-main text-lg">{t('partnerPreferences')}</h2>
+        <div className="glass-card radius-card border border-white/10 p-6 sm:p-8 shadow-2xl space-y-5">
+          <div className="flex items-center gap-2 pb-3 border-b border-white/10">
+            <HeartHandshake className="w-5 h-5 text-gold-400" />
+            <h2 className="font-serif font-bold gold-gradient-text text-lg">{t('partnerPreferences')}</h2>
           </div>
 
           <form onSubmit={handleSavePreferences} className="space-y-4">
             {/* Accepted Marital Status Multi-Select */}
             <div className="space-y-2">
-              <label className="block text-xs font-bold text-main">
+              <label className="block text-xs font-bold text-zinc-200">
                 {t('acceptedMaritalStatus')}
               </label>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -141,14 +141,14 @@ export const AccountSettingsPage = ({ onBack, onNavigateToProfile }) => {
                       type="button"
                       key={status.id}
                       onClick={() => handleMaritalStatusToggle(status.id)}
-                      className={`px-3 py-2 radius-btn text-xs font-medium border text-left flex items-center justify-between transition-colors ${
+                      className={`px-3 py-2 radius-btn text-xs font-medium border text-left flex items-center justify-between transition-colors cursor-pointer ${
                         isChecked
-                          ? 'bg-surface-ground border-sky-blue text-main font-bold shadow-xs'
-                          : 'bg-surface-ground/40 border-main text-sub hover:border-sky-blue/40'
+                          ? 'bg-zinc-900 border-gold-400 text-gold-300 font-bold shadow-xs'
+                          : 'bg-zinc-950/60 border-white/10 text-zinc-400 hover:border-gold-400/40'
                       }`}
                     >
                       <span>{status.label}</span>
-                      {isChecked && <CheckCircle2 className="w-3.5 h-3.5 text-sky-blue flex-shrink-0" />}
+                      {isChecked && <CheckCircle2 className="w-3.5 h-3.5 text-gold-400 flex-shrink-0" />}
                     </button>
                   );
                 })}
@@ -158,7 +158,7 @@ export const AccountSettingsPage = ({ onBack, onNavigateToProfile }) => {
             {/* Preferred Age & Minimum Income */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-main mb-1">Preferred Age Range</label>
+                <label className="block text-xs font-semibold text-zinc-300 mb-1">Preferred Age Range</label>
                 <div className="flex items-center gap-2">
                   <input
                     type="number"
@@ -166,28 +166,28 @@ export const AccountSettingsPage = ({ onBack, onNavigateToProfile }) => {
                     max="80"
                     value={prefData.age_min}
                     onChange={(e) => setPrefData(prev => ({ ...prev, age_min: Number(e.target.value) }))}
-                    className="w-full px-3 py-2 border border-main radius-btn text-xs bg-surface-ground text-main outline-none"
+                    className="w-full px-3 py-2 border border-white/10 radius-btn text-xs bg-zinc-900 text-white outline-none focus:border-gold-400"
                     placeholder="Min"
                   />
-                  <span className="text-xs text-sub font-bold">to</span>
+                  <span className="text-xs text-zinc-500 font-bold">to</span>
                   <input
                     type="number"
                     min="18"
                     max="80"
                     value={prefData.age_max}
                     onChange={(e) => setPrefData(prev => ({ ...prev, age_max: Number(e.target.value) }))}
-                    className="w-full px-3 py-2 border border-main radius-btn text-xs bg-surface-ground text-main outline-none"
+                    className="w-full px-3 py-2 border border-white/10 radius-btn text-xs bg-zinc-900 text-white outline-none focus:border-gold-400"
                     placeholder="Max"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-main mb-1">Minimum Annual Income (LPA)</label>
+                <label className="block text-xs font-semibold text-zinc-300 mb-1">Minimum Annual Income (LPA)</label>
                 <select
                   value={prefData.min_income_lpa}
                   onChange={(e) => setPrefData(prev => ({ ...prev, min_income_lpa: e.target.value }))}
-                  className="w-full px-3 py-2 border border-main radius-btn text-xs bg-surface-ground text-main outline-none"
+                  className="w-full px-3 py-2 border border-white/10 radius-btn text-xs bg-zinc-900 text-white outline-none focus:border-gold-400"
                 >
                   <option value="all">{t('anyIncome')}</option>
                   <option value="2.5">2.5+ LPA</option>
@@ -199,51 +199,42 @@ export const AccountSettingsPage = ({ onBack, onNavigateToProfile }) => {
               </div>
             </div>
 
-            {/* Preferred Diet & Preferred Location */}
+            {/* Preferred Diet & Preferred Education */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-main mb-1">Preferred Diet</label>
+                <label className="block text-xs font-semibold text-zinc-300 mb-1">Preferred Diet</label>
                 <select
                   value={prefData.diet}
                   onChange={(e) => setPrefData(prev => ({ ...prev, diet: e.target.value }))}
-                  className="w-full px-3 py-2 border border-main radius-btn text-xs bg-surface-ground text-main outline-none"
+                  className="w-full px-3 py-2 border border-white/10 radius-btn text-xs bg-zinc-900 text-white outline-none focus:border-gold-400"
                 >
-                  <option value="any">{t('allDiets')}</option>
-                  <option value="veg">{t('vegetarian')}</option>
-                  <option value="non-veg">{t('nonVegetarian')}</option>
-                  <option value="eggetarian">{t('eggetarian')}</option>
+                  <option value="any">Any Diet</option>
+                  <option value="veg">Vegetarian</option>
+                  <option value="non-veg">Non-Vegetarian</option>
+                  <option value="eggetarian">Eggetarian</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-main mb-1">Preferred Location / City</label>
-                <input
-                  type="text"
-                  value={prefData.city}
-                  onChange={(e) => setPrefData(prev => ({ ...prev, city: e.target.value }))}
-                  placeholder="e.g. Pune, Mumbai, or Any"
-                  className="w-full px-3 py-2 border border-main radius-btn text-xs bg-surface-ground text-main outline-none"
-                />
+                <label className="block text-xs font-semibold text-zinc-300 mb-1">Preferred Education</label>
+                <select
+                  value={prefData.education}
+                  onChange={(e) => setPrefData(prev => ({ ...prev, education: e.target.value }))}
+                  className="w-full px-3 py-2 border border-white/10 radius-btn text-xs bg-zinc-900 text-white outline-none focus:border-gold-400"
+                >
+                  <option value="any">Any Education Tier</option>
+                  <option value="graduate">Graduate / Bachelor's</option>
+                  <option value="postgraduate">Post-Graduate / Master's</option>
+                  <option value="doctorate">Doctorate / Ph.D.</option>
+                </select>
               </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-main mb-1">Partner Expectations & Notes</label>
-              <textarea
-                rows="2"
-                maxLength="400"
-                value={prefData.notes}
-                onChange={(e) => setPrefData(prev => ({ ...prev, notes: e.target.value }))}
-                placeholder="Specific partner values, remarriage considerations, or family expectations..."
-                className="w-full px-3.5 py-2.5 border border-main radius-btn text-xs bg-surface-ground text-main outline-none"
-              />
             </div>
 
             <div className="pt-2 flex justify-end">
               <button
                 type="submit"
                 disabled={savingPref}
-                className="px-6 py-2.5 radius-btn bg-sky-blue hover:bg-sky-blue/90 text-white font-bold text-xs shadow-xs transition-colors flex items-center gap-1.5"
+                className="px-6 py-2.5 radius-btn bg-gradient-to-r from-gold-500 to-amber-600 hover:from-gold-400 hover:to-amber-500 text-zinc-950 font-extrabold text-xs shadow-md transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
               >
                 <Save className="w-4 h-4" />
                 <span>{savingPref ? 'Saving...' : 'Save Partner Preferences'}</span>
@@ -253,20 +244,20 @@ export const AccountSettingsPage = ({ onBack, onNavigateToProfile }) => {
         </div>
 
         {/* Section 2: App Installation (PWA) */}
-        <div className="bg-surface-card radius-card border border-main p-6 shadow-xs space-y-4">
-          <div className="flex items-center gap-2 pb-3 border-b border-main">
-            <Smartphone className="w-5 h-5 text-sky-blue" />
-            <h2 className="font-serif font-bold text-main text-lg">App Installation</h2>
+        <div className="glass-card radius-card border border-white/10 p-6 sm:p-8 shadow-2xl space-y-4">
+          <div className="flex items-center gap-2 pb-3 border-b border-white/10">
+            <Smartphone className="w-5 h-5 text-gold-400" />
+            <h2 className="font-serif font-bold gold-gradient-text text-lg">App Installation</h2>
           </div>
 
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-surface-ground border border-main radius-card">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-zinc-900/80 border border-white/10 radius-card">
             <div className="flex items-center gap-3">
               <Logo type="app" size="small" />
               <div>
-                <p className="font-bold text-xs text-main">
+                <p className="font-bold text-xs text-white">
                   {isInstalled ? 'Vadhu Var App Installed' : 'Install Vadhu Var on this Device'}
                 </p>
-                <p className="text-[11px] text-sub mt-0.5 max-w-md">
+                <p className="text-[11px] text-zinc-400 mt-0.5 max-w-md leading-relaxed">
                   {isInstalled
                     ? 'You are running the full installed app experience with fast offline caching.'
                     : 'Add to your phone or desktop home screen for one-tap access, notifications, and smooth offline performance.'}
@@ -277,7 +268,7 @@ export const AccountSettingsPage = ({ onBack, onNavigateToProfile }) => {
             {!isInstalled && (
               <button
                 onClick={triggerInstall}
-                className="px-4 py-2.5 radius-btn bg-sky-blue hover:bg-sky-blue/90 text-white font-bold text-xs shadow-xs transition-colors flex items-center justify-center gap-1.5 flex-shrink-0"
+                className="px-4 py-2.5 radius-btn bg-gradient-to-r from-gold-500 to-amber-600 hover:from-gold-400 hover:to-amber-500 text-zinc-950 font-extrabold text-xs shadow-md transition-all active:scale-95 flex items-center justify-center gap-1.5 flex-shrink-0 cursor-pointer"
               >
                 <Download className="w-4 h-4" />
                 <span>Install App</span>
@@ -287,18 +278,18 @@ export const AccountSettingsPage = ({ onBack, onNavigateToProfile }) => {
         </div>
 
         {/* Section 3: Profile Visibility & Privacy */}
-        <div className="bg-surface-card radius-card border border-main p-6 shadow-xs space-y-4">
-          <div className="flex items-center gap-2 pb-3 border-b border-main">
-            {isSearchVisible ? <Eye className="w-5 h-5 text-sky-blue" /> : <EyeOff className="w-5 h-5 text-sub" />}
-            <h2 className="font-serif font-bold text-main text-lg">{t('profileVisibility')}</h2>
+        <div className="glass-card radius-card border border-white/10 p-6 sm:p-8 shadow-2xl space-y-4">
+          <div className="flex items-center gap-2 pb-3 border-b border-white/10">
+            {isSearchVisible ? <Eye className="w-5 h-5 text-emerald-400" /> : <EyeOff className="w-5 h-5 text-amber-400" />}
+            <h2 className="font-serif font-bold gold-gradient-text text-lg">{t('profileVisibility')}</h2>
           </div>
 
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-surface-ground border border-main radius-card">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-zinc-900/80 border border-white/10 radius-card">
             <div>
-              <p className="font-bold text-xs text-main">
+              <p className="font-bold text-xs text-white">
                 {isSearchVisible ? t('visibleToAll') : t('hiddenFromSearch')}
               </p>
-              <p className="text-[11px] text-sub mt-0.5 max-w-md">
+              <p className="text-[11px] text-zinc-400 mt-0.5 max-w-md leading-relaxed">
                 {isSearchVisible
                   ? 'Your profile is active and discoverable by verified matrimonial candidates.'
                   : 'Your profile is hidden from search results. You can still browse and send interests.'}
@@ -307,10 +298,10 @@ export const AccountSettingsPage = ({ onBack, onNavigateToProfile }) => {
 
             <button
               onClick={handleToggleVisibility}
-              className={`px-4 py-2 radius-btn text-xs font-bold transition-colors ${
+              className={`px-4 py-2 radius-btn text-xs font-bold transition-colors cursor-pointer ${
                 isSearchVisible
-                  ? 'bg-surface-card border border-main text-sub hover:text-main'
-                  : 'bg-sky-blue text-white'
+                  ? 'glass-card border border-white/10 text-zinc-300 hover:text-white'
+                  : 'bg-gradient-to-r from-gold-500 to-amber-600 text-zinc-950'
               }`}
             >
               {isSearchVisible ? 'Hide from Search' : 'Make Profile Visible'}
@@ -319,10 +310,10 @@ export const AccountSettingsPage = ({ onBack, onNavigateToProfile }) => {
         </div>
 
         {/* Section 4: Language Preference */}
-        <div className="bg-surface-card radius-card border border-main p-6 shadow-xs space-y-4">
-          <div className="flex items-center gap-2 pb-3 border-b border-main">
-            <Globe className="w-5 h-5 text-sky-blue" />
-            <h2 className="font-serif font-bold text-main text-lg">Language Preference</h2>
+        <div className="glass-card radius-card border border-white/10 p-6 sm:p-8 shadow-2xl space-y-4">
+          <div className="flex items-center gap-2 pb-3 border-b border-white/10">
+            <Globe className="w-5 h-5 text-gold-400" />
+            <h2 className="font-serif font-bold gold-gradient-text text-lg">Language Preference</h2>
           </div>
 
           <div className="flex items-center gap-3">
@@ -334,10 +325,10 @@ export const AccountSettingsPage = ({ onBack, onNavigateToProfile }) => {
               <button
                 key={l.code}
                 onClick={() => setLang(l.code)}
-                className={`px-4 py-2 radius-btn text-xs font-medium border transition-colors ${
+                className={`px-4 py-2 radius-btn text-xs font-medium border transition-colors cursor-pointer ${
                   lang === l.code
-                    ? 'bg-sky-blue text-white font-bold border-sky-blue shadow-xs'
-                    : 'bg-surface-ground border-main text-sub hover:text-main'
+                    ? 'bg-gradient-to-r from-gold-500 to-amber-600 text-zinc-950 font-bold border-gold-400 shadow-md'
+                    : 'glass-card border-white/10 text-zinc-400 hover:text-white'
                 }`}
               >
                 {l.label}
@@ -347,13 +338,13 @@ export const AccountSettingsPage = ({ onBack, onNavigateToProfile }) => {
         </div>
 
         {/* Section 5: Sign Out */}
-        <div className="bg-surface-card radius-card border border-main p-6 shadow-xs space-y-4">
-          <div className="flex items-center gap-2 pb-3 border-b border-main text-main">
-            <LogOut className="w-5 h-5 text-rose-500" />
-            <h2 className="font-serif font-bold text-main text-lg">{t('signOut')}</h2>
+        <div className="glass-card radius-card border border-white/10 p-6 sm:p-8 shadow-2xl space-y-4">
+          <div className="flex items-center gap-2 pb-3 border-b border-white/10 text-white">
+            <LogOut className="w-5 h-5 text-rose-400" />
+            <h2 className="font-serif font-bold text-white text-lg">{t('signOut')}</h2>
           </div>
 
-          <p className="text-xs text-sub">
+          <p className="text-xs text-zinc-400 leading-relaxed">
             Sign out of your active session on this device. You can sign back in at any time with your registered account.
           </p>
 
@@ -362,7 +353,7 @@ export const AccountSettingsPage = ({ onBack, onNavigateToProfile }) => {
               logout();
               if (onBack) onBack();
             }}
-            className="px-5 py-2.5 radius-btn bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs font-bold transition-colors flex items-center gap-2"
+            className="px-5 py-2.5 radius-btn bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-400 text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer"
           >
             <LogOut className="w-4 h-4" />
             <span>{t('signOut')}</span>
@@ -370,19 +361,19 @@ export const AccountSettingsPage = ({ onBack, onNavigateToProfile }) => {
         </div>
 
         {/* Section 6: Deactivate Account */}
-        <div className="bg-surface-card radius-card border border-main p-6 shadow-xs space-y-4">
-          <div className="flex items-center gap-2 pb-3 border-b border-main text-main">
-            <ShieldAlert className="w-5 h-5 text-sub" />
-            <h2 className="font-serif font-bold text-main text-lg">{t('deactivateAccount')}</h2>
+        <div className="glass-card radius-card border border-white/10 p-6 sm:p-8 shadow-2xl space-y-4">
+          <div className="flex items-center gap-2 pb-3 border-b border-white/10 text-white">
+            <ShieldAlert className="w-5 h-5 text-zinc-400" />
+            <h2 className="font-serif font-bold text-white text-lg">{t('deactivateAccount')}</h2>
           </div>
 
-          <p className="text-xs text-sub">
+          <p className="text-xs text-zinc-400 leading-relaxed">
             Deactivating your account hides your profile from all search feeds. Your data is preserved so you can reactivate anytime simply by signing back in.
           </p>
 
           <button
             onClick={handleDeactivateAccount}
-            className="px-5 py-2.5 radius-btn bg-surface-ground border border-main text-sub hover:text-main text-xs font-bold transition-colors flex items-center gap-2"
+            className="px-5 py-2.5 radius-btn glass-card border border-white/10 text-zinc-300 hover:text-white text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer"
           >
             <UserX className="w-4 h-4" />
             <span>{t('deactivateAccount')}</span>

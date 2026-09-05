@@ -228,40 +228,40 @@ export const ShareProfileModal = ({ profile, isOpen, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-surface-card radius-card border border-main max-w-lg w-full p-5 sm:p-6 space-y-4 shadow-2xl animate-fade-in max-h-[95vh] flex flex-col">
+    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+      <div className="glass-card radius-card border border-white/10 max-w-lg w-full p-5 sm:p-6 space-y-4 shadow-2xl animate-fade-in max-h-[95vh] flex flex-col overflow-hidden">
         {/* Modal Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-main">
+        <div className="flex items-center justify-between pb-3 border-b border-white/10">
           <div className="flex items-center gap-2">
-            <Share2 className="w-5 h-5 text-sky-blue" />
-            <h3 className="font-serif font-bold text-main text-base sm:text-lg">
-              Share Matrimonial Profile Card
+            <Share2 className="w-5 h-5 text-gold-400" />
+            <h3 className="font-serif font-bold gold-gradient-text text-base sm:text-lg">
+              Share Matrimonial Bio-Data Card
             </h3>
           </div>
-          <button type="button" onClick={onClose} className="p-1 radius-btn text-sub hover:text-main">
+          <button type="button" onClick={onClose} className="p-1 radius-btn text-zinc-400 hover:text-white hover:bg-white/10 transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <p className="text-xs text-sub">
+        <p className="text-xs text-zinc-400">
           Generate a safe, beautiful summary card for WhatsApp Status, Instagram, or family groups. (No contact info or sensitive details included).
         </p>
 
         {/* Canvas Card Preview */}
-        <div className="flex-1 overflow-hidden flex items-center justify-center bg-black/40 radius-card p-2 border border-main">
+        <div className="flex-1 overflow-hidden flex items-center justify-center bg-zinc-950/70 radius-card p-2 border border-white/10">
           <canvas
             ref={canvasRef}
-            className="w-full max-h-[380px] object-contain rounded-md shadow-lg"
+            className="w-full max-h-[380px] object-contain rounded-md shadow-2xl"
           />
         </div>
 
         {/* Action Buttons */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-2 border-t border-main">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-2 border-t border-white/10">
           <button
             type="button"
             onClick={handleNativeShare}
             disabled={sharing}
-            className="py-2.5 px-3 radius-btn bg-sky-blue hover:bg-sky-blue/90 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition-colors"
+            className="py-2.5 px-3 radius-btn bg-gradient-to-r from-gold-500 to-amber-600 hover:from-gold-400 hover:to-amber-500 text-zinc-950 font-extrabold text-xs flex items-center justify-center gap-1.5 shadow-sm transition-all active:scale-95 cursor-pointer"
           >
             <Share2 className="w-4 h-4" />
             <span>Share Card</span>
@@ -270,18 +270,18 @@ export const ShareProfileModal = ({ profile, isOpen, onClose }) => {
           <button
             type="button"
             onClick={handleDownload}
-            className="py-2.5 px-3 radius-btn bg-surface-ground hover:bg-surface-card border border-main text-main font-bold text-xs flex items-center justify-center gap-1.5 transition-colors"
+            className="py-2.5 px-3 radius-btn glass-card border border-white/10 text-white hover:bg-white/10 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
           >
-            <Download className="w-4 h-4 text-sky-blue" />
+            <Download className="w-4 h-4 text-gold-400" />
             <span>Download PNG</span>
           </button>
 
           <button
             type="button"
             onClick={handleCopyLink}
-            className="py-2.5 px-3 radius-btn bg-surface-ground hover:bg-surface-card border border-main text-main font-bold text-xs flex items-center justify-center gap-1.5 transition-colors"
+            className="py-2.5 px-3 radius-btn glass-card border border-white/10 text-white hover:bg-white/10 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
           >
-            {copied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4 text-sub" />}
+            {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4 text-zinc-400" />}
             <span>{copied ? 'Link Copied!' : 'Copy Link'}</span>
           </button>
         </div>

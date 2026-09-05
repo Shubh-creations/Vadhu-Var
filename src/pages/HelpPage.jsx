@@ -148,29 +148,32 @@ export const HelpPage = ({ onBack }) => {
       {onBack && (
         <button
           onClick={onBack}
-          className="mb-6 inline-flex items-center gap-2 px-4 py-2 radius-btn bg-surface-card border border-main text-sub hover:text-main font-semibold text-xs transition-colors shadow-xs"
+          className="mb-6 inline-flex items-center gap-2 px-4 py-2 radius-btn glass-card border border-white/10 text-zinc-300 hover:text-white font-semibold text-xs transition-colors shadow-xs cursor-pointer"
         >
-          <ArrowLeft className="w-4 h-4 text-sky-blue" />
+          <ArrowLeft className="w-4 h-4 text-gold-400" />
           <span>Back to Platform</span>
         </button>
       )}
 
-      <div className="bg-surface-card border border-main radius-card p-6 sm:p-10 shadow-xs space-y-8">
+      <div className="glass-card border border-white/10 radius-card p-6 sm:p-10 shadow-2xl space-y-8 relative overflow-hidden">
+        {/* Ambient Top Glow */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-24 bg-gold-500/10 blur-2xl pointer-events-none" />
+
         {/* Header */}
-        <div className="text-center max-w-2xl mx-auto">
-          <div className="w-14 h-14 radius-btn bg-sky-blue/10 text-sky-blue flex items-center justify-center mx-auto mb-3 shadow-xs">
+        <div className="text-center max-w-2xl mx-auto relative z-10">
+          <div className="w-14 h-14 radius-btn bg-gold-500/10 border border-gold-500/20 text-gold-400 flex items-center justify-center mx-auto mb-3 shadow-md">
             <HelpCircle className="w-8 h-8" />
           </div>
-          <h1 className="font-serif text-2xl sm:text-3xl font-extrabold text-main">
+          <h1 className="font-serif text-2xl sm:text-3xl font-extrabold gold-gradient-text">
             Help Center & Frequently Asked Questions
           </h1>
-          <p className="text-xs sm:text-sm text-sub mt-1.5 leading-relaxed">
+          <p className="text-xs sm:text-sm text-zinc-400 mt-1.5 leading-relaxed">
             Everything you need to know about verification badges, match compatibility, privacy, and safety.
           </p>
         </div>
 
         {/* FAQ Accordion */}
-        <div className="space-y-3">
+        <div className="space-y-3 relative z-10">
           {faqList.map((faq, idx) => {
             const Icon = faq.icon;
             const isOpen = openIndex === idx;
@@ -178,26 +181,26 @@ export const HelpPage = ({ onBack }) => {
             return (
               <div
                 key={faq.id}
-                className="bg-surface-ground radius-card border border-main overflow-hidden transition-colors"
+                className="bg-zinc-900/80 radius-card border border-white/10 overflow-hidden transition-colors"
               >
                 <button
                   type="button"
                   onClick={() => setOpenIndex(isOpen ? null : idx)}
-                  className="w-full p-4 sm:p-5 text-left flex items-center justify-between gap-4 font-serif font-bold text-main text-sm sm:text-base hover:bg-main/5 transition-colors"
+                  className="w-full p-4 sm:p-5 text-left flex items-center justify-between gap-4 font-serif font-bold text-white text-sm sm:text-base hover:bg-white/[0.03] transition-colors cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
-                    <Icon className="w-5 h-5 text-sky-blue flex-shrink-0" />
+                    <Icon className="w-5 h-5 text-gold-400 flex-shrink-0" />
                     <span>{faq.title}</span>
                   </div>
                   {isOpen ? (
-                    <ChevronUp className="w-4 h-4 text-sub flex-shrink-0" />
+                    <ChevronUp className="w-4 h-4 text-zinc-400 flex-shrink-0" />
                   ) : (
-                    <ChevronDown className="w-4 h-4 text-sub flex-shrink-0" />
+                    <ChevronDown className="w-4 h-4 text-zinc-400 flex-shrink-0" />
                   )}
                 </button>
 
                 {isOpen && (
-                  <div className="p-4 sm:p-5 pt-0 border-t border-main/60 animate-fade-in">
+                  <div className="p-4 sm:p-5 pt-0 border-t border-white/10 animate-fade-in text-zinc-300">
                     {faq.content}
                   </div>
                 )}
@@ -207,20 +210,23 @@ export const HelpPage = ({ onBack }) => {
         </div>
 
         {/* Support Banner */}
-        <div className="p-6 sm:p-8 radius-card bg-sky-blue/10 border border-sky-blue/20 text-center space-y-3">
-          <h3 className="font-serif font-bold text-main text-base sm:text-lg">
+        <div className="p-6 sm:p-8 radius-card bg-zinc-900/90 border border-gold-500/20 text-center space-y-3 relative z-10 overflow-hidden">
+          <div className="w-10 h-10 rounded-full bg-gold-500/10 text-gold-400 flex items-center justify-center mx-auto mb-1">
+            <PhoneCall className="w-5 h-5" />
+          </div>
+          <h3 className="font-serif font-bold gold-gradient-text text-base sm:text-xl">
             Still have questions or need assistance?
           </h3>
-          <p className="text-xs text-sub max-w-md mx-auto leading-relaxed">
+          <p className="text-xs text-zinc-400 max-w-md mx-auto leading-relaxed">
             Our verification and matrimonial support team is happy to help you via email.
           </p>
           <div className="pt-2 flex justify-center">
             <a
               href="mailto:vadhuvar.matrimonyapp@gmail.com"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 radius-btn bg-sky-blue hover:bg-sky-blue/90 text-white font-bold text-xs sm:text-sm shadow-xs transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 radius-btn bg-gradient-to-r from-gold-500 to-amber-600 hover:from-gold-400 hover:to-amber-500 text-zinc-950 font-extrabold text-xs sm:text-sm shadow-md transition-all active:scale-95 text-center cursor-pointer max-w-full"
             >
               <Mail className="w-4 h-4 flex-shrink-0" />
-              <span className="break-all">vadhuvar.matrimonyapp@gmail.com</span>
+              <span className="font-mono truncate">vadhuvar.matrimonyapp@gmail.com</span>
             </a>
           </div>
         </div>

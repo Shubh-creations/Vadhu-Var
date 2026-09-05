@@ -24,10 +24,10 @@ export const ChatAndCallModal = ({ candidate, isOpen, onClose, onOpenBlockReport
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-      <div className="bg-surface-card radius-card border border-main max-w-lg w-full h-[550px] flex flex-col relative shadow-md">
+    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+      <div className="glass-card radius-card border border-white/10 max-w-lg w-full h-[550px] flex flex-col relative shadow-2xl overflow-hidden animate-fade-in">
         {/* Header */}
-        <div className="p-4 border-b border-main flex items-center justify-between bg-surface-ground radius-card">
+        <div className="p-4 border-b border-white/10 flex items-center justify-between bg-zinc-900/90">
           <div className="flex items-center gap-3">
             <CandidateAvatar
               src={candidate?.photo_url}
@@ -36,27 +36,27 @@ export const ChatAndCallModal = ({ candidate, isOpen, onClose, onOpenBlockReport
               shape="rounded"
             />
             <div>
-              <h3 className="font-serif font-bold text-main text-sm">{candidateName}</h3>
-              <span className="text-[10px] text-sub">Verified Proposal Connect</span>
+              <h3 className="font-serif font-bold text-white text-sm">{candidateName}</h3>
+              <span className="text-[10px] text-gold-400 font-mono">Verified Proposal Connect</span>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
             <button
               onClick={() => onOpenBlockReport && onOpenBlockReport(candidate)}
-              className="p-1.5 radius-btn text-sub hover:text-main"
+              className="p-1.5 radius-btn text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
               title="Report or Block"
             >
               <ShieldAlert className="w-4 h-4" />
             </button>
-            <button onClick={onClose} className="p-1.5 radius-btn text-sub hover:text-main">
+            <button onClick={onClose} className="p-1.5 radius-btn text-zinc-400 hover:text-white hover:bg-white/10 transition-colors">
               <X className="w-4 h-4" />
             </button>
           </div>
         </div>
 
         {/* Message Area */}
-        <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-surface">
+        <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-zinc-950/80">
           {messages.map((m) => (
             <div
               key={m.id}
@@ -65,29 +65,29 @@ export const ChatAndCallModal = ({ candidate, isOpen, onClose, onOpenBlockReport
               <div
                 className={`max-w-[80%] p-3 radius-card text-xs font-medium ${
                   m.sender === 'me'
-                    ? 'bg-sky-blue text-white'
-                    : 'bg-surface-card text-main border border-main'
+                    ? 'bg-gradient-to-r from-gold-500 to-amber-600 text-zinc-950 font-bold shadow-md'
+                    : 'bg-zinc-900 text-white border border-white/10'
                 }`}
               >
                 {m.text}
               </div>
-              <span className="text-[10px] text-sub mt-1">{m.time}</span>
+              <span className="text-[10px] text-zinc-500 mt-1 font-mono">{m.time}</span>
             </div>
           ))}
         </div>
 
         {/* Input */}
-        <form onSubmit={handleSend} className="p-3 border-t border-main bg-surface-ground flex items-center gap-2">
+        <form onSubmit={handleSend} className="p-3 border-t border-white/10 bg-zinc-900/90 flex items-center gap-2">
           <input
             type="text"
             placeholder="Type a message..."
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
-            className="flex-1 px-3 py-2 border border-main radius-btn text-xs bg-surface-card text-main outline-none focus:ring-1 focus:ring-sky-blue"
+            className="flex-1 px-3.5 py-2.5 border border-white/10 radius-btn text-xs bg-zinc-950 text-white placeholder:text-zinc-500 outline-none focus:ring-1 focus:ring-gold-400/40 focus:border-gold-400 transition-colors"
           />
           <button
             type="submit"
-            className="p-2 radius-btn bg-sky-blue hover:bg-sky-blue/90 text-white font-medium shadow-xs"
+            className="p-2.5 radius-btn bg-gradient-to-r from-gold-500 to-amber-600 hover:from-gold-400 hover:to-amber-500 text-zinc-950 font-bold shadow-sm transition-all active:scale-95 cursor-pointer"
           >
             <Send className="w-4 h-4" />
           </button>

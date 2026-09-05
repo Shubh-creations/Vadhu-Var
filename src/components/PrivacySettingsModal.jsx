@@ -64,57 +64,60 @@ export const PrivacySettingsModal = ({ isOpen, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-surface-card border border-main radius-card max-w-lg w-full p-6 sm:p-8 shadow-2xl relative animate-fade-in">
+    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+      <div className="glass-card border border-white/10 radius-card max-w-lg w-full p-6 sm:p-8 shadow-2xl relative animate-fade-in overflow-hidden">
+        {/* Ambient Top Glow */}
+        <div className="absolute top-0 right-1/4 w-40 h-16 bg-gold-500/15 blur-xl pointer-events-none" />
+
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 p-1.5 radius-btn text-sub hover:text-main"
+          className="absolute top-5 right-5 p-1.5 radius-btn text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
           aria-label="Close"
         >
           <X className="w-5 h-5" />
         </button>
 
         {/* Modal Header */}
-        <div className="text-center mb-6">
-          <div className="w-12 h-12 radius-btn bg-sky-blue/10 text-sky-blue flex items-center justify-center mx-auto mb-2.5">
+        <div className="text-center mb-6 relative z-10">
+          <div className="w-12 h-12 radius-btn bg-gold-500/10 border border-gold-500/20 text-gold-400 flex items-center justify-center mx-auto mb-2.5">
             <Shield className="w-6 h-6" />
           </div>
-          <h2 className="font-serif text-xl font-bold text-main">
+          <h2 className="font-serif text-xl sm:text-2xl font-bold gold-gradient-text">
             Privacy & Trust Controls
           </h2>
-          <p className="text-xs text-sub mt-0.5">
+          <p className="text-xs text-zinc-400 mt-0.5">
             Configure photo blur, phone number masking & search visibility
           </p>
         </div>
 
-        <div className="space-y-4 text-xs sm:text-sm">
+        <div className="space-y-4 text-xs sm:text-sm relative z-10">
           {/* 1. Photo Shielding / Blur */}
-          <div className="bg-surface-ground p-4 radius-card border border-main space-y-2">
+          <div className="bg-zinc-900/80 p-4 radius-card border border-white/10 space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 {settings.photoBlur ? (
-                  <EyeOff className="w-4 h-4 text-amber-500" />
+                  <EyeOff className="w-4 h-4 text-amber-400" />
                 ) : (
-                  <Eye className="w-4 h-4 text-emerald-500" />
+                  <Eye className="w-4 h-4 text-emerald-400" />
                 )}
-                <span className="font-bold text-main">Photo Privacy Shield</span>
+                <span className="font-bold text-white">Photo Privacy Shield</span>
               </div>
 
               <button
                 type="button"
                 onClick={() => handleToggle('photoBlur')}
-                className={`w-11 h-6 flex items-center rounded-full p-1 transition-colors ${
-                  settings.photoBlur ? 'bg-sky-blue' : 'bg-surface-card border border-main'
+                className={`w-11 h-6 flex items-center rounded-full p-1 transition-colors cursor-pointer ${
+                  settings.photoBlur ? 'bg-gradient-to-r from-gold-500 to-amber-600' : 'bg-zinc-800 border border-white/10'
                 }`}
               >
                 <div
-                  className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform ${
-                    settings.photoBlur ? 'translate-x-5' : 'translate-x-0'
+                  className={`bg-zinc-950 w-4 h-4 rounded-full shadow-md transform transition-transform ${
+                    settings.photoBlur ? 'translate-x-5 bg-white' : 'translate-x-0'
                   }`}
                 />
               </button>
             </div>
-            <p className="text-[11px] text-sub leading-relaxed">
+            <p className="text-[11px] text-zinc-400 leading-relaxed">
               {settings.photoBlur
                 ? 'Photos stay blurred until you explicitly accept a connection request.'
                 : 'Photos are visible to verified candidates on discovery feed.'}
@@ -122,55 +125,55 @@ export const PrivacySettingsModal = ({ isOpen, onClose }) => {
           </div>
 
           {/* 2. Phone Number Masking Shield */}
-          <div className="bg-surface-ground p-4 radius-card border border-main space-y-2">
+          <div className="bg-zinc-900/80 p-4 radius-card border border-white/10 space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Phone className="w-4 h-4 text-emerald-500" />
-                <span className="font-bold text-main">Direct Phone Masking</span>
+                <Phone className="w-4 h-4 text-emerald-400" />
+                <span className="font-bold text-white">Direct Phone Masking</span>
               </div>
 
               <button
                 type="button"
                 onClick={() => handleToggle('phoneShield')}
-                className={`w-11 h-6 flex items-center rounded-full p-1 transition-colors ${
-                  settings.phoneShield ? 'bg-sky-blue' : 'bg-surface-card border border-main'
+                className={`w-11 h-6 flex items-center rounded-full p-1 transition-colors cursor-pointer ${
+                  settings.phoneShield ? 'bg-gradient-to-r from-gold-500 to-amber-600' : 'bg-zinc-800 border border-white/10'
                 }`}
               >
                 <div
-                  className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform ${
-                    settings.phoneShield ? 'translate-x-5' : 'translate-x-0'
+                  className={`bg-zinc-950 w-4 h-4 rounded-full shadow-md transform transition-transform ${
+                    settings.phoneShield ? 'translate-x-5 bg-white' : 'translate-x-0'
                   }`}
                 />
               </button>
             </div>
-            <p className="text-[11px] text-sub leading-relaxed">
+            <p className="text-[11px] text-zinc-400 leading-relaxed">
               Masks your mobile number and requires in-app proposal verification before contact exchange.
             </p>
           </div>
 
           {/* 3. Incognito Search Mode */}
-          <div className="bg-surface-ground p-4 radius-card border border-main space-y-2">
+          <div className="bg-zinc-900/80 p-4 radius-card border border-white/10 space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Lock className="w-4 h-4 text-sky-blue" />
-                <span className="font-bold text-main">Private / Incognito Mode</span>
+                <Lock className="w-4 h-4 text-gold-400" />
+                <span className="font-bold text-white">Private / Incognito Mode</span>
               </div>
 
               <button
                 type="button"
                 onClick={() => handleToggle('incognito')}
-                className={`w-11 h-6 flex items-center rounded-full p-1 transition-colors ${
-                  settings.incognito ? 'bg-sky-blue' : 'bg-surface-card border border-main'
+                className={`w-11 h-6 flex items-center rounded-full p-1 transition-colors cursor-pointer ${
+                  settings.incognito ? 'bg-gradient-to-r from-gold-500 to-amber-600' : 'bg-zinc-800 border border-white/10'
                 }`}
               >
                 <div
-                  className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform ${
-                    settings.incognito ? 'translate-x-5' : 'translate-x-0'
+                  className={`bg-zinc-950 w-4 h-4 rounded-full shadow-md transform transition-transform ${
+                    settings.incognito ? 'translate-x-5 bg-white' : 'translate-x-0'
                   }`}
                 />
               </button>
             </div>
-            <p className="text-[11px] text-sub leading-relaxed">
+            <p className="text-[11px] text-zinc-400 leading-relaxed">
               {settings.incognito
                 ? 'Your profile is currently hidden from public search feeds.'
                 : 'Your profile is active and discoverable by verified candidates.'}
@@ -180,7 +183,7 @@ export const PrivacySettingsModal = ({ isOpen, onClose }) => {
 
         <button
           onClick={handleSave}
-          className="w-full mt-6 py-3 radius-btn bg-sky-blue hover:bg-sky-blue/90 text-white font-bold text-xs sm:text-sm shadow-xs transition-colors flex items-center justify-center gap-2"
+          className="w-full mt-6 py-3 radius-btn bg-gradient-to-r from-gold-500 to-amber-600 hover:from-gold-400 hover:to-amber-500 text-zinc-950 font-extrabold text-xs sm:text-sm shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer relative z-10"
         >
           {savedSuccess ? <CheckCircle2 className="w-4 h-4" /> : null}
           <span>{savedSuccess ? 'Settings Saved!' : 'Save Privacy Preferences'}</span>

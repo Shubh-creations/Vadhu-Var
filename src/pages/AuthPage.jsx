@@ -147,27 +147,27 @@ export const AuthPage = ({ onSuccess }) => {
   if (emailSentScreen) {
     return (
       <div className="max-w-md mx-auto px-4 py-12">
-        <div className="bg-surface-card radius-card border border-main p-6 sm:p-8 shadow-sm text-center space-y-4">
+        <div className="glass-card radius-card border border-white/10 p-6 sm:p-8 shadow-2xl text-center space-y-4">
           <div className="flex justify-center mb-2">
             <Logo variant="icon" size="large" />
           </div>
 
-          <h2 className="font-serif text-2xl font-bold text-main">
+          <h2 className="font-serif text-2xl font-bold gold-gradient-text">
             Check Your Email
           </h2>
 
-          <p className="text-xs text-sub leading-relaxed max-w-sm mx-auto">
-            We sent a verification link to <strong className="text-main">{email}</strong>. Please check your inbox (and spam folder) and click the link to activate your Vadhu Var account.
+          <p className="text-xs text-zinc-400 leading-relaxed max-w-sm mx-auto">
+            We sent a verification link to <strong className="text-white font-mono">{email}</strong>. Please check your inbox (and spam folder) and click the link to activate your Vadhu Var account.
           </p>
 
-          <div className="pt-4 border-t border-main">
+          <div className="pt-4 border-t border-white/10">
             <button
               onClick={() => {
                 setEmailSentScreen(false);
                 setMode('signin');
                 setError('');
               }}
-              className="px-6 py-2.5 radius-btn bg-sky-blue text-white text-xs font-bold hover:bg-sky-blue/90 transition-colors"
+              className="px-6 py-2.5 radius-btn bg-gradient-to-r from-gold-500 to-amber-600 text-zinc-950 text-xs font-bold hover:brightness-110 shadow-md transition-all active:scale-95"
             >
               Return to Sign In
             </button>
@@ -179,22 +179,25 @@ export const AuthPage = ({ onSuccess }) => {
 
   return (
     <div className="max-w-md mx-auto px-4 py-10 sm:py-14">
-      <div className="bg-surface-card radius-card border border-main p-6 sm:p-8 shadow-sm text-center transition-colors">
+      <div className="glass-card radius-card border border-white/10 p-6 sm:p-8 shadow-2xl text-center transition-colors relative overflow-hidden">
+        {/* Ambient Top Glow */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-20 bg-gradient-to-b from-gold-500/15 via-gold-500/5 to-transparent blur-xl pointer-events-none" />
+
         {/* Header Logo */}
-        <div className="flex justify-center mb-5">
+        <div className="flex justify-center mb-5 relative z-10">
           <Logo size="large" />
         </div>
 
         {/* Title and Subtitle */}
         {mode === 'recovery' && (
           <>
-            <div className="w-12 h-12 rounded-full bg-sky-blue/10 text-sky-blue flex items-center justify-center mx-auto mb-3">
+            <div className="w-12 h-12 rounded-full bg-gold-500/10 text-gold-400 border border-gold-500/20 flex items-center justify-center mx-auto mb-3">
               <KeyRound className="w-6 h-6" />
             </div>
-            <h1 className="font-serif text-2xl font-bold text-main mb-1 tracking-tight">
+            <h1 className="font-serif text-2xl sm:text-3xl font-bold gold-gradient-text mb-1 tracking-tight">
               Set New Password
             </h1>
-            <p className="text-xs text-sub mb-6">
+            <p className="text-xs text-zinc-400 mb-6">
               Create a new secure password for your Vadhu Var account.
             </p>
           </>
@@ -202,13 +205,13 @@ export const AuthPage = ({ onSuccess }) => {
 
         {mode === 'forgot' && (
           <>
-            <div className="w-12 h-12 rounded-full bg-sky-blue/10 text-sky-blue flex items-center justify-center mx-auto mb-3">
+            <div className="w-12 h-12 rounded-full bg-gold-500/10 text-gold-400 border border-gold-500/20 flex items-center justify-center mx-auto mb-3">
               <KeyRound className="w-6 h-6" />
             </div>
-            <h1 className="font-serif text-2xl font-bold text-main mb-1 tracking-tight">
+            <h1 className="font-serif text-2xl sm:text-3xl font-bold gold-gradient-text mb-1 tracking-tight">
               Reset Your Password
             </h1>
-            <p className="text-xs text-sub mb-6">
+            <p className="text-xs text-zinc-400 mb-6">
               Enter your registered email address and we'll send you a password reset link.
             </p>
           </>
@@ -216,10 +219,10 @@ export const AuthPage = ({ onSuccess }) => {
 
         {mode === 'signin' && (
           <>
-            <h1 className="font-serif text-2xl font-bold text-main mb-1 tracking-tight">
+            <h1 className="font-serif text-2xl sm:text-3xl font-bold gold-gradient-text mb-1 tracking-tight">
               Sign In to Vadhu Var
             </h1>
-            <p className="text-xs text-sub mb-6">
+            <p className="text-xs text-zinc-400 mb-6">
               Access verified bride and groom profiles across India.
             </p>
           </>
@@ -227,10 +230,10 @@ export const AuthPage = ({ onSuccess }) => {
 
         {mode === 'signup' && (
           <>
-            <h1 className="font-serif text-2xl font-bold text-main mb-1 tracking-tight">
+            <h1 className="font-serif text-2xl sm:text-3xl font-bold gold-gradient-text mb-1 tracking-tight">
               Create Your Profile
             </h1>
-            <p className="text-xs text-sub mb-6">
+            <p className="text-xs text-zinc-400 mb-6">
               Start your verified matrimony search today.
             </p>
           </>
@@ -238,34 +241,34 @@ export const AuthPage = ({ onSuccess }) => {
 
         {/* Error Alert */}
         {error && (
-          <div className="mb-4 p-3 radius-btn bg-surface-ground border border-main text-rose-600 dark:text-rose-400 text-xs font-medium text-left flex items-start gap-2">
-            <span className="font-bold">•</span>
+          <div className="mb-4 p-3 radius-btn bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-medium text-left flex items-start gap-2">
+            <span className="font-bold text-rose-500">•</span>
             <span>{error}</span>
           </div>
         )}
 
         {/* Success Alert */}
         {successMsg && (
-          <div className="mb-4 p-3 radius-btn bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs font-medium text-left flex items-start gap-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+          <div className="mb-4 p-3 radius-btn bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-medium text-left flex items-start gap-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
             <span>{successMsg}</span>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4 text-left">
+        <form onSubmit={handleSubmit} className="space-y-4 text-left relative z-10">
           {/* Sign Up: Full Name */}
           {mode === 'signup' && (
             <div>
-              <label className="block text-xs font-semibold text-main mb-1">Full Name *</label>
+              <label className="block text-xs font-semibold text-zinc-300 mb-1">Full Name *</label>
               <div className="relative">
-                <User className="w-4 h-4 text-sub absolute left-3 top-3" />
+                <User className="w-4 h-4 text-zinc-400 absolute left-3.5 top-3" />
                 <input
                   type="text"
                   required
                   placeholder="e.g. Ananya Deshmukh"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2.5 border border-main radius-btn text-sm bg-surface-ground text-main outline-none focus:border-sky-blue focus:ring-1 focus:ring-sky-blue transition-colors"
+                  className="w-full pl-10 pr-3 py-2.5 border border-white/10 radius-btn text-sm bg-zinc-900/90 text-white placeholder:text-zinc-500 outline-none focus:border-gold-400 focus:ring-1 focus:ring-gold-400/40 transition-colors"
                 />
               </div>
             </div>
@@ -274,16 +277,16 @@ export const AuthPage = ({ onSuccess }) => {
           {/* Email Address (Hidden in recovery mode) */}
           {mode !== 'recovery' && (
             <div>
-              <label className="block text-xs font-semibold text-main mb-1">Email Address *</label>
+              <label className="block text-xs font-semibold text-zinc-300 mb-1">Email Address *</label>
               <div className="relative">
-                <Mail className="w-4 h-4 text-sub absolute left-3 top-3" />
+                <Mail className="w-4 h-4 text-zinc-400 absolute left-3.5 top-3" />
                 <input
                   type="email"
                   required
                   placeholder="name@domain.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2.5 border border-main radius-btn text-sm bg-surface-ground text-main outline-none focus:border-sky-blue focus:ring-1 focus:ring-sky-blue transition-colors"
+                  className="w-full pl-10 pr-3 py-2.5 border border-white/10 radius-btn text-sm bg-zinc-900/90 text-white placeholder:text-zinc-500 outline-none focus:border-gold-400 focus:ring-1 focus:ring-gold-400/40 transition-colors"
                 />
               </div>
             </div>
@@ -293,7 +296,7 @@ export const AuthPage = ({ onSuccess }) => {
           {mode !== 'forgot' && (
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="block text-xs font-semibold text-main">
+                <label className="block text-xs font-semibold text-zinc-300">
                   {mode === 'recovery' ? 'New Password *' : 'Password *'}
                 </label>
                 {mode === 'signin' && (
@@ -304,14 +307,14 @@ export const AuthPage = ({ onSuccess }) => {
                       setSuccessMsg('');
                       setMode('forgot');
                     }}
-                    className="text-xs text-sky-blue hover:underline font-medium"
+                    className="text-xs text-gold-400 hover:text-gold-300 hover:underline font-medium"
                   >
                     Forgot Password?
                   </button>
                 )}
               </div>
               <div className="relative">
-                <Lock className="w-4 h-4 text-sub absolute left-3 top-3" />
+                <Lock className="w-4 h-4 text-zinc-400 absolute left-3.5 top-3" />
                 <input
                   type="password"
                   required
@@ -319,7 +322,7 @@ export const AuthPage = ({ onSuccess }) => {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2.5 border border-main radius-btn text-sm bg-surface-ground text-main outline-none focus:border-sky-blue focus:ring-1 focus:ring-sky-blue transition-colors"
+                  className="w-full pl-10 pr-3 py-2.5 border border-white/10 radius-btn text-sm bg-zinc-900/90 text-white placeholder:text-zinc-500 outline-none focus:border-gold-400 focus:ring-1 focus:ring-gold-400/40 transition-colors"
                 />
               </div>
             </div>
@@ -328,9 +331,9 @@ export const AuthPage = ({ onSuccess }) => {
           {/* Confirm Password (only for recovery) */}
           {mode === 'recovery' && (
             <div>
-              <label className="block text-xs font-semibold text-main mb-1">Confirm New Password *</label>
+              <label className="block text-xs font-semibold text-zinc-300 mb-1">Confirm New Password *</label>
               <div className="relative">
-                <Lock className="w-4 h-4 text-sub absolute left-3 top-3" />
+                <Lock className="w-4 h-4 text-zinc-400 absolute left-3.5 top-3" />
                 <input
                   type="password"
                   required
@@ -338,7 +341,7 @@ export const AuthPage = ({ onSuccess }) => {
                   placeholder="••••••••"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2.5 border border-main radius-btn text-sm bg-surface-ground text-main outline-none focus:border-sky-blue focus:ring-1 focus:ring-sky-blue transition-colors"
+                  className="w-full pl-10 pr-3 py-2.5 border border-white/10 radius-btn text-sm bg-zinc-900/90 text-white placeholder:text-zinc-500 outline-none focus:border-gold-400 focus:ring-1 focus:ring-gold-400/40 transition-colors"
                 />
               </div>
             </div>
@@ -353,10 +356,10 @@ export const AuthPage = ({ onSuccess }) => {
                   required
                   checked={termsAccepted}
                   onChange={(e) => setTermsAccepted(e.target.checked)}
-                  className="mt-0.5 w-4 h-4 rounded border-main text-sky-blue focus:ring-sky-blue accent-sky-blue cursor-pointer"
+                  className="mt-0.5 w-4 h-4 rounded border-white/20 text-gold-500 focus:ring-gold-500 accent-amber-500 cursor-pointer"
                 />
-                <span className="text-[11px] sm:text-xs text-sub leading-snug">
-                  I agree to the <a href="#terms" onClick={(e) => { e.preventDefault(); if (window.__onOpenTerms) window.__onOpenTerms(); }} className="text-sky-blue font-semibold hover:underline">Terms of Service</a> and <a href="#privacy" onClick={(e) => { e.preventDefault(); if (window.__onOpenPrivacy) window.__onOpenPrivacy(); }} className="text-sky-blue font-semibold hover:underline">Privacy Policy</a> of Vadhu Var.
+                <span className="text-[11px] sm:text-xs text-zinc-400 leading-snug">
+                  I agree to the <a href="#terms" onClick={(e) => { e.preventDefault(); if (window.__onOpenTerms) window.__onOpenTerms(); }} className="text-gold-400 font-semibold hover:underline">Terms of Service</a> and <a href="#privacy" onClick={(e) => { e.preventDefault(); if (window.__onOpenPrivacy) window.__onOpenPrivacy(); }} className="text-gold-400 font-semibold hover:underline">Privacy Policy</a> of Vadhu Var.
                 </span>
               </label>
             </div>
@@ -366,7 +369,7 @@ export const AuthPage = ({ onSuccess }) => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 radius-btn bg-sky-blue hover:bg-sky-blue/90 text-white font-bold text-sm shadow-xs transition-colors flex items-center justify-center gap-2 mt-2"
+            className="w-full py-3 radius-btn bg-gradient-to-r from-gold-500 to-amber-600 hover:from-gold-400 hover:to-amber-500 text-zinc-950 font-extrabold text-sm shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 mt-2 cursor-pointer disabled:opacity-50"
           >
             <span>
               {loading
@@ -384,7 +387,7 @@ export const AuthPage = ({ onSuccess }) => {
         </form>
 
         {/* Navigation & Mode Switching */}
-        <div className="mt-6 pt-4 border-t border-main text-xs text-sub space-y-2">
+        <div className="mt-6 pt-4 border-t border-white/10 text-xs text-zinc-400 space-y-2 relative z-10">
           {mode === 'forgot' && (
             <button
               onClick={() => {
@@ -392,7 +395,7 @@ export const AuthPage = ({ onSuccess }) => {
                 setSuccessMsg('');
                 setMode('signin');
               }}
-              className="text-sky-blue font-bold hover:underline flex items-center justify-center gap-1 mx-auto"
+              className="text-gold-400 font-bold hover:underline flex items-center justify-center gap-1 mx-auto"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Back to Sign In</span>
@@ -408,7 +411,7 @@ export const AuthPage = ({ onSuccess }) => {
                   setSuccessMsg('');
                   setMode('signup');
                 }}
-                className="text-sky-blue font-bold hover:underline"
+                className="text-gold-400 font-bold hover:underline ml-1"
               >
                 Create an Account
               </button>
@@ -424,7 +427,7 @@ export const AuthPage = ({ onSuccess }) => {
                   setSuccessMsg('');
                   setMode('signin');
                 }}
-                className="text-sky-blue font-bold hover:underline"
+                className="text-gold-400 font-bold hover:underline ml-1"
               >
                 Sign In
               </button>

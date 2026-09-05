@@ -143,15 +143,15 @@ export const ImageCropperModal = ({ isOpen, imageSrc, onCropComplete, onClose })
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-surface-card radius-card border border-main max-w-md w-full p-5 sm:p-6 space-y-4 shadow-2xl animate-fade-in">
+    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+      <div className="glass-card radius-card border border-white/10 max-w-md w-full p-5 sm:p-6 space-y-4 shadow-2xl animate-fade-in overflow-hidden">
         {/* Modal Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-main">
+        <div className="flex items-center justify-between pb-3 border-b border-white/10">
           <div className="flex items-center gap-2">
-            <Crop className="w-5 h-5 text-sky-blue" />
-            <h3 className="font-serif font-bold text-main text-base sm:text-lg">{t('cropPhoto')}</h3>
+            <Crop className="w-5 h-5 text-gold-400" />
+            <h3 className="font-serif font-bold gold-gradient-text text-base sm:text-lg">{t('cropPhoto')}</h3>
           </div>
-          <button type="button" onClick={onClose} className="p-1 text-sub hover:text-main radius-btn">
+          <button type="button" onClick={onClose} className="p-1 text-zinc-400 hover:text-white radius-btn hover:bg-white/10 transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -168,7 +168,7 @@ export const ImageCropperModal = ({ isOpen, imageSrc, onCropComplete, onClose })
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
             onWheel={handleWheel}
-            className="relative w-64 h-64 sm:w-72 sm:h-72 mx-auto rounded-full overflow-hidden border-4 border-sky-blue bg-surface-ground cursor-grab active:cursor-grabbing shadow-inner flex items-center justify-center select-none touch-none"
+            className="relative w-64 h-64 sm:w-72 sm:h-72 mx-auto rounded-full overflow-hidden border-4 border-gold-500 bg-zinc-950 cursor-grab active:cursor-grabbing shadow-2xl flex items-center justify-center select-none touch-none"
           >
             <img
               src={imageSrc}
@@ -183,7 +183,7 @@ export const ImageCropperModal = ({ isOpen, imageSrc, onCropComplete, onClose })
                 pointerEvents: 'none'
               }}
             />
-            <div className="absolute inset-0 pointer-events-none border-2 border-white/40 rounded-full flex items-center justify-center">
+            <div className="absolute inset-0 pointer-events-none border-2 border-white/30 rounded-full flex items-center justify-center">
               <Move className="w-6 h-6 text-white/70 drop-shadow-md" />
             </div>
           </div>
@@ -193,7 +193,7 @@ export const ImageCropperModal = ({ isOpen, imageSrc, onCropComplete, onClose })
             <button
               type="button"
               onClick={() => nudge(-15, 0)}
-              className="px-2.5 py-1 text-xs radius-btn bg-surface-ground hover:bg-surface-card border border-main text-sub hover:text-main font-bold"
+              className="px-2.5 py-1 text-xs radius-btn glass-card border border-white/10 text-zinc-300 hover:text-white font-bold hover:bg-white/10 transition-colors cursor-pointer"
               title="Move Left"
             >
               ←
@@ -201,7 +201,7 @@ export const ImageCropperModal = ({ isOpen, imageSrc, onCropComplete, onClose })
             <button
               type="button"
               onClick={() => nudge(0, -15)}
-              className="px-2.5 py-1 text-xs radius-btn bg-surface-ground hover:bg-surface-card border border-main text-sub hover:text-main font-bold"
+              className="px-2.5 py-1 text-xs radius-btn glass-card border border-white/10 text-zinc-300 hover:text-white font-bold hover:bg-white/10 transition-colors cursor-pointer"
               title="Move Up"
             >
               ↑
@@ -209,7 +209,7 @@ export const ImageCropperModal = ({ isOpen, imageSrc, onCropComplete, onClose })
             <button
               type="button"
               onClick={resetCenter}
-              className="px-3 py-1 text-[11px] radius-btn bg-sky-blue/10 hover:bg-sky-blue/20 text-sky-blue border border-sky-blue/30 font-bold"
+              className="px-3 py-1 text-[11px] radius-btn bg-gold-500/10 hover:bg-gold-500/20 text-gold-400 border border-gold-500/30 font-bold transition-colors cursor-pointer"
               title="Reset to Center"
             >
               Center 🎯
@@ -217,7 +217,7 @@ export const ImageCropperModal = ({ isOpen, imageSrc, onCropComplete, onClose })
             <button
               type="button"
               onClick={() => nudge(0, 15)}
-              className="px-2.5 py-1 text-xs radius-btn bg-surface-ground hover:bg-surface-card border border-main text-sub hover:text-main font-bold"
+              className="px-2.5 py-1 text-xs radius-btn glass-card border border-white/10 text-zinc-300 hover:text-white font-bold hover:bg-white/10 transition-colors cursor-pointer"
               title="Move Down"
             >
               ↓
@@ -225,7 +225,7 @@ export const ImageCropperModal = ({ isOpen, imageSrc, onCropComplete, onClose })
             <button
               type="button"
               onClick={() => nudge(15, 0)}
-              className="px-2.5 py-1 text-xs radius-btn bg-surface-ground hover:bg-surface-card border border-main text-sub hover:text-main font-bold"
+              className="px-2.5 py-1 text-xs radius-btn glass-card border border-white/10 text-zinc-300 hover:text-white font-bold hover:bg-white/10 transition-colors cursor-pointer"
               title="Move Right"
             >
               →
@@ -233,7 +233,7 @@ export const ImageCropperModal = ({ isOpen, imageSrc, onCropComplete, onClose })
           </div>
         </div>
 
-        <p className="text-center text-xs text-sub font-medium">
+        <p className="text-center text-xs text-zinc-400 font-medium">
           {t('dragPhotoHint')}
         </p>
 
@@ -244,7 +244,7 @@ export const ImageCropperModal = ({ isOpen, imageSrc, onCropComplete, onClose })
             <button
               type="button"
               onClick={() => adjustZoom(-0.2)}
-              className="p-1.5 radius-btn bg-surface-ground hover:bg-surface-card border border-main text-sub hover:text-main"
+              className="p-1.5 radius-btn glass-card border border-white/10 text-zinc-400 hover:text-white hover:bg-white/10 cursor-pointer"
               title="Zoom Out"
             >
               <Minus className="w-3.5 h-3.5" />
@@ -257,29 +257,29 @@ export const ImageCropperModal = ({ isOpen, imageSrc, onCropComplete, onClose })
               step="0.05"
               value={zoom}
               onChange={(e) => setZoom(parseFloat(e.target.value))}
-              className="w-full h-2 bg-surface-ground radius-btn appearance-none cursor-pointer accent-sky-blue"
+              className="w-full h-2 bg-zinc-900 radius-btn appearance-none cursor-pointer accent-amber-500"
             />
 
             <button
               type="button"
               onClick={() => adjustZoom(0.2)}
-              className="p-1.5 radius-btn bg-surface-ground hover:bg-surface-card border border-main text-sub hover:text-main"
+              className="p-1.5 radius-btn glass-card border border-white/10 text-zinc-400 hover:text-white hover:bg-white/10 cursor-pointer"
               title="Zoom In"
             >
               <Plus className="w-3.5 h-3.5" />
             </button>
 
-            <span className="text-xs font-mono font-bold text-main w-9 text-right">{zoom.toFixed(1)}x</span>
+            <span className="text-xs font-mono font-bold text-gold-400 w-9 text-right">{zoom.toFixed(1)}x</span>
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center justify-between gap-3 pt-3 border-t border-main">
+          <div className="flex items-center justify-between gap-3 pt-3 border-t border-white/10">
             <button
               type="button"
               onClick={handleRotate}
-              className="flex items-center gap-1.5 px-3 py-2 radius-btn bg-surface-ground border border-main text-sub hover:text-main text-xs font-medium transition-colors"
+              className="flex items-center gap-1.5 px-3 py-2 radius-btn glass-card border border-white/10 text-zinc-300 hover:text-white text-xs font-medium transition-colors cursor-pointer"
             >
-              <RotateCw className="w-4 h-4" />
+              <RotateCw className="w-4 h-4 text-gold-400" />
               <span>{t('rotate90')}</span>
             </button>
 
@@ -287,14 +287,14 @@ export const ImageCropperModal = ({ isOpen, imageSrc, onCropComplete, onClose })
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 radius-btn border border-main text-sub font-medium text-xs hover:bg-surface-ground"
+                className="px-4 py-2 radius-btn glass-card border border-white/10 text-zinc-300 hover:text-white font-medium text-xs hover:bg-white/10 cursor-pointer"
               >
                 {t('cancel')}
               </button>
               <button
                 type="button"
                 onClick={handleCropSave}
-                className="px-5 py-2 radius-btn bg-sky-blue hover:bg-sky-blue/90 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition-colors"
+                className="px-5 py-2 radius-btn bg-gradient-to-r from-gold-500 to-amber-600 hover:from-gold-400 hover:to-amber-500 text-zinc-950 font-extrabold text-xs flex items-center gap-1.5 shadow-md transition-all active:scale-95 cursor-pointer"
               >
                 <Check className="w-4 h-4" />
                 <span>{t('saveCrop')}</span>
