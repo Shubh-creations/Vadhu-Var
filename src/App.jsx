@@ -32,6 +32,7 @@ import ChatAndCallModal from './components/ChatAndCallModal';
 import BlockReportModal from './components/BlockReportModal';
 
 import UserProfileHub from './components/UserProfileHub';
+import DestinyCanvas from './components/DestinyCanvas';
 
 function AppContent() {
   const { user, profile, isPasswordRecovery, isAccountDeactivated } = useAuth();
@@ -224,7 +225,10 @@ function AppContent() {
   ]);
 
   return (
-    <div className="min-h-screen flex flex-col transition-colors duration-200 pb-16 md:pb-0">
+    <div className="min-h-screen flex flex-col transition-colors duration-200 pb-16 md:pb-0 relative overflow-hidden bg-surface-ground">
+      {/* Generative WebGL/Canvas Spatial Field: Undulating Golden Threads & Particle Motes */}
+      <DestinyCanvas />
+
       {/* Smart Mobile Install Banner */}
       <SmartInstallBanner />
 

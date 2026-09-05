@@ -19,36 +19,43 @@
     --trust-light-green-bg: #dcfce7;
     --trust-light-green-text: #15803d;
     --trust-light-green-border: #86efac;
+
+    --gold-accent: #D4AF37;
+    --crimson-accent: #E11D48;
   }
 
   html.dark {
     color-scheme: dark;
-    --surface: #0b0d10;
-    --surface-card: #12151c;
-    --surface-ground: #1a1e29;
-    --border-color: #27272a;
+    --surface: #040405;
+    --surface-card: #09090b;
+    --surface-ground: #101116;
+    --border-color: rgba(255, 255, 255, 0.08);
     --text-primary: #ffffff;
-    --text-secondary: #94a3b8;
-    --text-muted: #64748b;
+    --text-secondary: #a1a1aa;
+    --text-muted: #71717a;
 
     --brand-sky-blue: #38bdf8;
     --brand-sky-blue-hover: #0ea5e9;
 
-    --trust-light-green-bg: #052e16;
-    --trust-light-green-text: #4ade80;
-    --trust-light-green-border: rgba(74, 222, 128, 0.3);
+    --trust-light-green-bg: rgba(16, 185, 129, 0.12);
+    --trust-light-green-text: #34d399;
+    --trust-light-green-border: rgba(52, 211, 153, 0.3);
+
+    --gold-accent: #F59E0B;
+    --crimson-accent: #F43F5E;
   }
 
   body {
     background-color: var(--surface);
     color: var(--text-primary);
-    font-family: 'Inter', 'Noto Sans Devanagari', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: 'Inter', '"Noto Sans Devanagari"', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     -webkit-tap-highlight-color: transparent;
-    transition: background-color 0.15s ease, color 0.15s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    overflow-x: hidden;
   }
 
   h1, h2, h3, .font-serif-heading {
-    font-family: 'Lora', 'Noto Serif Devanagari', Georgia, serif;
+    font-family: '"Playfair Display"', 'Lora', '"Noto Serif Devanagari"', Georgia, serif;
   }
 
   /* Form Elements & Native Dropdown Dark Mode Optimization */
@@ -70,11 +77,70 @@
 
   html.dark select option,
   html.dark select optgroup {
-    background-color: #12151c !important;
+    background-color: #09090b !important;
     color: #ffffff !important;
   }
 }
 
+/* Luxury Glassmorphism & Micro-Surfaces */
+.glass-card {
+  background: rgba(9, 9, 11, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-card-crimson {
+  background: radial-gradient(circle at top left, rgba(225, 29, 72, 0.08), transparent 70%), rgba(9, 9, 11, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(244, 63, 94, 0.15);
+}
+
+.glass-card-gold {
+  background: radial-gradient(circle at top right, rgba(245, 158, 11, 0.07), transparent 70%), rgba(9, 9, 11, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+/* Radiant Gold & Crimson Glows */
+.gold-glow {
+  box-shadow: 0 0 24px -4px rgba(245, 158, 11, 0.35);
+}
+
+.gold-glow-subtle {
+  box-shadow: 0 0 16px -6px rgba(245, 158, 11, 0.2);
+}
+
+.crimson-glow {
+  box-shadow: 0 0 24px -4px rgba(225, 29, 72, 0.35);
+}
+
+.emerald-glow {
+  box-shadow: 0 0 20px -4px rgba(16, 185, 129, 0.35);
+}
+
+/* Editorial Gradient Typography */
+.gold-gradient-text {
+  background: linear-gradient(135deg, #FDE68A 0%, #F59E0B 50%, #D4AF37 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.crimson-gradient-text {
+  background: linear-gradient(135deg, #FB7185 0%, #E11D48 60%, #9F1239 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.emerald-gradient-text {
+  background: linear-gradient(135deg, #6EE7B7 0%, #10B981 60%, #047857 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Surface Utility Classes */
 .bg-surface-card {
   background-color: var(--surface-card);
 }
@@ -118,11 +184,11 @@
 }
 
 .radius-card {
-  border-radius: 8px;
+  border-radius: 12px;
 }
 
 .radius-btn {
-  border-radius: 6px;
+  border-radius: 8px;
 }
 
 .line-clamp-2 {
@@ -130,4 +196,14 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/* Shimmer Animation */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.animate-shimmer {
+  animation: shimmer 2.5s infinite;
 }
