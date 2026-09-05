@@ -1,37 +1,107 @@
-import React, { useState } from 'react';
-import { Activity, Clock, ShieldCheck, CheckCircle2, MessageSquare, Zap } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { Activity, Clock, ShieldCheck, CheckCircle2, MessageSquare, Zap, Calendar } from 'lucide-react';
+import { useData } from '../context/DataContext';
 
 /**
- * ActivityHeatmap - Bklit UI Precision Dot-Matrix Telemetry
- * Visualizes candidate responsiveness, activity cadence across 12 weeks, and trust verification metrics.
+ * ActivityHeatmap - Precision Dot-Matrix Platform Telemetry
+ * Visualizes candidate responsiveness, date-anchored activity cadence across 12 weeks, and trust verification metrics.
  */
 export const ActivityHeatmap = ({
   profile = {},
   className = ''
 }) => {
   const [hoveredCell, setHoveredCell] = useState(null);
+  const { interests = [] } = useData();
 
-  // Generate 12-week activity matrix (7 days per week)
-  const weeks = 12;
-  const daysPerWeek = 7;
-  const matrix = [];
+  // Generate date-anchored 12-week (84 days) matrix back from today
+  const { matrix, activeWeeksCount } = useMemo(() => {
+    const weeks = 12;
+    const daysPerWeek = 7;
+    const totalDays = weeks * daysPerWeek;
+    const today = new Date();
 
-  // Seeded deterministic activity levels (0: none, 1: low, 2: medium, 3: high)
-  for (let w = 0; w < weeks; w++) {
-    const weekDays = [];
-    for (let d = 0; d < daysPerWeek; d++) {
-      const isWeekend = d === 0 || d === 6;
-      const rand = Math.sin(w * 3 + d * 7 + (profile.id ? profile.id.charCodeAt(0) : 12)) * 10;
-      const level = Math.abs(rand) > 6 ? 3 : Math.abs(rand) > 3 ? 2 : Math.abs(rand) > 1 ? 1 : 0;
-      weekDays.push({
-        week: w + 1,
-        day: d,
-        level: isWeekend ? Math.min(3, level + 1) : level,
-        events: level === 3 ? '4 logins & 2 active chats' : level === 2 ? 'Active 1 hr ago' : level === 1 ? 'Profile updated' : 'No activity'
+    // Relevant candidate timestamps
+    const createdAt = profile.created_at ? new Date(profile.created_at) : null;
+    const updatedAt = profile.updated_at ? new Date(profile.updated_at) : null;
+    const verifiedAt = profile.verified_at ? new Date(profile.verified_at) : null;
+
+    // Filter candidate interactions
+    const candidateInterests = interests.filter(
+      (i) => i.sender_id === profile.id || i.receiver_id === profile.id
+    );
+
+    const dayCells = [];
+    for (let i = totalDays - 1; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(today.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      const dTime = d.getTime();
+
+      let level = 0;
+      let events = 'No activity';
+
+      // If date is before candidate account creation date
+      if (createdAt && dTime < (createdAt.getTime() - 86400000)) {
+        level = 0;
+        events = 'Pre-registration';
+      } else {
+        // Check milestone days
+        const isCreatedDay = createdAt && createdAt.toISOString().split('T')[0] === dateStr;
+        const isUpdatedDay = updatedAt && updatedAt.toISOString().split('T')[0] === dateStr;
+        const isVerifiedDay = verifiedAt && verifiedAt.toISOString().split('T')[0] === dateStr;
+
+        const matchingInterests = candidateInterests.filter((item) => {
+          if (!item.created_at) return false;
+          return item.created_at.split('T')[0] === dateStr;
+        });
+
+        if (matchingInterests.length > 0) {
+          level = 3;
+          events = `${matchingInterests.length} Matrimonial interaction${matchingInterests.length > 1 ? 's' : ''}`;
+        } else if (isVerifiedDay) {
+          level = 3;
+          events = 'Government ID Verified';
+        } else if (isUpdatedDay) {
+          level = 2;
+          events = 'Profile details updated';
+        } else if (isCreatedDay) {
+          level = 2;
+          events = 'Profile registered on platform';
+        } else if (createdAt && dTime >= createdAt.getTime()) {
+          // Deterministic organic active cadence for registered users
+          const dayOfWeek = d.getDay();
+          const seed = (profile.id ? profile.id.charCodeAt(0) : 10) + d.getDate() * 3;
+          if (dayOfWeek === 0 || dayOfWeek === 6) {
+            level = seed % 5 === 0 ? 2 : seed % 3 === 0 ? 1 : 0;
+          } else {
+            level = seed % 4 === 0 ? 1 : 0;
+          }
+          if (level === 2) events = 'Platform login & browse';
+          else if (level === 1) events = 'Active browsing';
+        }
+      }
+
+      dayCells.push({
+        date: dateStr,
+        formattedDate: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        level,
+        events
       });
     }
-    matrix.push(weekDays);
-  }
+
+    // Partition into 12 columns of 7 days
+    const resultMatrix = [];
+    let activeWeeks = 0;
+    for (let w = 0; w < weeks; w++) {
+      const weekDays = dayCells.slice(w * daysPerWeek, (w + 1) * daysPerWeek);
+      if (weekDays.some((cell) => cell.level > 0)) {
+        activeWeeks++;
+      }
+      resultMatrix.push(weekDays);
+    }
+
+    return { matrix: resultMatrix, activeWeeksCount: activeWeeks };
+  }, [profile.created_at, profile.updated_at, profile.verified_at, profile.id, interests]);
 
   const getLevelColor = (lvl) => {
     switch (lvl) {
@@ -42,7 +112,7 @@ export const ActivityHeatmap = ({
       case 1:
         return 'bg-emerald-900/60';
       default:
-        return 'bg-zinc-850 bg-white/[0.04]';
+        return 'bg-zinc-200 dark:bg-white/[0.04]';
     }
   };
 
@@ -112,8 +182,8 @@ export const ActivityHeatmap = ({
           </div>
 
           {hoveredCell && (
-            <span className="font-mono text-emerald-600 dark:text-emerald-300 font-semibold animate-fade-in">
-              Week {hoveredCell.week}: {hoveredCell.events}
+            <span className="font-mono text-emerald-600 dark:text-emerald-300 font-semibold animate-fade-in text-[10px]">
+              {hoveredCell.formattedDate}: {hoveredCell.events}
             </span>
           )}
         </div>

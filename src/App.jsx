@@ -225,7 +225,7 @@ function AppContent() {
   ]);
 
   return (
-    <div className="min-h-screen flex flex-col transition-colors duration-200 pb-16 md:pb-0 relative overflow-hidden bg-surface-ground">
+    <div className="min-h-screen flex flex-col transition-colors duration-200 pb-16 md:pb-0 relative overflow-hidden bg-surface-ground bg-cultural-pattern">
       {/* Generative WebGL/Canvas Spatial Field: Undulating Golden Threads & Particle Motes */}
       <DestinyCanvas />
 

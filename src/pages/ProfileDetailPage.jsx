@@ -13,7 +13,10 @@ import ExpressInterestBurst from '../components/ExpressInterestBurst';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
-import calculateCompatibilityEstimate from '../lib/compatibilityCalculator';
+import calculateCompatibilityEstimate, { calculateDetailedMatchScore } from '../lib/compatibilityCalculator';
+import { calculateProfileCompleteness } from '../lib/profileCompleteness';
+import SendProposalModal from '../components/SendProposalModal';
+import { Lock, UserCheck, HeartHandshake } from 'lucide-react';
 
 /**
  * ProfileDetailPage - Luxury Match Deep-Dive Portal
@@ -34,6 +37,8 @@ export const ProfileDetailPage = ({
   const [loadingInterest, setLoadingInterest] = useState(false);
   const [burstActive, setBurstActive] = useState(false);
   const [activePhotoIdx, setActivePhotoIdx] = useState(0);
+  const [proposalModalOpen, setProposalModalOpen] = useState(false);
+  const [loadingProposal, setLoadingProposal] = useState(false);
 
   if (!profile) return null;
 
@@ -54,13 +59,109 @@ export const ProfileDetailPage = ({
   const hasExpressedInterest = Boolean(existingInterest);
   const isAcceptedMatch = existingInterest?.status === 'accepted' || existingReceived?.status === 'accepted';
 
+  // 100% Profile Completeness Gate check for viewer
+  const viewerCompletenessData = myProfile ? calculateProfileCompleteness(myProfile) : { percentage: 0 };
+  const viewerCompleteness = viewerCompletenessData.percentage;
+  const isViewer100Percent = Boolean(myProfile && viewerCompleteness === 100);
+
   // Precision Telemetry Scores
-  const matchScore = calculateCompatibilityEstimate(myProfile, profile, partnerPreferences);
+  const detailedMatch = calculateDetailedMatchScore(myProfile, profile, partnerPreferences);
+  const matchScore = detailedMatch.totalScore;
   const valuesScore = Math.min(98, Math.max(70, matchScore + 4));
   const careerScore = Math.min(96, Math.max(65, matchScore - 3));
   
   const hasKundali = Boolean(profile.rashi || profile.nakshatra || profile.manglik || profile.gana || profile.nadi);
   const kundaliGuna = hasKundali ? Math.min(36, Math.max(24, Math.round((matchScore / 100) * 36))) : null;
+
+  // Perspective 6-Axis Radar Scores calculated against viewer profile & partner preferences
+  const perspectiveScores = (() => {
+    const pref = partnerPreferences || {};
+
+    // 1. Age Score
+    let ageScore = 80;
+    const cAge = Number(profile.age);
+    if (cAge) {
+      const minA = Number(pref.age_min) || (myProfile?.age ? myProfile.age - 3 : 21);
+      const maxA = Number(pref.age_max) || (myProfile?.age ? myProfile.age + 3 : 35);
+      if (cAge >= minA && cAge <= maxA) {
+        ageScore = 95;
+      } else {
+        const diff = cAge < minA ? minA - cAge : cAge - maxA;
+        ageScore = Math.max(40, 95 - diff * 10);
+      }
+    }
+
+    // 2. Height Score
+    let heightScore = 75;
+    const cHeight = Number(profile.height_cm);
+    if (cHeight) {
+      const minH = Number(pref.height_min_cm) || 150;
+      const maxH = Number(pref.height_max_cm) || 195;
+      if (cHeight >= minH && cHeight <= maxH) {
+        heightScore = 92;
+      } else {
+        const diff = cHeight < minH ? minH - cHeight : cHeight - maxH;
+        heightScore = Math.max(45, 92 - diff * 4);
+      }
+    }
+
+    // 3. Career & Income Score
+    let careerPScore = 75;
+    const cIncome = Number(profile.annual_income_lpa) || 0;
+    const minInc = pref.min_income_lpa && pref.min_income_lpa !== 'all' ? Number(pref.min_income_lpa) : 0;
+    if (cIncome > 0 && cIncome >= minInc) {
+      careerPScore = 94;
+    } else if (cIncome > 0) {
+      careerPScore = 78;
+    } else if (profile.occupation) {
+      careerPScore = 82;
+    }
+
+    // 4. Diet Score
+    let dietScore = 75;
+    if (profile.diet) {
+      const pDiet = (pref.diet || 'any').toLowerCase();
+      const cDiet = profile.diet.toLowerCase();
+      if (pDiet === 'any' || pDiet === cDiet) {
+        dietScore = 100;
+      } else {
+        dietScore = 55;
+      }
+    }
+
+    // 5. Location Score
+    let locationScore = 70;
+    if (profile.city || profile.state) {
+      const pCity = (pref.city || '').toLowerCase().trim();
+      const pState = (pref.state || 'any').toLowerCase().trim();
+      const cCity = (profile.city || '').toLowerCase().trim();
+      const cState = (profile.state || '').toLowerCase().trim();
+
+      if (!pCity && pState === 'any') {
+        locationScore = 90;
+      } else if (pCity && cCity.includes(pCity)) {
+        locationScore = 98;
+      } else if (pState !== 'any' && cState.includes(pState)) {
+        locationScore = 92;
+      } else {
+        locationScore = 60;
+      }
+    }
+
+    // 6. Kundali Guna Score
+    const kundaliRadarScore = hasKundali && kundaliGuna ? Math.round((kundaliGuna / 36) * 100) : 25;
+
+    return {
+      ageScore,
+      heightScore,
+      careerScore: careerPScore,
+      dietScore,
+      locationScore,
+      kundaliScore: kundaliRadarScore,
+      hasKundali,
+      kundaliGuna
+    };
+  })();
 
   const handleExpressInterest = async () => {
     if (!user && !myProfile) {
@@ -224,7 +325,7 @@ export const ProfileDetailPage = ({
 
       {/* 2. Match Telemetry & Data Visualization (Bklit UI Pattern) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Multi-Ring Radial Gauge Card */}
+        {/* Multi-Ring Radial Gauge Card (Visible to all viewers) */}
         <div className="glass-card radius-card p-6 border border-zinc-200 dark:border-white/[0.08] flex flex-col items-center justify-between text-center space-y-4">
           <div>
             <div className="inline-flex items-center gap-1.5 px-3 py-1 radius-btn bg-amber-500/10 text-amber-700 dark:text-gold-400 border border-amber-500/20 text-xs font-serif font-bold mb-2">
@@ -232,7 +333,7 @@ export const ProfileDetailPage = ({
               <span>Concentric Match Telemetry</span>
             </div>
             <h3 className="font-serif font-bold text-zinc-900 dark:text-white text-lg">Overall Compatibility</h3>
-            <p className="text-xs text-zinc-600 dark:text-zinc-400">Algorithmic alignment across dimensions</p>
+            <p className="text-xs text-zinc-600 dark:text-zinc-400">Algorithmic alignment from your profile's perspective</p>
           </div>
 
           <MatchTelemetryGauge
@@ -264,8 +365,8 @@ export const ProfileDetailPage = ({
           </div>
         </div>
 
-        {/* 6-Axis Partner Preference Radar Chart Card */}
-        <div className="glass-card radius-card p-6 border border-zinc-200 dark:border-white/[0.08] flex flex-col items-center justify-between space-y-4">
+        {/* 6-Axis Partner Preference Radar Chart Card (100% Completeness Gated) */}
+        <div className="glass-card radius-card p-6 border border-zinc-200 dark:border-white/[0.08] flex flex-col items-center justify-between space-y-4 relative overflow-hidden">
           <div className="text-center">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 radius-btn bg-crimson-500/10 text-crimson-600 dark:text-crimson-400 border border-crimson-500/20 text-xs font-serif font-bold mb-2">
               <Compass className="w-3.5 h-3.5" />
@@ -275,24 +376,70 @@ export const ProfileDetailPage = ({
             <p className="text-xs text-zinc-600 dark:text-zinc-400">Candidate Attributes vs. Your Preferences</p>
           </div>
 
-          <KundaliRadarChart
-            candidateData={{
-              ageScore: valuesScore,
-              heightScore: profile.height_cm ? 92 : 75,
-              careerScore: careerScore,
-              dietScore: profile.diet ? 100 : 80,
-              locationScore: profile.city ? 88 : 70,
-              kundaliScore: hasKundali && kundaliGuna ? Math.round((kundaliGuna / 36) * 100) : 0,
-              hasKundali: hasKundali,
-              kundaliGuna: kundaliGuna
-            }}
-            size={240}
-          />
+          {isViewer100Percent ? (
+            <KundaliRadarChart
+              candidateData={perspectiveScores}
+              size={240}
+            />
+          ) : (
+            <div className="w-full h-full min-h-[250px] flex flex-col items-center justify-center p-6 text-center space-y-3 bg-zinc-100/60 dark:bg-zinc-900/60 border border-dashed border-zinc-300 dark:border-white/10 rounded-xl relative z-10">
+              <div className="w-12 h-12 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-600 dark:text-gold-400 shadow-sm">
+                <Lock className="w-6 h-6" />
+              </div>
+              <div className="space-y-1">
+                <h4 className="font-serif font-bold text-zinc-900 dark:text-white text-sm">
+                  100% Complete Member Exclusive
+                </h4>
+                <p className="text-xs text-zinc-600 dark:text-zinc-400 max-w-xs leading-relaxed">
+                  The 6-Axis Perspective Radar calculates precise vector deltas exclusively for members with 100% profile completion.
+                </p>
+              </div>
+              <div className="w-full max-w-[200px] bg-zinc-200 dark:bg-zinc-800 rounded-full h-2 overflow-hidden mt-1">
+                <div 
+                  className="bg-gradient-to-r from-amber-500 to-emerald-500 h-full rounded-full transition-all duration-500"
+                  style={{ width: `${viewerCompleteness}%` }}
+                />
+              </div>
+              <p className="text-[10px] font-mono text-amber-700 dark:text-gold-400">
+                Your profile: {viewerCompleteness}% complete
+              </p>
+              <button
+                type="button"
+                onClick={() => onEditProfile ? onEditProfile() : (onAuthRequired ? onAuthRequired() : null)}
+                className="px-4 py-2 radius-btn bg-gradient-to-r from-gold-500 to-amber-600 hover:from-gold-400 hover:to-amber-500 text-zinc-950 font-bold text-xs shadow-md transition-all active:scale-95"
+              >
+                Complete Your Profile (100%)
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* 12-Week Activity & Trust Heatmap Card */}
-        <div className="glass-card radius-card p-6 border border-zinc-200 dark:border-white/[0.08] flex flex-col justify-between space-y-4">
-          <ActivityHeatmap profile={profile} />
+        {/* 12-Week Activity & Trust Heatmap Card (100% Completeness Gated) */}
+        <div className="glass-card radius-card p-6 border border-zinc-200 dark:border-white/[0.08] flex flex-col justify-between space-y-4 relative overflow-hidden">
+          {isViewer100Percent ? (
+            <ActivityHeatmap profile={profile} />
+          ) : (
+            <div className="w-full h-full min-h-[250px] flex flex-col items-center justify-center p-6 text-center space-y-3 bg-zinc-100/60 dark:bg-zinc-900/60 border border-dashed border-zinc-300 dark:border-white/10 rounded-xl">
+              <div className="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shadow-sm">
+                <ShieldCheck className="w-6 h-6" />
+              </div>
+              <div className="space-y-1">
+                <h4 className="font-serif font-bold text-zinc-900 dark:text-white text-sm">
+                  12-Week Trust Telemetry Locked
+                </h4>
+                <p className="text-xs text-zinc-600 dark:text-zinc-400 max-w-xs leading-relaxed">
+                  Genuine activity cadence and trust audit logs are unlocked once your profile reaches 100% verified status.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => onEditProfile ? onEditProfile() : (onAuthRequired ? onAuthRequired() : null)}
+                className="px-4 py-2 radius-btn bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-900 dark:text-white font-semibold text-xs border border-zinc-300 dark:border-white/10 transition-colors"
+              >
+                Verify & Complete Profile
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -387,7 +534,116 @@ export const ProfileDetailPage = ({
         </div>
       </div>
 
-      {/* 5. Sticky Bottom Luxury Proposal Action Bar */}
+      {/* 5. End-of-Profile Matrimonial Proposal & Interest Section */}
+      <div className="glass-card radius-card p-6 sm:p-8 border border-amber-500/30 dark:border-gold-400/20 bg-gradient-to-br from-amber-500/[0.04] via-transparent to-crimson-500/[0.04] space-y-6 relative overflow-hidden shadow-xl">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-200 dark:border-white/[0.08]">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-gold-500 to-amber-600 text-zinc-950 flex items-center justify-center shadow-lg">
+              <HeartHandshake className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className="font-serif font-black text-zinc-900 dark:text-white text-xl">
+                Connect with {profile.full_name}
+              </h3>
+              <p className="text-xs text-zinc-600 dark:text-zinc-400">
+                Initiate formal matrimonial dialogue with family or express quick interest
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 radius-btn bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 text-xs font-mono font-bold">
+              <ShieldCheck className="w-3.5 h-3.5" />
+              100% Privacy Protected
+            </span>
+          </div>
+        </div>
+
+        {/* Action Controls */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          {isAcceptedMatch ? (
+            <button
+              type="button"
+              onClick={() => onOpenChat && onOpenChat(profile)}
+              className="flex-1 py-3.5 px-6 radius-btn bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-extrabold text-sm flex items-center justify-center gap-2 shadow-lg transition-all"
+            >
+              <MessageSquare className="w-5 h-5" />
+              <span>Proposal Accepted — Open Direct Chat</span>
+            </button>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={() => {
+                  if (!user && !myProfile) {
+                    if (onAuthRequired) onAuthRequired();
+                    return;
+                  }
+                  if (isOwnProfile) return;
+                  setProposalModalOpen(true);
+                }}
+                disabled={isOwnProfile || hasExpressedInterest || loadingInterest}
+                className={`flex-1 py-3.5 px-6 radius-btn font-extrabold text-sm flex items-center justify-center gap-2 transition-all shadow-lg cursor-pointer ${
+                  hasExpressedInterest
+                    ? 'bg-zinc-200 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 border border-zinc-300 dark:border-white/10 cursor-default'
+                    : isOwnProfile
+                    ? 'bg-zinc-200 dark:bg-zinc-900 text-zinc-500 cursor-not-allowed opacity-50'
+                    : 'bg-gradient-to-r from-gold-500 to-amber-600 hover:from-gold-400 hover:to-amber-500 text-zinc-950 gold-glow active:scale-95'
+                }`}
+              >
+                {hasExpressedInterest ? (
+                  <>
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                    <span>Proposal / Interest Sent ✓</span>
+                  </>
+                ) : isOwnProfile ? (
+                  <span>Your Profile</span>
+                ) : (
+                  <>
+                    <HeartHandshake className="w-4 h-4" />
+                    <span>Send Matrimonial Proposal</span>
+                  </>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={handleExpressInterest}
+                disabled={isOwnProfile || hasExpressedInterest || loadingInterest}
+                className={`py-3.5 px-6 radius-btn font-bold text-sm flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                  hasExpressedInterest
+                    ? 'hidden'
+                    : isOwnProfile
+                    ? 'hidden'
+                    : 'bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-900 dark:text-white border border-zinc-300 dark:border-white/15'
+                }`}
+              >
+                <Heart className="w-4 h-4 text-crimson-500 fill-crimson-500" />
+                <span>Express Quick Interest</span>
+              </button>
+            </>
+          )}
+
+          <button
+            type="button"
+            onClick={() => toggleShortlist(profile.id)}
+            className={`py-3.5 px-5 radius-btn border font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all ${
+              isShort
+                ? 'border-gold-400/40 text-gold-500 gold-glow-subtle bg-gold-500/10'
+                : 'border-zinc-300 dark:border-white/10 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-white/5'
+            }`}
+          >
+            <Star className={`w-4 h-4 ${isShort ? 'fill-gold-400 text-gold-400' : ''}`} />
+            <span>{isShort ? 'Shortlisted' : 'Shortlist'}</span>
+          </button>
+        </div>
+
+        <p className="text-[11px] text-zinc-500 dark:text-zinc-400 italic">
+          * A formal matrimonial proposal allows you to include a culturally respectful introduction for {profile.full_name}'s family. Direct contact numbers are exchanged once accepted.
+        </p>
+      </div>
+
+      {/* 6. Sticky Bottom Luxury Proposal Action Bar */}
       <div className="fixed bottom-0 left-0 right-0 z-40 glass-card border-t border-zinc-200 dark:border-white/10 p-3 sm:p-4 backdrop-blur-2xl">
         <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
           <div className="hidden sm:flex items-center gap-3">
@@ -413,7 +669,14 @@ export const ProfileDetailPage = ({
             ) : (
               <button
                 type="button"
-                onClick={handleExpressInterest}
+                onClick={() => {
+                  if (!user && !myProfile) {
+                    if (onAuthRequired) onAuthRequired();
+                    return;
+                  }
+                  if (isOwnProfile || hasExpressedInterest) return;
+                  setProposalModalOpen(true);
+                }}
                 disabled={loadingInterest || hasExpressedInterest || isOwnProfile}
                 className={`w-full sm:w-auto px-8 py-3 radius-btn font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all shadow-xl ${
                   hasExpressedInterest
@@ -443,6 +706,25 @@ export const ProfileDetailPage = ({
           </div>
         </div>
       </div>
+
+      {/* Send Proposal Dialog Modal */}
+      <SendProposalModal
+        isOpen={proposalModalOpen}
+        onClose={() => setProposalModalOpen(false)}
+        candidate={profile}
+        isLoading={loadingProposal}
+        onSendProposal={async (candidateId, msg) => {
+          setLoadingProposal(true);
+          try {
+            await expressInterest(candidateId);
+            setBurstActive(true);
+          } catch (err) {
+            console.warn('Proposal submit err:', err);
+          } finally {
+            setLoadingProposal(false);
+          }
+        }}
+      />
     </div>
   );
 };

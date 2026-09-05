@@ -58,6 +58,27 @@
     font-family: '"Playfair Display"', 'Lora', '"Noto Serif Devanagari"', Georgia, serif;
   }
 
+  /* Sacred Vedic Cultural Matrimonial Wallpaper Pattern */
+  .bg-cultural-pattern {
+    background-color: var(--surface-ground);
+    background-image: 
+      radial-gradient(circle at 50% 50%, rgba(212, 175, 55, 0.04) 0%, transparent 60%),
+      radial-gradient(circle at 10% 20%, rgba(225, 29, 72, 0.03) 0%, transparent 50%),
+      radial-gradient(circle at 90% 80%, rgba(212, 175, 55, 0.04) 0%, transparent 50%),
+      url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23D4AF37' fill-opacity='0.05' fill-rule='evenodd'%3E%3Cpath d='M60 0 C65 20 80 35 100 40 C80 45 65 60 60 80 C55 60 40 45 20 40 C40 35 55 20 60 0 Z'/%3E%3Cpath d='M60 60 C65 80 80 95 100 100 C80 105 65 120 60 140 C55 120 40 105 20 100 C40 95 55 80 60 60 Z'/%3E%3Ccircle cx='60' cy='60' r='8' fill='%23E11D48' fill-opacity='0.04'/%3E%3Ccircle cx='60' cy='60' r='18' fill='none' stroke='%23D4AF37' stroke-width='0.8' stroke-dasharray='3,3'/%3E%3Ccircle cx='0' cy='0' r='10' fill='%23D4AF37' fill-opacity='0.035'/%3E%3Ccircle cx='120' cy='0' r='10' fill='%23D4AF37' fill-opacity='0.035'/%3E%3Ccircle cx='0' cy='120' r='10' fill='%23D4AF37' fill-opacity='0.035'/%3E%3Ccircle cx='120' cy='120' r='10' fill='%23D4AF37' fill-opacity='0.035'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: auto, auto, auto, 120px 120px;
+  }
+
+  html.dark .bg-cultural-pattern {
+    background-color: var(--surface-ground);
+    background-image: 
+      radial-gradient(circle at 50% 50%, rgba(245, 158, 11, 0.05) 0%, transparent 70%),
+      radial-gradient(circle at 10% 20%, rgba(244, 63, 94, 0.04) 0%, transparent 60%),
+      radial-gradient(circle at 90% 80%, rgba(245, 158, 11, 0.05) 0%, transparent 60%),
+      url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23F59E0B' fill-opacity='0.07' fill-rule='evenodd'%3E%3Cpath d='M60 0 C65 20 80 35 100 40 C80 45 65 60 60 80 C55 60 40 45 20 40 C40 35 55 20 60 0 Z'/%3E%3Cpath d='M60 60 C65 80 80 95 100 100 C80 105 65 120 60 140 C55 120 40 105 20 100 C40 95 55 80 60 60 Z'/%3E%3Ccircle cx='60' cy='60' r='8' fill='%23F43F5E' fill-opacity='0.05'/%3E%3Ccircle cx='60' cy='60' r='18' fill='none' stroke='%23F59E0B' stroke-width='0.8' stroke-dasharray='3,3'/%3E%3Ccircle cx='0' cy='0' r='10' fill='%23F59E0B' fill-opacity='0.045'/%3E%3Ccircle cx='120' cy='0' r='10' fill='%23F59E0B' fill-opacity='0.045'/%3E%3Ccircle cx='0' cy='120' r='10' fill='%23F59E0B' fill-opacity='0.045'/%3E%3Ccircle cx='120' cy='120' r='10' fill='%23F59E0B' fill-opacity='0.045'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: auto, auto, auto, 120px 120px;
+  }
+
   /* Form Elements & Native Dropdown Dark Mode Optimization */
   select, input, textarea, button {
     color-scheme: inherit;
