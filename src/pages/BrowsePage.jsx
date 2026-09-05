@@ -468,13 +468,20 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
             </div>
           ) : (
             <div className="space-y-4">
-              {/* Deck Progress Bar */}
+              {/* Deck Progress Bar & Filter Action */}
               <div className="flex items-center justify-between text-xs px-1 text-zinc-400 font-semibold font-mono">
                 <span className="flex items-center gap-1.5 text-gold-400">
                   <span className="w-2 h-2 rounded-full bg-gold-400 animate-pulse" />
-                  Profile {deckIndex + 1} of {filteredProfiles.length}
+                  Candidate {deckIndex + 1} of {filteredProfiles.length}
                 </span>
-                <span className="text-[11px] text-zinc-500">Swipe or use arrows</span>
+                <button
+                  type="button"
+                  onClick={() => setFilterDrawerOpen(true)}
+                  className="flex items-center gap-1.5 px-3 py-1 rounded-full glass-card border border-gold-400/30 text-gold-300 hover:text-white text-[11px] font-sans font-bold shadow-xs hover:border-gold-400 transition-all active:scale-95"
+                >
+                  <SlidersHorizontal className="w-3 h-3 text-gold-400" />
+                  <span>Filters</span>
+                </button>
               </div>
 
               <div className="h-1.5 w-full bg-zinc-900 radius-btn overflow-hidden border border-white/5">
@@ -493,6 +500,7 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
               >
                 <ProfileCard
                   profile={filteredProfiles[deckIndex]}
+                  isDeckView={true}
                   onViewDetails={onViewProfile}
                   onOpenCompatibility={onOpenCompatibility}
                   onAuthRequired={onAuthRequired}

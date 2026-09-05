@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ShieldCheck, User, Briefcase, GraduationCap, FileText, CheckCircle2, ArrowRight, ArrowLeft, Camera, IndianRupee, Crop, AlertCircle, HeartHandshake, Baby, Clock, Sparkles, Loader2 } from 'lucide-react';
+import { ShieldCheck, User, Briefcase, GraduationCap, FileText, CheckCircle2, ArrowRight, ArrowLeft, Camera, IndianRupee, Crop, AlertCircle, HeartHandshake, Baby, Clock, Sparkles, Loader2, Image, Trash2, Plus } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -18,6 +18,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
   const [loading, setLoading] = useState(false);
   const [photoUploading, setPhotoUploading] = useState(false);
   const [photoError, setPhotoError] = useState('');
+  const [targetPhotoSlot, setTargetPhotoSlot] = useState('photo_url');
   const [ocrStatus, setOcrStatus] = useState({ scanning: false, result: null });
   const [successModal, setSuccessModal] = useState(false);
   const [errors, setErrors] = useState({});
@@ -50,6 +51,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
     sub_caste: '',
     bio: '',
     photo_url: '',
+    photo_url_2: '',
     id_document_url: '',
     family_consent_document_url: '',
     career_proof_url: '' // Optional
@@ -85,6 +87,7 @@ export const ProfileWizardPage = ({ onComplete }) => {
         sub_caste: existingProfile.sub_caste || '',
         bio: existingProfile.bio || '',
         photo_url: existingProfile.photo_url || '',
+        photo_url_2: existingProfile.photo_url_2 || existingProfile.secondary_photo_url || '',
         has_children: existingProfile.has_children || 'no',
         children_count: existingProfile.children_count || '',
         children_living_status: existingProfile.children_living_status || 'living_together'
@@ -149,8 +152,9 @@ export const ProfileWizardPage = ({ onComplete }) => {
   };
 
   // Open Cropper on file pick with auto-compression for high-res camera photos
-  const handlePhotoFileSelect = async (e) => {
+  const handlePhotoFileSelect = async (e, slotKey = 'photo_url') => {
     setPhotoError('');
+    setTargetPhotoSlot(slotKey);
     const file = e.target.files?.[0];
     if (file) {
       setPhotoUploading(true);
@@ -178,13 +182,17 @@ export const ProfileWizardPage = ({ onComplete }) => {
     setPhotoUploading(true);
     setPhotoError('');
     try {
-      const compressed = await compressImage(croppedDataUrl, 600, 600, 0.82);
-      setFormData(prev => ({ ...prev, photo_url: compressed || croppedDataUrl }));
+      const compressed = await compressImage(croppedDataUrl, 800, 800, 0.85);
+      setFormData(prev => ({ ...prev, [targetPhotoSlot]: compressed || croppedDataUrl }));
     } catch (err) {
-      setFormData(prev => ({ ...prev, photo_url: croppedDataUrl }));
+      setFormData(prev => ({ ...prev, [targetPhotoSlot]: croppedDataUrl }));
     } finally {
       setPhotoUploading(false);
     }
+  };
+
+  const handleRemovePhoto = (slotKey) => {
+    setFormData(prev => ({ ...prev, [slotKey]: '' }));
   };
 
   const validateStep5 = () => {
@@ -811,9 +819,17 @@ export const ProfileWizardPage = ({ onComplete }) => {
               />
             </div>
 
-            {/* Profile Photo Uploader with Integrated Cropper & Inline Spinner */}
-            <div className="p-4 border border-main radius-card bg-surface-ground space-y-3">
-              <label className="block text-xs font-semibold text-main">{t('profilePhotoAndCropper')}</label>
+            {/* Profile Photos Uploader (2 Slots: Primary Portrait + Secondary Full-Length) */}
+            <div className="p-4 sm:p-5 border border-main radius-card bg-surface-ground space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 pb-2 border-b border-main/60">
+                <div>
+                  <label className="block text-xs font-bold text-main">Profile Showcase Photos (Upload Up to 2 Photos)</label>
+                  <p className="text-[11px] text-sub">Upload a close-up portrait and a full-length photo for maximum match interest.</p>
+                </div>
+                <span className="text-[10px] text-amber-500 dark:text-amber-400 font-bold bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 w-fit">
+                  2 Photos Recommended
+                </span>
+              </div>
               
               {photoError && (
                 <div className="p-2.5 radius-btn bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs flex items-center gap-2">
@@ -822,43 +838,129 @@ export const ProfileWizardPage = ({ onComplete }) => {
                 </div>
               )}
 
-              <div className="flex items-center gap-4">
-                {photoUploading ? (
-                  <div className="w-20 h-20 rounded-full bg-surface-card flex items-center justify-center text-sky-blue border border-main shadow-xs">
-                    <Loader2 className="w-8 h-8 animate-spin" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Photo 1: Primary Portrait */}
+                <div className="p-3.5 radius-card bg-surface-card border border-main/80 flex flex-col justify-between space-y-3 relative group">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-main flex items-center gap-1.5">
+                      <span className="w-5 h-5 rounded-full bg-gold-500/20 text-gold-400 font-mono text-[10px] flex items-center justify-center font-bold">1</span>
+                      Primary Photo (Portrait)
+                    </span>
+                    <span className="text-[10px] text-emerald-500 font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded">Primary</span>
                   </div>
-                ) : formData.photo_url ? (
-                  <div className="relative group">
-                    <img
-                      src={formData.photo_url}
-                      alt="Cropped Preview"
-                      className="w-20 h-20 rounded-full object-cover border-2 border-sky-blue shadow-xs"
-                    />
-                  </div>
-                ) : (
-                  <div className="w-20 h-20 rounded-full bg-surface-card flex items-center justify-center text-sub border border-main">
-                    <Camera className="w-8 h-8 text-sub" />
-                  </div>
-                )}
 
-                <div className="space-y-1.5 flex-1">
-                  <input
-                    type="file"
-                    id="profile-photo-input"
-                    accept="image/*"
-                    onChange={handlePhotoFileSelect}
-                    className="hidden"
-                  />
-                  <label
-                    htmlFor="profile-photo-input"
-                    className="inline-flex items-center gap-2 px-4 py-2 radius-btn bg-sky-blue text-white text-xs font-bold hover:bg-sky-blue/90 cursor-pointer shadow-xs transition-colors"
-                  >
-                    <Crop className="w-4 h-4" />
-                    <span>{formData.photo_url ? t('changePhoto') : t('uploadPhoto')}</span>
-                  </label>
-                  <p className="text-[11px] text-sub">
-                    {t('dragPhotoHint')}
-                  </p>
+                  <div className="flex items-center gap-3">
+                    {photoUploading && targetPhotoSlot === 'photo_url' ? (
+                      <div className="w-20 h-24 rounded-lg bg-surface-ground flex items-center justify-center text-gold-400 border border-main shadow-xs">
+                        <Loader2 className="w-6 h-6 animate-spin" />
+                      </div>
+                    ) : formData.photo_url ? (
+                      <div className="relative w-20 h-24 rounded-lg overflow-hidden border-2 border-gold-500 shadow-xs flex-shrink-0">
+                        <img
+                          src={formData.photo_url}
+                          alt="Primary Portrait Preview"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-20 h-24 rounded-lg bg-surface-ground flex flex-col items-center justify-center text-sub border border-dashed border-main flex-shrink-0">
+                        <Camera className="w-6 h-6 text-sub mb-1" />
+                        <span className="text-[9px] text-sub">No Photo</span>
+                      </div>
+                    )}
+
+                    <div className="flex-1 space-y-1.5">
+                      <input
+                        type="file"
+                        id="primary-photo-input"
+                        accept="image/*"
+                        onChange={(e) => handlePhotoFileSelect(e, 'photo_url')}
+                        className="hidden"
+                      />
+                      <label
+                        htmlFor="primary-photo-input"
+                        className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 radius-btn bg-gradient-to-r from-gold-500 to-amber-600 text-zinc-950 text-xs font-bold hover:brightness-110 cursor-pointer shadow-xs transition-transform active:scale-95"
+                      >
+                        <Crop className="w-3.5 h-3.5" />
+                        <span>{formData.photo_url ? 'Change Photo 1' : 'Upload Photo 1'}</span>
+                      </label>
+                      {formData.photo_url && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemovePhoto('photo_url')}
+                          className="w-full text-rose-500 hover:text-rose-600 text-[11px] font-semibold flex items-center justify-center gap-1 py-1"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                          <span>Remove</span>
+                        </button>
+                      )}
+                      <p className="text-[10px] text-sub leading-tight">
+                        Close-up face picture with clear lighting.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Photo 2: Secondary Full-Length / Casual */}
+                <div className="p-3.5 radius-card bg-surface-card border border-main/80 flex flex-col justify-between space-y-3 relative group">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-main flex items-center gap-1.5">
+                      <span className="w-5 h-5 rounded-full bg-zinc-700/60 text-zinc-300 font-mono text-[10px] flex items-center justify-center font-bold">2</span>
+                      Secondary Photo (Full-Length)
+                    </span>
+                    <span className="text-[10px] text-sub bg-surface-ground px-1.5 py-0.5 rounded border border-main">Optional</span>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    {photoUploading && targetPhotoSlot === 'photo_url_2' ? (
+                      <div className="w-20 h-24 rounded-lg bg-surface-ground flex items-center justify-center text-gold-400 border border-main shadow-xs">
+                        <Loader2 className="w-6 h-6 animate-spin" />
+                      </div>
+                    ) : formData.photo_url_2 ? (
+                      <div className="relative w-20 h-24 rounded-lg overflow-hidden border-2 border-emerald-500 shadow-xs flex-shrink-0">
+                        <img
+                          src={formData.photo_url_2}
+                          alt="Secondary Photo Preview"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-20 h-24 rounded-lg bg-surface-ground flex flex-col items-center justify-center text-sub border border-dashed border-main flex-shrink-0">
+                        <Camera className="w-6 h-6 text-sub mb-1" />
+                        <span className="text-[9px] text-sub">No Photo</span>
+                      </div>
+                    )}
+
+                    <div className="flex-1 space-y-1.5">
+                      <input
+                        type="file"
+                        id="secondary-photo-input"
+                        accept="image/*"
+                        onChange={(e) => handlePhotoFileSelect(e, 'photo_url_2')}
+                        className="hidden"
+                      />
+                      <label
+                        htmlFor="secondary-photo-input"
+                        className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 radius-btn glass-card border border-white/15 text-white hover:bg-white/10 text-xs font-bold cursor-pointer shadow-xs transition-transform active:scale-95"
+                      >
+                        <Crop className="w-3.5 h-3.5 text-gold-400" />
+                        <span>{formData.photo_url_2 ? 'Change Photo 2' : 'Upload Photo 2'}</span>
+                      </label>
+                      {formData.photo_url_2 && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemovePhoto('photo_url_2')}
+                          className="w-full text-rose-500 hover:text-rose-600 text-[11px] font-semibold flex items-center justify-center gap-1 py-1"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                          <span>Remove</span>
+                        </button>
+                      )}
+                      <p className="text-[10px] text-sub leading-tight">
+                        Full-length, traditional, or lifestyle photo.
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

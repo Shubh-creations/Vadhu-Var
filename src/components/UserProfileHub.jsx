@@ -3,7 +3,7 @@ import {
   User, Pencil, ShieldCheck, HeartHandshake, Eye, EyeOff, Globe, 
   Download, LogOut, UserX, ArrowLeft, CheckCircle2, Sparkles, MapPin, 
   Briefcase, IndianRupee, ShieldAlert, Smartphone, ChevronRight, Share2, HelpCircle, FileText, Trash2,
-  Camera, Loader2
+  Camera, Loader2, Crop, Image
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
@@ -25,6 +25,8 @@ export const UserProfileHub = ({ onNavigateToDiscover, onOpenHelp, onOpenTerms, 
   const { isInstalled, triggerInstall } = usePWA();
 
   const fileInputRef = useRef(null);
+  const secondaryFileInputRef = useRef(null);
+  const [targetPhotoSlot, setTargetPhotoSlot] = useState('photo_url');
   const [cropperOpen, setCropperOpen] = useState(false);
   const [rawPhotoSrc, setRawPhotoSrc] = useState('');
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
@@ -87,7 +89,8 @@ export const UserProfileHub = ({ onNavigateToDiscover, onOpenHelp, onOpenTerms, 
     );
   }
 
-  const handleAvatarFileSelect = async (e) => {
+  const handleAvatarFileSelect = async (e, slotKey = 'photo_url') => {
+    setTargetPhotoSlot(slotKey);
     const file = e.target.files?.[0];
     if (file) {
       setUploadingPhoto(true);
@@ -112,21 +115,38 @@ export const UserProfileHub = ({ onNavigateToDiscover, onOpenHelp, onOpenTerms, 
   const handleCropComplete = async (croppedDataUrl) => {
     setUploadingPhoto(true);
     try {
-      const finalPhoto = await compressImage(croppedDataUrl, 600, 600, 0.82) || croppedDataUrl;
+      const finalPhoto = await compressImage(croppedDataUrl, 800, 800, 0.85) || croppedDataUrl;
       const updated = await saveProfile({
         ...profile,
-        photo_url: finalPhoto
+        [targetPhotoSlot]: finalPhoto
       });
       if (refreshProfiles) {
         await refreshProfiles();
       }
-      setSuccessMsg('Profile photo updated successfully!');
+      setSuccessMsg(`${targetPhotoSlot === 'photo_url' ? 'Primary' : 'Secondary'} photo updated successfully!`);
       setTimeout(() => setSuccessMsg(''), 3500);
     } catch (err) {
       console.error('Error saving photo:', err);
       alert('Failed to save profile photo. Please try again.');
     } finally {
       setUploadingPhoto(false);
+    }
+  };
+
+  const handleRemovePhoto = async (slotKey) => {
+    if (!window.confirm(`Are you sure you want to remove this photo?`)) return;
+    try {
+      await saveProfile({
+        ...profile,
+        [slotKey]: ''
+      });
+      if (refreshProfiles) {
+        await refreshProfiles();
+      }
+      setSuccessMsg('Photo removed');
+      setTimeout(() => setSuccessMsg(''), 2500);
+    } catch (err) {
+      alert('Failed to remove photo');
     }
   };
 
@@ -263,6 +283,140 @@ export const UserProfileHub = ({ onNavigateToDiscover, onOpenHelp, onOpenTerms, 
                 <span className="font-bold text-main capitalize block">
                   {profile.marital_status ? profile.marital_status.replace('_', ' ') : 'Never Married'}
                 </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Profile Photos Showcase & Multi-Slot Manager */}
+      <div className="bg-surface-card radius-card border border-main p-6 shadow-xs space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 pb-3 border-b border-main">
+          <div>
+            <h2 className="font-serif font-bold text-main text-base flex items-center gap-2">
+              <Image className="w-5 h-5 text-gold-400" />
+              <span>Profile Photos (Upload 2 Photos)</span>
+            </h2>
+            <p className="text-xs text-sub mt-0.5">High-quality photos increase candidate interest and telemetry score by 85%.</p>
+          </div>
+          <span className="text-[11px] font-bold text-gold-400 bg-gold-500/10 px-2.5 py-1 rounded-full border border-gold-500/20 w-fit">
+            {[profile.photo_url, profile.photo_url_2 || profile.secondary_photo_url].filter(Boolean).length} of 2 Photos Active
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Photo Slot 1: Primary Portrait */}
+          <div className="p-4 radius-card bg-surface-ground border border-main flex flex-col justify-between space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-main flex items-center gap-1.5">
+                <span className="w-5 h-5 rounded-full bg-gold-500/20 text-gold-400 font-mono text-[10px] flex items-center justify-center font-bold">1</span>
+                Primary Photo (Portrait)
+              </span>
+              <span className="text-[10px] text-emerald-500 font-bold bg-emerald-500/10 px-2 py-0.5 rounded">Primary</span>
+            </div>
+
+            <div className="flex items-center gap-4">
+              {profile.photo_url ? (
+                <div className="relative w-24 h-28 rounded-xl overflow-hidden border-2 border-gold-500 shadow-md flex-shrink-0">
+                  <img
+                    src={profile.photo_url}
+                    alt="Primary Portrait"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ) : (
+                <div className="w-24 h-28 rounded-xl bg-surface-card flex flex-col items-center justify-center text-sub border border-dashed border-main flex-shrink-0">
+                  <Camera className="w-7 h-7 text-sub mb-1" />
+                  <span className="text-[10px] text-sub">No Photo</span>
+                </div>
+              )}
+
+              <div className="flex-1 space-y-2">
+                <input
+                  type="file"
+                  id="hub-primary-photo"
+                  accept="image/*"
+                  onChange={(e) => handleAvatarFileSelect(e, 'photo_url')}
+                  className="hidden"
+                />
+                <label
+                  htmlFor="hub-primary-photo"
+                  className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 radius-btn bg-gradient-to-r from-gold-500 to-amber-600 text-zinc-950 text-xs font-bold hover:brightness-110 cursor-pointer shadow-xs transition-all active:scale-95"
+                >
+                  <Crop className="w-3.5 h-3.5" />
+                  <span>{profile.photo_url ? 'Change Photo 1' : 'Upload Photo 1'}</span>
+                </label>
+                {profile.photo_url && (
+                  <button
+                    type="button"
+                    onClick={() => handleRemovePhoto('photo_url')}
+                    className="w-full text-rose-500 hover:text-rose-600 text-[11px] font-semibold flex items-center justify-center gap-1 py-1 transition-colors"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                    <span>Remove</span>
+                  </button>
+                )}
+                <p className="text-[10px] text-sub leading-tight">
+                  Close-up face picture with clear lighting.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Photo Slot 2: Secondary Full-Length / Casual */}
+          <div className="p-4 radius-card bg-surface-ground border border-main flex flex-col justify-between space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-main flex items-center gap-1.5">
+                <span className="w-5 h-5 rounded-full bg-zinc-700/60 text-zinc-300 font-mono text-[10px] flex items-center justify-center font-bold">2</span>
+                Secondary Photo (Full-Length)
+              </span>
+              <span className="text-[10px] text-sub bg-surface-card px-2 py-0.5 rounded border border-main">Optional</span>
+            </div>
+
+            <div className="flex items-center gap-4">
+              {(profile.photo_url_2 || profile.secondary_photo_url) ? (
+                <div className="relative w-24 h-28 rounded-xl overflow-hidden border-2 border-emerald-500 shadow-md flex-shrink-0">
+                  <img
+                    src={profile.photo_url_2 || profile.secondary_photo_url}
+                    alt="Secondary Photo"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ) : (
+                <div className="w-24 h-28 rounded-xl bg-surface-card flex flex-col items-center justify-center text-sub border border-dashed border-main flex-shrink-0">
+                  <Camera className="w-7 h-7 text-sub mb-1" />
+                  <span className="text-[10px] text-sub">No Photo</span>
+                </div>
+              )}
+
+              <div className="flex-1 space-y-2">
+                <input
+                  type="file"
+                  id="hub-secondary-photo"
+                  accept="image/*"
+                  onChange={(e) => handleAvatarFileSelect(e, 'photo_url_2')}
+                  className="hidden"
+                />
+                <label
+                  htmlFor="hub-secondary-photo"
+                  className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 radius-btn glass-card border border-white/15 text-white hover:bg-white/10 text-xs font-bold cursor-pointer shadow-xs transition-all active:scale-95"
+                >
+                  <Crop className="w-3.5 h-3.5 text-gold-400" />
+                  <span>{(profile.photo_url_2 || profile.secondary_photo_url) ? 'Change Photo 2' : 'Upload Photo 2'}</span>
+                </label>
+                {(profile.photo_url_2 || profile.secondary_photo_url) && (
+                  <button
+                    type="button"
+                    onClick={() => handleRemovePhoto(profile.photo_url_2 ? 'photo_url_2' : 'secondary_photo_url')}
+                    className="w-full text-rose-500 hover:text-rose-600 text-[11px] font-semibold flex items-center justify-center gap-1 py-1 transition-colors"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                    <span>Remove</span>
+                  </button>
+                )}
+                <p className="text-[10px] text-sub leading-tight">
+                  Full-length, traditional, or lifestyle photo.
+                </p>
               </div>
             </div>
           </div>
