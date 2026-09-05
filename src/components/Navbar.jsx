@@ -37,7 +37,7 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
   ];
 
   return (
-    <header className="sticky top-0 z-40 glass-card border-b border-white/[0.08] shadow-lg backdrop-blur-2xl">
+    <header className="sticky top-0 z-40 glass-card border-b border-zinc-200 dark:border-white/[0.08] shadow-lg backdrop-blur-2xl">
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-14 sm:h-16 gap-2">
           {/* Brand Logo with Clean Transparent Emblem */}
@@ -50,10 +50,10 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
             >
               <Logo variant="icon" size="small" />
               <div className="flex flex-col">
-                <span className="font-serif text-base sm:text-lg font-black text-white whitespace-nowrap tracking-tight leading-tight">
+                <span className="font-serif text-base sm:text-lg font-black text-zinc-900 dark:text-white whitespace-nowrap tracking-tight leading-tight">
                   {t('brandName')}
                 </span>
-                <span className="text-[10px] text-zinc-400 font-medium leading-none hidden sm:inline">
+                <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium leading-none hidden sm:inline">
                   {t('brandSubtitle')}
                 </span>
               </div>
@@ -71,11 +71,11 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
                   onClick={() => setActiveTab(item.id)}
                   className={`flex items-center gap-2 px-3.5 py-2 radius-btn text-xs sm:text-sm font-semibold transition-all ${
                     isActive
-                      ? 'bg-white/[0.08] text-gold-300 border border-gold-400/40 shadow-xs'
-                      : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
+                      ? 'bg-amber-500/10 dark:bg-white/[0.08] text-amber-700 dark:text-gold-300 border border-amber-500/30 dark:border-gold-400/40 shadow-xs'
+                      : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/[0.04]'
                   }`}
                 >
-                  <Icon className={`w-4 h-4 ${isActive ? 'text-gold-400' : 'text-zinc-400'}`} />
+                  <Icon className={`w-4 h-4 ${isActive ? 'text-amber-600 dark:text-gold-400' : 'text-zinc-500 dark:text-zinc-400'}`} />
                   <span>{item.label}</span>
                   {item.badge && (
                     <span className="ml-1 px-1.5 py-0.2 text-[10px] font-mono font-bold text-zinc-950 bg-gold-400 rounded-full">
@@ -94,17 +94,17 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
               <>
                 <button
                   onClick={triggerInstall}
-                  className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 radius-btn bg-zinc-900/80 hover:bg-zinc-800 text-zinc-200 border border-white/10 hover:border-gold-400/40 text-xs font-bold transition-all shadow-xs"
+                  className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 radius-btn bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900/80 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-white/10 hover:border-amber-500/40 dark:hover:border-gold-400/40 text-xs font-bold transition-all shadow-xs"
                   title={t('installVadhuVarApp')}
                   aria-label={t('installApp')}
                 >
-                  <Download className="w-3.5 h-3.5 text-gold-400" />
+                  <Download className="w-3.5 h-3.5 text-amber-600 dark:text-gold-400" />
                   <span>{t('installApp')}</span>
                 </button>
 
                 <button
                   onClick={triggerInstall}
-                  className="sm:hidden p-1.5 radius-btn text-gold-400 hover:bg-white/[0.05] transition-colors"
+                  className="sm:hidden p-1.5 radius-btn text-amber-600 dark:text-gold-400 hover:bg-black/5 dark:hover:bg-white/[0.05] transition-colors"
                   title={t('installApp')}
                   aria-label={t('installApp')}
                 >
@@ -114,11 +114,11 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
             )}
 
             {/* Trilingual Language Selector */}
-            <div className="flex items-center bg-zinc-900/90 radius-btn border border-white/10 p-0.5 text-[11px] font-bold text-zinc-400">
+            <div className="flex items-center bg-zinc-100 dark:bg-zinc-900/90 radius-btn border border-zinc-200 dark:border-white/10 p-0.5 text-[11px] font-bold text-zinc-600 dark:text-zinc-400">
               <button
                 onClick={() => setLang('en')}
                 className={`px-1.5 py-0.5 radius-btn transition-colors ${
-                  lang === 'en' ? 'bg-zinc-800 text-gold-300 font-bold shadow-xs' : 'hover:text-white'
+                  lang === 'en' ? 'bg-white dark:bg-zinc-800 text-amber-700 dark:text-gold-300 font-bold shadow-xs' : 'hover:text-zinc-900 dark:hover:text-white'
                 }`}
                 title="English"
               >
@@ -127,7 +127,7 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
               <button
                 onClick={() => setLang('hi')}
                 className={`px-1.5 py-0.5 radius-btn transition-colors ${
-                  lang === 'hi' ? 'bg-zinc-800 text-gold-300 font-bold shadow-xs' : 'hover:text-white'
+                  lang === 'hi' ? 'bg-white dark:bg-zinc-800 text-amber-700 dark:text-gold-300 font-bold shadow-xs' : 'hover:text-zinc-900 dark:hover:text-white'
                 }`}
                 title="हिंदी (Hindi)"
               >
@@ -136,7 +136,7 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
               <button
                 onClick={() => setLang('mr')}
                 className={`px-1.5 py-0.5 radius-btn transition-colors ${
-                  lang === 'mr' ? 'bg-zinc-800 text-gold-300 font-bold shadow-xs' : 'hover:text-white'
+                  lang === 'mr' ? 'bg-white dark:bg-zinc-800 text-amber-700 dark:text-gold-300 font-bold shadow-xs' : 'hover:text-zinc-900 dark:hover:text-white'
                 }`}
                 title="मराठी (Marathi)"
               >
@@ -147,21 +147,21 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
             {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
-              className="p-1.5 radius-btn text-zinc-400 hover:text-white hover:bg-white/[0.05] transition-colors"
+              className="p-1.5 radius-btn text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/[0.05] transition-colors"
               title={t('toggleTheme')}
               aria-label={t('toggleTheme')}
             >
-              {isDark ? <Sun className="w-4 h-4 text-gold-400" /> : <Moon className="w-4 h-4" />}
+              {isDark ? <Sun className="w-4 h-4 text-gold-400" /> : <Moon className="w-4 h-4 text-zinc-700" />}
             </button>
 
             {/* Privacy Controls */}
             <button
               onClick={onOpenPrivacyModal}
-              className="hidden lg:block p-1.5 radius-btn text-zinc-400 hover:text-white hover:bg-white/[0.05] transition-colors"
+              className="hidden lg:block p-1.5 radius-btn text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/[0.05] transition-colors"
               title={t('privacyControls')}
               aria-label={t('privacyControls')}
             >
-              <Shield className="w-4 h-4 text-emerald-400" />
+              <Shield className="w-4 h-4 text-emerald-500" />
             </button>
 
             {/* User Profile & Sign Out or Sign In */}
@@ -169,13 +169,13 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenAuth, onOpenPrivacyModal
               <div className="flex items-center gap-1 sm:gap-2">
                 <button
                   onClick={() => setActiveTab('profile')}
-                  className="flex items-center gap-1.5 p-0.5 sm:pr-2.5 rounded-full border border-gold-400/30 hover:border-gold-400 transition-colors bg-zinc-900"
+                  className="flex items-center gap-1.5 p-0.5 sm:pr-2.5 rounded-full border border-amber-500/30 dark:border-gold-400/30 hover:border-amber-500 dark:hover:border-gold-400 transition-colors bg-zinc-100 dark:bg-zinc-900"
                   title={profile ? t('myProfile') : t('createProfile')}
                 >
                   <div className="w-7 h-7 rounded-full bg-gradient-to-br from-gold-500 to-amber-600 text-zinc-950 font-black text-xs flex items-center justify-center shadow-xs">
                     {(profile?.full_name || user?.email || 'U')[0].toUpperCase()}
                   </div>
-                  <span className="hidden sm:inline text-xs font-semibold text-zinc-200 max-w-[85px] truncate">
+                  <span className="hidden sm:inline text-xs font-semibold text-zinc-800 dark:text-zinc-200 max-w-[85px] truncate">
                     {profile?.full_name || user?.email?.split('@')[0]}
                   </span>
                 </button>

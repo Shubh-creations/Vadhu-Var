@@ -108,16 +108,16 @@ export const FilterPanel = ({ appliedFilters, filters, onApply, onReset, totalMa
   };
 
   return (
-    <div className="glass-card radius-card border border-white/[0.08] p-5 shadow-xl transition-colors space-y-6">
+    <div className="glass-card radius-card border border-zinc-200 dark:border-white/[0.08] p-5 shadow-xl transition-colors space-y-6">
       {/* 1. Header Row */}
-      <div className="flex items-center justify-between gap-2 pb-4 border-b border-white/[0.08]">
+      <div className="flex items-center justify-between gap-2 pb-4 border-b border-zinc-200 dark:border-white/[0.08]">
         <div className="flex items-center gap-2 min-w-0">
-          <Filter className="w-4 h-4 text-gold-400 flex-shrink-0" />
-          <h2 className="font-serif font-bold text-white text-base tracking-tight truncate">
+          <Filter className="w-4 h-4 text-amber-600 dark:text-gold-400 flex-shrink-0" />
+          <h2 className="font-serif font-bold text-zinc-900 dark:text-white text-base tracking-tight truncate">
             {t('filterTitle')}
           </h2>
           {activeAppliedCount > 0 && (
-            <span className="px-2 py-0.5 radius-btn text-[10px] font-bold bg-gold-500 text-zinc-950 flex-shrink-0">
+            <span className="px-2 py-0.5 radius-btn text-[10px] font-bold bg-amber-500 text-zinc-950 flex-shrink-0">
               {activeAppliedCount}
             </span>
           )}
@@ -126,7 +126,7 @@ export const FilterPanel = ({ appliedFilters, filters, onApply, onReset, totalMa
         <button
           type="button"
           onClick={onReset}
-          className="text-xs text-zinc-400 hover:text-crimson-400 font-semibold flex items-center gap-1 transition-colors flex-shrink-0"
+          className="text-xs text-zinc-500 dark:text-zinc-400 hover:text-crimson-500 dark:hover:text-crimson-400 font-semibold flex items-center gap-1 transition-colors flex-shrink-0"
           title={t('resetFilters')}
         >
           <RotateCcw className="w-3.5 h-3.5" />
@@ -136,10 +136,10 @@ export const FilterPanel = ({ appliedFilters, filters, onApply, onReset, totalMa
 
       {/* 2. Looking For (Gender Selection) */}
       <div className="space-y-2">
-        <label className="text-xs font-bold text-white block tracking-wide uppercase">
+        <label className="text-xs font-bold text-zinc-900 dark:text-white block tracking-wide uppercase">
           {t('lookingFor')}
         </label>
-        <div className="grid grid-cols-3 gap-1.5 p-1 bg-zinc-900/90 radius-btn border border-white/[0.06]">
+        <div className="grid grid-cols-3 gap-1.5 p-1 bg-zinc-100 dark:bg-zinc-900/90 radius-btn border border-zinc-200 dark:border-white/[0.06]">
           {[
             { id: 'all', label: t('all') },
             { id: 'female', label: t('brides') },
@@ -154,7 +154,7 @@ export const FilterPanel = ({ appliedFilters, filters, onApply, onReset, totalMa
                 className={`py-1.5 px-2 radius-btn text-xs font-bold transition-all ${
                   isSelected
                     ? 'bg-gradient-to-r from-gold-500 to-amber-600 text-zinc-950 shadow-sm'
-                    : 'text-zinc-400 hover:text-white'
+                    : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
                 }`}
               >
                 {item.label}
@@ -165,12 +165,12 @@ export const FilterPanel = ({ appliedFilters, filters, onApply, onReset, totalMa
       </div>
 
       {/* 3. Age Range Slider & Quick Preset Pills */}
-      <div className="space-y-3 pt-2 border-t border-white/[0.06]">
+      <div className="space-y-3 pt-2 border-t border-zinc-200 dark:border-white/[0.06]">
         <div className="flex items-center justify-between">
-          <label className="text-xs font-bold text-white uppercase tracking-wide">
+          <label className="text-xs font-bold text-zinc-900 dark:text-white uppercase tracking-wide">
             {t('ageRange')}
           </label>
-          <span className="text-xs font-mono font-bold text-gold-400">
+          <span className="text-xs font-mono font-bold text-amber-700 dark:text-gold-400">
             {pendingFilters.ageMin || 18} – {pendingFilters.ageMax || 80} yrs
           </span>
         </div>
@@ -188,8 +188,8 @@ export const FilterPanel = ({ appliedFilters, filters, onApply, onReset, totalMa
                 onClick={() => handleSetAgePreset(preset.min, preset.max)}
                 className={`py-1 px-1.5 radius-btn text-[11px] font-mono font-semibold transition-all ${
                   isSelected
-                    ? 'bg-gold-500/20 text-gold-300 border border-gold-400/40'
-                    : 'bg-zinc-900/60 text-zinc-400 hover:text-white border border-white/[0.04]'
+                    ? 'bg-amber-500/20 text-amber-700 dark:text-gold-300 border border-amber-500/40 dark:border-gold-400/40'
+                    : 'bg-zinc-100 dark:bg-zinc-900/60 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white border border-zinc-200 dark:border-white/[0.04]'
                 }`}
               >
                 {preset.label}
@@ -210,7 +210,7 @@ export const FilterPanel = ({ appliedFilters, filters, onApply, onReset, totalMa
                 value={pendingFilters.ageMin ?? 18}
                 onChange={(e) => handleAgeChange('ageMin', e.target.value)}
                 onBlur={() => handleAgeBlur('ageMin')}
-                className="w-full px-2 py-1 radius-btn text-xs font-mono bg-zinc-900 text-white border border-white/10 text-center outline-none focus:border-gold-400"
+                className="w-full px-2 py-1 radius-btn text-xs font-mono bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white border border-zinc-200 dark:border-white/10 text-center outline-none focus:border-amber-500 dark:focus:border-gold-400"
               />
             </div>
             <div className="flex-1">
@@ -222,7 +222,7 @@ export const FilterPanel = ({ appliedFilters, filters, onApply, onReset, totalMa
                 value={pendingFilters.ageMax ?? 80}
                 onChange={(e) => handleAgeChange('ageMax', e.target.value)}
                 onBlur={() => handleAgeBlur('ageMax')}
-                className="w-full px-2 py-1 radius-btn text-xs font-mono bg-zinc-900 text-white border border-white/10 text-center outline-none focus:border-gold-400"
+                className="w-full px-2 py-1 radius-btn text-xs font-mono bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white border border-zinc-200 dark:border-white/10 text-center outline-none focus:border-amber-500 dark:focus:border-gold-400"
               />
             </div>
           </div>
@@ -230,48 +230,48 @@ export const FilterPanel = ({ appliedFilters, filters, onApply, onReset, totalMa
       </div>
 
       {/* 4. Location & Income Filters */}
-      <div className="space-y-3 pt-2 border-t border-white/[0.06]">
-        <label className="text-xs font-bold text-white uppercase tracking-wide">
+      <div className="space-y-3 pt-2 border-t border-zinc-200 dark:border-white/[0.06]">
+        <label className="text-xs font-bold text-zinc-900 dark:text-white uppercase tracking-wide">
           {t('locationIncome')}
         </label>
 
         {/* Annual Income */}
         <div className="space-y-1.5">
-          <label className="flex items-center gap-1.5 text-xs font-semibold text-zinc-300">
-            <IndianRupee className="w-3.5 h-3.5 text-gold-400" />
+          <label className="flex items-center gap-1.5 text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+            <IndianRupee className="w-3.5 h-3.5 text-amber-600 dark:text-gold-400" />
             <span>{t('annualIncome')}</span>
           </label>
           <select
             value={pendingFilters.incomeBracket || 'all'}
             onChange={(e) => handleFieldChange('incomeBracket', e.target.value)}
-            className="w-full px-3 py-2 radius-btn text-xs bg-zinc-900 text-white border border-white/10 outline-none focus:border-gold-400 transition-colors cursor-pointer"
+            className="w-full px-3 py-2 radius-btn text-xs bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white border border-zinc-200 dark:border-white/10 outline-none focus:border-amber-500 dark:focus:border-gold-400 transition-colors cursor-pointer"
           >
             {incomeBrackets.map(b => (
-              <option key={b.value} value={b.value}>{b.label}</option>
+              <option key={b.value} value={b.value} className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white">{b.label}</option>
             ))}
           </select>
         </div>
 
         {/* State Selection */}
         <div className="space-y-1.5">
-          <label className="flex items-center gap-1.5 text-xs font-semibold text-zinc-300">
-            <MapPin className="w-3.5 h-3.5 text-crimson-400" />
+          <label className="flex items-center gap-1.5 text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+            <MapPin className="w-3.5 h-3.5 text-crimson-500 dark:text-crimson-400" />
             <span>{t('state')}</span>
           </label>
           <select
             value={pendingFilters.state || 'All States'}
             onChange={(e) => handleFieldChange('state', e.target.value)}
-            className="w-full px-3 py-2 radius-btn text-xs bg-zinc-900 text-white border border-white/10 outline-none focus:border-gold-400 transition-colors cursor-pointer"
+            className="w-full px-3 py-2 radius-btn text-xs bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white border border-zinc-200 dark:border-white/10 outline-none focus:border-amber-500 dark:focus:border-gold-400 transition-colors cursor-pointer"
           >
             {indianStates.map(st => (
-              <option key={st} value={st}>{st}</option>
+              <option key={st} value={st} className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white">{st}</option>
             ))}
           </select>
         </div>
 
         {/* City Input */}
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold text-zinc-300 block">
+          <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block">
             {t('city')}
           </label>
           <input
@@ -279,78 +279,78 @@ export const FilterPanel = ({ appliedFilters, filters, onApply, onReset, totalMa
             placeholder={t('searchCity')}
             value={pendingFilters.city || ''}
             onChange={(e) => handleFieldChange('city', e.target.value)}
-            className="w-full px-3 py-2 radius-btn text-xs bg-zinc-900 text-white border border-white/10 outline-none focus:border-gold-400 transition-colors placeholder:text-zinc-600"
+            className="w-full px-3 py-2 radius-btn text-xs bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white border border-zinc-200 dark:border-white/10 outline-none focus:border-amber-500 dark:focus:border-gold-400 transition-colors placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
           />
         </div>
 
         {/* Education Level */}
         <div className="space-y-1.5">
-          <label className="flex items-center gap-1.5 text-xs font-semibold text-zinc-300">
+          <label className="flex items-center gap-1.5 text-xs font-semibold text-zinc-700 dark:text-zinc-300">
             <GraduationCap className="w-3.5 h-3.5 text-zinc-400" />
             <span>{t('education')}</span>
           </label>
           <select
             value={pendingFilters.education || 'All Education'}
             onChange={(e) => handleFieldChange('education', e.target.value)}
-            className="w-full px-3 py-2 radius-btn text-xs bg-zinc-900 text-white border border-white/10 outline-none focus:border-gold-400 transition-colors cursor-pointer"
+            className="w-full px-3 py-2 radius-btn text-xs bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white border border-zinc-200 dark:border-white/10 outline-none focus:border-amber-500 dark:focus:border-gold-400 transition-colors cursor-pointer"
           >
             {educationLevels.map(ed => (
-              <option key={ed} value={ed}>{ed}</option>
+              <option key={ed} value={ed} className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white">{ed}</option>
             ))}
           </select>
         </div>
 
         {/* Diet Preference */}
         <div className="space-y-1.5">
-          <label className="flex items-center gap-1.5 text-xs font-semibold text-zinc-300">
-            <Utensils className="w-3.5 h-3.5 text-emerald-400" />
+          <label className="flex items-center gap-1.5 text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+            <Utensils className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400" />
             <span>{t('dietPreference')}</span>
           </label>
           <select
             value={pendingFilters.diet || ''}
             onChange={(e) => handleFieldChange('diet', e.target.value)}
-            className="w-full px-3 py-2 radius-btn text-xs bg-zinc-900 text-white border border-white/10 outline-none focus:border-gold-400 transition-colors cursor-pointer"
+            className="w-full px-3 py-2 radius-btn text-xs bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white border border-zinc-200 dark:border-white/10 outline-none focus:border-amber-500 dark:focus:border-gold-400 transition-colors cursor-pointer"
           >
-            <option value="">{t('allDiets')}</option>
-            <option value="veg">{t('vegetarian')}</option>
-            <option value="non-veg">{t('nonVegetarian')}</option>
-            <option value="eggetarian">{t('eggetarian')}</option>
+            <option value="" className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white">{t('allDiets')}</option>
+            <option value="veg" className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white">{t('vegetarian')}</option>
+            <option value="non-veg" className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white">{t('nonVegetarian')}</option>
+            <option value="eggetarian" className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white">{t('eggetarian')}</option>
           </select>
         </div>
 
         {/* Marital Status */}
         <div className="space-y-1.5">
-          <label className="flex items-center gap-1.5 text-xs font-semibold text-zinc-300">
-            <Heart className="w-3.5 h-3.5 text-crimson-400" />
+          <label className="flex items-center gap-1.5 text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+            <Heart className="w-3.5 h-3.5 text-crimson-500 dark:text-crimson-400" />
             <span>{t('maritalStatus')}</span>
           </label>
           <select
             value={pendingFilters.maritalStatus || ''}
             onChange={(e) => handleFieldChange('maritalStatus', e.target.value)}
-            className="w-full px-3 py-2 radius-btn text-xs bg-zinc-900 text-white border border-white/10 outline-none focus:border-gold-400 transition-colors cursor-pointer"
+            className="w-full px-3 py-2 radius-btn text-xs bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white border border-zinc-200 dark:border-white/10 outline-none focus:border-amber-500 dark:focus:border-gold-400 transition-colors cursor-pointer"
           >
-            <option value="">{t('allStatuses')}</option>
-            <option value="never_married">{t('neverMarried')}</option>
-            <option value="divorced">{t('divorced')}</option>
-            <option value="widowed">{t('widowed')}</option>
-            <option value="awaiting_divorce">{t('awaitingDivorce')}</option>
+            <option value="" className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white">{t('allStatuses')}</option>
+            <option value="never_married" className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white">{t('neverMarried')}</option>
+            <option value="divorced" className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white">{t('divorced')}</option>
+            <option value="widowed" className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white">{t('widowed')}</option>
+            <option value="awaiting_divorce" className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white">{t('awaitingDivorce')}</option>
           </select>
         </div>
       </div>
 
       {/* 5. Verification Toggle */}
-      <div className="pt-4 border-t border-white/[0.06]">
-        <div className="flex items-center justify-between p-3 radius-btn bg-zinc-900/80 border border-white/[0.06]">
+      <div className="pt-4 border-t border-zinc-200 dark:border-white/[0.06]">
+        <div className="flex items-center justify-between p-3 radius-btn bg-zinc-100 dark:bg-zinc-900/80 border border-zinc-200 dark:border-white/[0.06]">
           <div className="flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-            <span className="text-xs font-semibold text-zinc-200">{t('idVerifiedOnly')}</span>
+            <ShieldCheck className="w-4 h-4 text-emerald-500 dark:text-emerald-400 flex-shrink-0" />
+            <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-200">{t('idVerifiedOnly')}</span>
           </div>
 
           <button
             type="button"
             onClick={() => handleFieldChange('verifiedOnly', !pendingFilters.verifiedOnly)}
             className={`w-9 h-5 flex items-center rounded-full p-0.5 transition-colors ${
-              pendingFilters.verifiedOnly ? 'bg-emerald-500' : 'bg-zinc-800 border border-white/10'
+              pendingFilters.verifiedOnly ? 'bg-emerald-500' : 'bg-zinc-300 dark:bg-zinc-800 border border-zinc-400 dark:border-white/10'
             }`}
             aria-label={t('idVerifiedOnly')}
           >
@@ -364,14 +364,14 @@ export const FilterPanel = ({ appliedFilters, filters, onApply, onReset, totalMa
       </div>
 
       {/* 6. Action Button */}
-      <div className="pt-3 border-t border-white/[0.06] space-y-2">
+      <div className="pt-3 border-t border-zinc-200 dark:border-white/[0.06] space-y-2">
         <button
           type="button"
           onClick={() => onApply(pendingFilters)}
           className={`w-full py-3 px-4 radius-btn text-xs sm:text-sm font-bold flex items-center justify-center gap-2 shadow-lg transition-all ${
             hasUnappliedChanges
               ? 'bg-gradient-to-r from-gold-500 to-amber-600 hover:from-gold-400 hover:to-amber-500 text-zinc-950 font-extrabold gold-glow scale-[1.01]'
-              : 'bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-white/10'
+              : 'bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-300 border border-zinc-200 dark:border-white/10'
           }`}
         >
           <Check className="w-4 h-4" />
@@ -383,7 +383,7 @@ export const FilterPanel = ({ appliedFilters, filters, onApply, onReset, totalMa
         </button>
 
         {hasUnappliedChanges && (
-          <p className="text-[10px] text-center text-gold-400 font-medium animate-pulse">
+          <p className="text-[10px] text-center text-amber-600 dark:text-gold-400 font-medium animate-pulse">
             {t('clickApplyHint')}
           </p>
         )}

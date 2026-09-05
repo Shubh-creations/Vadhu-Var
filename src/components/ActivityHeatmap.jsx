@@ -61,14 +61,17 @@ export const ActivityHeatmap = ({
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 radius-btn bg-zinc-100 dark:bg-zinc-900/90 text-emerald-700 dark:text-emerald-400 border border-zinc-200 dark:border-emerald-500/30 text-xs font-mono font-bold">
-            <Zap className="w-3 h-3 text-emerald-500 dark:text-emerald-400" />
-            98% Reply Rate
-          </span>
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 radius-btn bg-zinc-100 dark:bg-zinc-900/90 text-amber-700 dark:text-gold-400 border border-zinc-200 dark:border-gold-400/30 text-xs font-mono font-bold">
-            <Clock className="w-3 h-3 text-amber-600 dark:text-gold-400" />
-            &lt; 2 hrs avg
-          </span>
+          {profile.is_id_verified ? (
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 radius-btn bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 text-xs font-mono font-bold">
+              <Zap className="w-3 h-3 text-emerald-500" />
+              Verified Active Member
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 radius-btn bg-zinc-100 dark:bg-zinc-900/90 text-zinc-500 dark:text-zinc-400 border border-zinc-200 dark:border-white/10 text-xs font-mono">
+              <Clock className="w-3 h-3 text-zinc-400" />
+              Cadence: Yet to update
+            </span>
+          )}
         </div>
       </div>
 
@@ -116,48 +119,48 @@ export const ActivityHeatmap = ({
         </div>
       </div>
 
-      {/* Trust Audit Verification Badges (Real Profile Checks, Zero Fake Demo) */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-3 border-t border-zinc-200 dark:border-white/[0.06] text-xs">
-        <div className="p-2.5 radius-btn bg-zinc-100 dark:bg-zinc-900/60 border border-zinc-200 dark:border-white/5 flex items-center gap-2">
-          {profile.is_id_verified ? (
-            <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-          ) : (
-            <Clock className="w-4 h-4 text-zinc-400 flex-shrink-0" />
-          )}
-          <div className="truncate">
-            <span className="font-semibold text-zinc-900 dark:text-white block text-[11px]">Government ID</span>
-            <span className="text-[10px] text-zinc-600 dark:text-zinc-400">
-              {profile.is_id_verified ? 'Verified Document' : 'Verification Pending'}
-            </span>
+      {/* Trust Audit Verification Badges (Unclipped Full Width Rows) */}
+      <div className="flex flex-col gap-2 pt-3 border-t border-zinc-200 dark:border-white/[0.06] text-xs">
+        <div className="p-2.5 radius-btn bg-zinc-100 dark:bg-zinc-900/60 border border-zinc-200 dark:border-white/5 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {profile.is_id_verified ? (
+              <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+            ) : (
+              <Clock className="w-4 h-4 text-zinc-400 flex-shrink-0" />
+            )}
+            <span className="font-semibold text-zinc-900 dark:text-white text-[11px]">Government ID</span>
           </div>
+          <span className={`text-[10px] font-medium ${profile.is_id_verified ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-500 dark:text-zinc-400 italic'}`}>
+            {profile.is_id_verified ? '100% Verified' : 'Yet to update'}
+          </span>
         </div>
 
-        <div className="p-2.5 radius-btn bg-zinc-100 dark:bg-zinc-900/60 border border-zinc-200 dark:border-white/5 flex items-center gap-2">
-          {profile.phone || profile.email ? (
-            <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-          ) : (
-            <Clock className="w-4 h-4 text-zinc-400 flex-shrink-0" />
-          )}
-          <div className="truncate">
-            <span className="font-semibold text-zinc-900 dark:text-white block text-[11px]">Contact Verified</span>
-            <span className="text-[10px] text-zinc-600 dark:text-zinc-400">
-              {profile.phone || profile.email ? 'Phone & Email Active' : 'Yet to update'}
-            </span>
+        <div className="p-2.5 radius-btn bg-zinc-100 dark:bg-zinc-900/60 border border-zinc-200 dark:border-white/5 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {profile.phone || profile.email ? (
+              <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+            ) : (
+              <Clock className="w-4 h-4 text-zinc-400 flex-shrink-0" />
+            )}
+            <span className="font-semibold text-zinc-900 dark:text-white text-[11px]">Contact Telemetry</span>
           </div>
+          <span className={`text-[10px] font-medium ${profile.phone || profile.email ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-500 dark:text-zinc-400 italic'}`}>
+            {profile.phone || profile.email ? 'Verified Active' : 'Yet to update'}
+          </span>
         </div>
 
-        <div className="p-2.5 radius-btn bg-zinc-100 dark:bg-zinc-900/60 border border-zinc-200 dark:border-white/5 flex items-center gap-2">
-          {profile.father_occupation || profile.native_place ? (
-            <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-          ) : (
-            <Clock className="w-4 h-4 text-zinc-400 flex-shrink-0" />
-          )}
-          <div className="truncate">
-            <span className="font-semibold text-zinc-900 dark:text-white block text-[11px]">Family Roots</span>
-            <span className="text-[10px] text-zinc-600 dark:text-zinc-400">
-              {profile.father_occupation || profile.native_place ? 'Details Verified' : 'Yet to update'}
-            </span>
+        <div className="p-2.5 radius-btn bg-zinc-100 dark:bg-zinc-900/60 border border-zinc-200 dark:border-white/5 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {profile.father_occupation || profile.native_place ? (
+              <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+            ) : (
+              <Clock className="w-4 h-4 text-zinc-400 flex-shrink-0" />
+            )}
+            <span className="font-semibold text-zinc-900 dark:text-white text-[11px]">Family Lineage</span>
           </div>
+          <span className={`text-[10px] font-medium ${profile.father_occupation || profile.native_place ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-500 dark:text-zinc-400 italic'}`}>
+            {profile.father_occupation || profile.native_place ? 'Roots Documented' : 'Yet to update'}
+          </span>
         </div>
       </div>
     </div>

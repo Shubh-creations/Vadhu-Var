@@ -13,7 +13,7 @@ export const MatchTelemetryGauge = ({
   score = 88,
   valuesScore = 92,
   careerScore = 86,
-  kundaliScore = 31, // out of 36
+  kundaliScore = null, // null if candidate has not provided kundali
   kundaliMax = 36,
   size = 'md', // 'sm' | 'md' | 'lg'
   showDetails = false,
@@ -21,8 +21,9 @@ export const MatchTelemetryGauge = ({
 }) => {
   const [hovered, setHovered] = useState(false);
 
-  // Normalize kundali score to percentage for ring draw
-  const kundaliPct = Math.min(100, Math.round((kundaliScore / kundaliMax) * 100));
+  const isKundaliPending = kundaliScore === null || kundaliScore === undefined;
+  // Normalize kundali score to percentage for ring draw (0 if pending)
+  const kundaliPct = isKundaliPending ? 0 : Math.min(100, Math.round((kundaliScore / kundaliMax) * 100));
 
   // Size configurations
   const config = {
@@ -65,7 +66,7 @@ export const MatchTelemetryGauge = ({
 
   const offset1 = c1 - (valuesScore / 100) * c1;
   const offset2 = c2 - (careerScore / 100) * c2;
-  const offset3 = c3 - (kundaliPct / 100) * c3;
+  const offset3 = isKundaliPending ? c3 : c3 - (kundaliPct / 100) * c3;
 
   return (
     <div
@@ -142,9 +143,10 @@ export const MatchTelemetryGauge = ({
             cx={center}
             cy={center}
             r={r3}
-            stroke="url(#crimsonGradient)"
+            stroke={isKundaliPending ? 'currentColor' : 'url(#crimsonGradient)'}
+            className={isKundaliPending ? 'text-zinc-300 dark:text-white/10' : ''}
             strokeWidth={strokeWidth}
-            strokeDasharray={c3}
+            strokeDasharray={isKundaliPending ? '2 3' : c3}
             strokeDashoffset={offset3}
             strokeLinecap="round"
             fill="none"
@@ -181,9 +183,9 @@ export const MatchTelemetryGauge = ({
         </div>
       </div>
 
-      {/* Interactive Bklit Glassmorphic Tooltip on Hover */}
-      {(hovered || showDetails) && (
-        <div className="absolute -bottom-24 sm:-bottom-28 z-30 w-52 sm:w-60 p-3 radius-card glass-card border border-zinc-200 dark:border-white/10 shadow-2xl space-y-1.5 text-left text-xs pointer-events-none animate-fade-in backdrop-blur-2xl">
+      {/* Interactive Bklit Glassmorphic Tooltip ONLY on Hover */}
+      {hovered && (
+        <div className="absolute -top-24 sm:-top-28 z-40 w-52 sm:w-60 p-3 radius-card glass-card border border-zinc-200 dark:border-white/10 shadow-2xl space-y-1.5 text-left text-xs pointer-events-none animate-fade-in backdrop-blur-2xl">
           <div className="flex items-center justify-between pb-1 border-b border-zinc-200 dark:border-white/10">
             <span className="font-serif font-bold text-zinc-900 dark:text-white text-[11px] flex items-center gap-1">
               <Sparkles className="w-3 h-3 text-amber-600 dark:text-gold-400" />
@@ -210,10 +212,12 @@ export const MatchTelemetryGauge = ({
 
           <div className="flex items-center justify-between text-[10px]">
             <span className="text-zinc-600 dark:text-zinc-400 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-crimson-500" />
+              <span className={`w-1.5 h-1.5 rounded-full ${isKundaliPending ? 'bg-zinc-400' : 'bg-crimson-500'}`} />
               Kundali Guna Milan
             </span>
-            <span className="font-mono font-semibold text-crimson-600 dark:text-crimson-400">{kundaliScore}/36 Gunas</span>
+            <span className={`font-mono font-semibold ${isKundaliPending ? 'text-zinc-400 dark:text-zinc-500 italic text-[9px]' : 'text-crimson-600 dark:text-crimson-400'}`}>
+              {isKundaliPending ? 'Yet to update' : `${kundaliScore}/36 Gunas`}
+            </span>
           </div>
         </div>
       )}

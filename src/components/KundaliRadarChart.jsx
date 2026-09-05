@@ -13,49 +13,52 @@ export const KundaliRadarChart = ({
 }) => {
   const [activeAxis, setActiveAxis] = useState(null);
 
+  const hasKundali = Boolean(candidateData.hasKundali);
+  const kundaliGuna = candidateData.kundaliGuna;
+
   // 6 Primary Dimensions & Scores
   const dimensions = [
     {
       key: 'age',
       label: 'Age & Stage',
-      score: candidateData.ageScore || 92,
+      score: candidateData.ageScore || 85,
       prefScore: 90,
-      detail: 'Within optimal ±2 year preference bracket'
+      detail: 'Optimal ±2 year preference bracket'
     },
     {
       key: 'height',
       label: 'Height & Build',
-      score: candidateData.heightScore || 88,
+      score: candidateData.heightScore || 75,
       prefScore: 85,
-      detail: 'Matches stated height range (5ft 6in – 5ft 10in)'
+      detail: candidateData.heightScore >= 85 ? 'Matches stated height range' : 'Height details pending or approximate'
     },
     {
       key: 'career',
       label: 'Career & Tier',
-      score: candidateData.careerScore || 95,
+      score: candidateData.careerScore || 80,
       prefScore: 80,
-      detail: 'Education level (Post Graduate / Doctor) aligns 100%'
+      detail: 'Professional qualification alignment'
     },
     {
       key: 'diet',
       label: 'Diet & Lifestyle',
-      score: candidateData.dietScore || 100,
+      score: candidateData.dietScore || 80,
       prefScore: 100,
-      detail: 'Exact match on vegetarian dietary lifestyle'
+      detail: 'Dietary preference alignment'
     },
     {
       key: 'location',
       label: 'Location & Region',
-      score: candidateData.locationScore || 86,
+      score: candidateData.locationScore || 75,
       prefScore: 90,
-      detail: 'Same state (Maharashtra) with preferred metro tier'
+      detail: 'Native region and current metro preference'
     },
     {
       key: 'kundali',
-      label: 'Kundali (32/36)',
-      score: candidateData.kundaliScore || 89,
+      label: hasKundali && kundaliGuna ? `Kundali (${kundaliGuna}/36)` : 'Kundali (Pending)',
+      score: hasKundali ? (candidateData.kundaliScore || 70) : 15,
       prefScore: 80,
-      detail: '32 of 36 Gunas matched (Nadi & Bhakoot aligned)'
+      detail: hasKundali && kundaliGuna ? `${kundaliGuna} of 36 Gunas matched (Vedic aligned)` : 'Astrological details pending update by candidate'
     }
   ];
 

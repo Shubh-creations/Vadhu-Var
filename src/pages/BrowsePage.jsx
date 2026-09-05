@@ -11,6 +11,7 @@ import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import calculateCompatibilityEstimate from '../lib/compatibilityCalculator';
+import calculateProfileCompleteness from '../lib/profileCompleteness';
 
 const defaultFilters = {
   ageMin: 18,
@@ -175,28 +176,48 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
     // Score Calculation & Sorting
     const scoredProfiles = matching.map(candidate => {
       const matchScore = calculateCompatibilityEstimate(myProfile, candidate, partnerPreferences);
+      const completeness = calculateProfileCompleteness(candidate).percentage;
       return {
         ...candidate,
-        _matchScore: matchScore
+        _matchScore: matchScore,
+        _completeness: completeness
       };
     });
 
     return scoredProfiles.sort((a, b) => {
+      const compDiff = (b._completeness || 0) - (a._completeness || 0);
+
+      if (sortBy === 'completeness') {
+        if (compDiff !== 0) return compDiff;
+        return (b._matchScore || 0) - (a._matchScore || 0);
+      }
       if (sortBy === 'best_match') {
+        // Priority 1: Profiles that are 100% completed appear first!
+        if (b._completeness === 100 && a._completeness !== 100) return 1;
+        if (a._completeness === 100 && b._completeness !== 100) return -1;
+        // Priority 2: Higher completeness tier difference
+        if (compDiff !== 0 && Math.abs(compDiff) >= 20) return compDiff;
+        // Priority 3: Higher match score
         return (b._matchScore || 0) - (a._matchScore || 0);
       }
       if (sortBy === 'newest') {
+        if (b._completeness === 100 && a._completeness !== 100) return 1;
+        if (a._completeness === 100 && b._completeness !== 100) return -1;
         const timeA = new Date(a.created_at || 0).getTime();
         const timeB = new Date(b.created_at || 0).getTime();
         return timeB - timeA;
       }
       if (sortBy === 'age_asc') {
+        if (b._completeness === 100 && a._completeness !== 100) return 1;
+        if (a._completeness === 100 && b._completeness !== 100) return -1;
         return (Number(a.age) || 0) - (Number(b.age) || 0);
       }
       if (sortBy === 'age_desc') {
+        if (b._completeness === 100 && a._completeness !== 100) return 1;
+        if (a._completeness === 100 && b._completeness !== 100) return -1;
         return (Number(b.age) || 0) - (Number(a.age) || 0);
       }
-      return 0;
+      return compDiff;
     });
   }, [profiles, shortlistedIds, appliedFilters, searchQuery, sortBy, myProfile, user, partnerPreferences, showShortlistedOnly]);
 
@@ -331,10 +352,12 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
     }
   };
 
+  const myCompleteness = myProfile ? calculateProfileCompleteness(myProfile).percentage : 0;
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 relative z-10 text-zinc-900 dark:text-white">
       {/* Top Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
         <div>
           <div className="flex items-center gap-3">
             <h1 className="font-serif text-2xl sm:text-4xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
@@ -346,7 +369,7 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
           </div>
           <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 mt-1 leading-relaxed">
             {partnerPreferences
-              ? 'Ranked by precision Bklit match compatibility against your saved criteria.'
+              ? 'Sequenced by profile completeness (100% first) & precision Bklit match compatibility.'
               : 'Verified matrimonial candidates across Maharashtra and India.'}
           </p>
         </div>
@@ -362,7 +385,8 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
               className="bg-transparent text-xs font-semibold text-zinc-800 dark:text-zinc-200 outline-none cursor-pointer"
               aria-label={t('sortBestMatch')}
             >
-              <option value="best_match" className="bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white">Best Compatibility Score</option>
+              <option value="best_match" className="bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white">100% Complete & Best Match</option>
+              <option value="completeness" className="bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white">Profile Completeness (100% First)</option>
               <option value="newest" className="bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white">Recently Joined</option>
               <option value="age_asc" className="bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white">Age: Youngest First</option>
               <option value="age_desc" className="bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white">Age: Oldest First</option>
@@ -405,6 +429,34 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
           </button>
         </div>
       </div>
+
+      {/* Profile Completion Policy & Nudge Banner */}
+      {myProfile && myCompleteness < 100 && (
+        <div className="mb-6 p-4 radius-card glass-card border border-amber-500/30 bg-amber-500/5 dark:bg-amber-500/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 text-zinc-950 font-black text-xs flex items-center justify-center flex-shrink-0 shadow-xs">
+              {myCompleteness}%
+            </div>
+            <div>
+              <p className="font-bold text-zinc-900 dark:text-white text-xs sm:text-sm flex items-center gap-2">
+                <span>Complete Your Profile to 100% to Unlock Top Rank</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-700 dark:text-gold-400 font-bold">100% Policy</span>
+              </p>
+              <p className="text-zinc-600 dark:text-zinc-400 text-[11px] mt-0.5 leading-relaxed">
+                Candidates with 100% complete profiles appear first in searches, receive verified badges, and unlock direct proposal connections.
+              </p>
+            </div>
+          </div>
+          {onNavigateToProfile && (
+            <button
+              onClick={onNavigateToProfile}
+              className="px-4 py-2 radius-btn bg-gradient-to-r from-gold-500 to-amber-600 hover:from-gold-400 hover:to-amber-500 text-zinc-950 font-bold text-xs transition-all active:scale-95 whitespace-nowrap flex-shrink-0 shadow-xs"
+            >
+              Complete Profile (100%)
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Search Input */}
       <div className="mb-6 relative">

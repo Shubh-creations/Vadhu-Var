@@ -13,6 +13,7 @@ import PhotoPrivacyShield from './PhotoPrivacyShield';
 import ExpressInterestBurst from './ExpressInterestBurst';
 import BadgeVerified from './BadgeVerified';
 import { calculateCompatibilityEstimate } from '../lib/compatibilityCalculator';
+import calculateProfileCompleteness from '../lib/profileCompleteness';
 
 /**
  * ProfileDiscoveryCard - Luxury Immersive Candidate Card
@@ -48,11 +49,13 @@ export const ProfileDiscoveryCard = ({
     (i) => i.sender_id === (myProfile?.id || user?.id) && i.receiver_id === profile.id
   );
 
-  // Precision match scores
+  // Precision match scores & completeness
   const matchScore = calculateCompatibilityEstimate(myProfile, profile, partnerPreferences);
   const valuesScore = Math.min(98, Math.max(70, matchScore + 4));
   const careerScore = Math.min(96, Math.max(65, matchScore - 3));
-  const kundaliGuna = Math.min(36, Math.max(22, Math.round((matchScore / 100) * 36)));
+  const hasKundali = Boolean(profile.rashi || profile.nakshatra || profile.manglik || profile.gana || profile.nadi);
+  const kundaliGuna = hasKundali ? Math.min(36, Math.max(22, Math.round((matchScore / 100) * 36))) : null;
+  const completeness = calculateProfileCompleteness(profile).percentage;
 
   const handleExpressInterest = async (e) => {
     e.stopPropagation();
@@ -123,6 +126,12 @@ export const ProfileDiscoveryCard = ({
               <span className="inline-flex items-center gap-1 px-2.5 py-1 radius-btn text-[10px] font-bold bg-zinc-950/80 backdrop-blur-md text-white border border-white/15 shadow-md">
                 {profile.profile_created_for ? `Managed by ${profile.profile_created_for}` : 'Self Managed'}
               </span>
+              {completeness === 100 && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 radius-btn text-[10px] font-bold bg-gradient-to-r from-gold-500 to-amber-600 text-zinc-950 shadow-md">
+                  <Sparkles className="w-3 h-3 text-zinc-950" />
+                  100% Complete
+                </span>
+              )}
               {profile.is_id_verified && (
                 <span className="inline-flex items-center gap-1 px-2.5 py-1 radius-btn text-[10px] font-bold bg-emerald-500 text-zinc-950 shadow-md">
                   <ShieldCheck className="w-3.5 h-3.5 text-zinc-950" />

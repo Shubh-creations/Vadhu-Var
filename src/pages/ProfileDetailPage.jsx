@@ -239,9 +239,9 @@ export const ProfileDetailPage = ({
             score={matchScore}
             valuesScore={valuesScore}
             careerScore={careerScore}
-            kundaliScore={kundaliGuna || 28}
+            kundaliScore={hasKundali ? kundaliGuna : null}
             size="lg"
-            showDetails={true}
+            showDetails={false}
           />
 
           <div className="w-full pt-3 border-t border-zinc-200 dark:border-white/[0.06] text-xs space-y-1">
@@ -258,7 +258,7 @@ export const ProfileDetailPage = ({
               {hasKundali ? (
                 <span className="font-mono text-crimson-600 dark:text-crimson-400 font-bold">{kundaliGuna} / 36 Gunas</span>
               ) : (
-                <span className="text-zinc-400 dark:text-zinc-500 italic text-[10px]">Kundali Pending</span>
+                <span className="text-zinc-400 dark:text-zinc-500 italic text-[10px]">Yet to update</span>
               )}
             </div>
           </div>
@@ -282,7 +282,9 @@ export const ProfileDetailPage = ({
               careerScore: careerScore,
               dietScore: profile.diet ? 100 : 80,
               locationScore: profile.city ? 88 : 70,
-              kundaliScore: hasKundali ? Math.round((kundaliGuna / 36) * 100) : 50
+              kundaliScore: hasKundali && kundaliGuna ? Math.round((kundaliGuna / 36) * 100) : 0,
+              hasKundali: hasKundali,
+              kundaliGuna: kundaliGuna
             }}
             size={240}
           />
