@@ -171,8 +171,7 @@ export const DestinyCanvas = ({ className = '' }) => {
   return (
     <canvas
       ref={canvasRef}
-      className={`fixed inset-0 pointer-events-none z-0 ${className}`}
-      style={{ opacity: 0.85 }}
+      className={`fixed inset-0 pointer-events-none z-0 opacity-40 dark:opacity-85 transition-opacity duration-300 ${className}`}
     />
   );
 };

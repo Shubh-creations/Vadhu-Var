@@ -82,15 +82,31 @@
   }
 }
 
-/* Luxury Glassmorphism & Micro-Surfaces */
+/* Luxury Glassmorphism & Micro-Surfaces (Responsive Light & Dark Mode) */
 .glass-card {
-  background: rgba(9, 9, 11, 0.75);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+}
+
+html.dark .glass-card {
+  background: rgba(9, 9, 11, 0.78);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 24px -2px rgba(0, 0, 0, 0.5);
 }
 
 .glass-card-crimson {
+  background: radial-gradient(circle at top left, rgba(225, 29, 72, 0.05), transparent 70%), rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(225, 29, 72, 0.2);
+}
+
+html.dark .glass-card-crimson {
   background: radial-gradient(circle at top left, rgba(225, 29, 72, 0.08), transparent 70%), rgba(9, 9, 11, 0.8);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -98,6 +114,13 @@
 }
 
 .glass-card-gold {
+  background: radial-gradient(circle at top right, rgba(212, 175, 55, 0.08), transparent 70%), rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+}
+
+html.dark .glass-card-gold {
   background: radial-gradient(circle at top right, rgba(245, 158, 11, 0.07), transparent 70%), rgba(9, 9, 11, 0.8);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -121,20 +144,38 @@
   box-shadow: 0 0 20px -4px rgba(16, 185, 129, 0.35);
 }
 
-/* Editorial Gradient Typography */
+/* Editorial Gradient Typography (High-Contrast for both Light & Dark Mode) */
 .gold-gradient-text {
+  background: linear-gradient(135deg, #B45309 0%, #D97706 50%, #92400E 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+html.dark .gold-gradient-text {
   background: linear-gradient(135deg, #FDE68A 0%, #F59E0B 50%, #D4AF37 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .crimson-gradient-text {
+  background: linear-gradient(135deg, #BE123C 0%, #E11D48 60%, #881337 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+html.dark .crimson-gradient-text {
   background: linear-gradient(135deg, #FB7185 0%, #E11D48 60%, #9F1239 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .emerald-gradient-text {
+  background: linear-gradient(135deg, #047857 0%, #059669 60%, #065F46 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+html.dark .emerald-gradient-text {
   background: linear-gradient(135deg, #6EE7B7 0%, #10B981 60%, #047857 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;

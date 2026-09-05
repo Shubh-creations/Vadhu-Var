@@ -3,7 +3,7 @@ import {
   User, Pencil, ShieldCheck, HeartHandshake, Eye, EyeOff, Globe, 
   Download, LogOut, UserX, ArrowLeft, CheckCircle2, Sparkles, MapPin, 
   Briefcase, IndianRupee, ShieldAlert, Smartphone, ChevronRight, Share2, HelpCircle, FileText, Trash2,
-  Camera, Loader2, Crop, Image
+  Camera, Loader2, Crop, Image, Moon, Users
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
@@ -32,6 +32,7 @@ export const UserProfileHub = ({ onNavigateToDiscover, onOpenHelp, onOpenTerms, 
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
   const [isEditingWizard, setIsEditingWizard] = useState(false);
+  const [wizardInitialStep, setWizardInitialStep] = useState(1);
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [isSearchVisible, setIsSearchVisible] = useState(
@@ -84,7 +85,7 @@ export const UserProfileHub = ({ onNavigateToDiscover, onOpenHelp, onOpenTerms, 
             <span>{t('signOut')}</span>
           </button>
         </div>
-        <ProfileWizardPage onComplete={() => setIsEditingWizard(false)} />
+        <ProfileWizardPage onComplete={() => setIsEditingWizard(false)} initialStep={wizardInitialStep} />
       </div>
     );
   }
@@ -427,8 +428,126 @@ export const UserProfileHub = ({ onNavigateToDiscover, onOpenHelp, onOpenTerms, 
       <ProfileCompletenessCard
         profile={profile}
         partnerPreferences={partnerPreferences}
-        onUpdateProfile={() => setIsEditingWizard(true)}
+        onUpdateProfile={() => {
+          setWizardInitialStep(1);
+          setIsEditingWizard(true);
+        }}
       />
+
+      {/* Astrological Alignment & Family Lineage Summary */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Vedic Astrological Alignment */}
+        <div className="bg-surface-card radius-card border border-main p-6 shadow-xs flex flex-col justify-between space-y-4">
+          <div>
+            <div className="flex items-center justify-between pb-3 border-b border-main">
+              <div className="flex items-center gap-2">
+                <Moon className="w-5 h-5 text-amber-500" />
+                <h2 className="font-serif font-bold text-main text-base">Kundali & Astrology</h2>
+              </div>
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                (profile.rashi || profile.nakshatra) ? 'text-emerald-500 bg-emerald-500/10' : 'text-zinc-400 bg-zinc-500/10'
+              }`}>
+                {(profile.rashi || profile.nakshatra) ? 'Vedic Aligned' : 'Yet to update'}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2.5 pt-4 text-xs">
+              <div className="bg-surface-ground p-3 radius-btn border border-main">
+                <span className="text-sub block text-[10px] uppercase font-semibold tracking-wider">Rashi (Zodiac)</span>
+                <span className={`font-bold block truncate mt-0.5 ${profile.rashi ? 'text-main' : 'text-sub italic font-normal'}`}>
+                  {profile.rashi || 'Yet to update'}
+                </span>
+              </div>
+              <div className="bg-surface-ground p-3 radius-btn border border-main">
+                <span className="text-sub block text-[10px] uppercase font-semibold tracking-wider">Nakshatra</span>
+                <span className={`font-bold block truncate mt-0.5 ${profile.nakshatra ? 'text-main' : 'text-sub italic font-normal'}`}>
+                  {profile.nakshatra || 'Yet to update'}
+                </span>
+              </div>
+              <div className="bg-surface-ground p-3 radius-btn border border-main">
+                <span className="text-sub block text-[10px] uppercase font-semibold tracking-wider">Manglik Status</span>
+                <span className={`font-bold block capitalize mt-0.5 ${profile.manglik ? 'text-main' : 'text-sub italic font-normal'}`}>
+                  {profile.manglik ? (profile.manglik === 'yes' ? 'Manglik' : profile.manglik === 'no' ? 'Non-Manglik' : 'Anshik Manglik') : 'Yet to update'}
+                </span>
+              </div>
+              <div className="bg-surface-ground p-3 radius-btn border border-main">
+                <span className="text-sub block text-[10px] uppercase font-semibold tracking-wider">Gana / Nadi</span>
+                <span className={`font-bold block truncate mt-0.5 ${(profile.gana || profile.nadi) ? 'text-main' : 'text-sub italic font-normal'}`}>
+                  {(profile.gana || profile.nadi) ? `${profile.gana || '—'} / ${profile.nadi || '—'}` : 'Yet to update'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              setWizardInitialStep(3);
+              setIsEditingWizard(true);
+            }}
+            className="w-full py-2.5 px-4 radius-btn text-xs font-bold flex items-center justify-center gap-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/20 transition-all active:scale-98"
+          >
+            <Pencil className="w-3.5 h-3.5" />
+            <span>Edit Kundali Details</span>
+          </button>
+        </div>
+
+        {/* Family Heritage & Roots */}
+        <div className="bg-surface-card radius-card border border-main p-6 shadow-xs flex flex-col justify-between space-y-4">
+          <div>
+            <div className="flex items-center justify-between pb-3 border-b border-main">
+              <div className="flex items-center gap-2">
+                <Users className="w-5 h-5 text-sky-blue" />
+                <h2 className="font-serif font-bold text-main text-base">Family Heritage & Roots</h2>
+              </div>
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                (profile.father_occupation || profile.native_place) ? 'text-emerald-500 bg-emerald-500/10' : 'text-zinc-400 bg-zinc-500/10'
+              }`}>
+                {(profile.father_occupation || profile.native_place) ? 'Heritage Added' : 'Yet to update'}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2.5 pt-4 text-xs">
+              <div className="bg-surface-ground p-3 radius-btn border border-main">
+                <span className="text-sub block text-[10px] uppercase font-semibold tracking-wider">Father's Work</span>
+                <span className={`font-bold block truncate mt-0.5 ${profile.father_occupation ? 'text-main' : 'text-sub italic font-normal'}`}>
+                  {profile.father_occupation || 'Yet to update'}
+                </span>
+              </div>
+              <div className="bg-surface-ground p-3 radius-btn border border-main">
+                <span className="text-sub block text-[10px] uppercase font-semibold tracking-wider">Mother's Work</span>
+                <span className={`font-bold block truncate mt-0.5 ${profile.mother_occupation ? 'text-main' : 'text-sub italic font-normal'}`}>
+                  {profile.mother_occupation || 'Yet to update'}
+                </span>
+              </div>
+              <div className="bg-surface-ground p-3 radius-btn border border-main">
+                <span className="text-sub block text-[10px] uppercase font-semibold tracking-wider">Native City / District</span>
+                <span className={`font-bold block truncate mt-0.5 ${profile.native_place ? 'text-main' : 'text-sub italic font-normal'}`}>
+                  {profile.native_place || 'Yet to update'}
+                </span>
+              </div>
+              <div className="bg-surface-ground p-3 radius-btn border border-main">
+                <span className="text-sub block text-[10px] uppercase font-semibold tracking-wider">Family Values</span>
+                <span className={`font-bold block truncate capitalize mt-0.5 ${profile.family_values ? 'text-main' : 'text-sub italic font-normal'}`}>
+                  {profile.family_values || 'Yet to update'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              setWizardInitialStep(3);
+              setIsEditingWizard(true);
+            }}
+            className="w-full py-2.5 px-4 radius-btn text-xs font-bold flex items-center justify-center gap-2 bg-sky-blue/10 hover:bg-sky-blue/20 text-sky-blue border border-sky-blue/20 transition-all active:scale-98"
+          >
+            <Pencil className="w-3.5 h-3.5" />
+            <span>Edit Family Details</span>
+          </button>
+        </div>
+      </div>
 
       {/* Merged Settings Sections */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

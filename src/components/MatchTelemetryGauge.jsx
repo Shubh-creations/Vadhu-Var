@@ -85,7 +85,8 @@ export const MatchTelemetryGauge = ({
             cx={center}
             cy={center}
             r={r1}
-            stroke="rgba(255, 255, 255, 0.06)"
+            stroke="currentColor"
+            className="text-zinc-200 dark:text-white/[0.08]"
             strokeWidth={strokeWidth}
             fill="none"
           />
@@ -93,7 +94,8 @@ export const MatchTelemetryGauge = ({
             cx={center}
             cy={center}
             r={r2}
-            stroke="rgba(255, 255, 255, 0.06)"
+            stroke="currentColor"
+            className="text-zinc-200 dark:text-white/[0.08]"
             strokeWidth={strokeWidth}
             fill="none"
           />
@@ -101,7 +103,8 @@ export const MatchTelemetryGauge = ({
             cx={center}
             cy={center}
             r={r3}
-            stroke="rgba(255, 255, 255, 0.06)"
+            stroke="currentColor"
+            className="text-zinc-200 dark:text-white/[0.08]"
             strokeWidth={strokeWidth}
             fill="none"
           />
@@ -167,11 +170,11 @@ export const MatchTelemetryGauge = ({
 
         {/* Center Display: Overall Match Score % */}
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-          <span className={`font-mono font-black tracking-tighter ${fontSize} text-white drop-shadow`}>
+          <span className={`font-mono font-black tracking-tighter ${fontSize} text-zinc-900 dark:text-white drop-shadow-sm`}>
             {score}%
           </span>
           {size !== 'sm' && (
-            <span className={`font-sans font-medium uppercase tracking-widest ${labelSize} text-gold-champagne`}>
+            <span className={`font-sans font-semibold uppercase tracking-widest ${labelSize} text-amber-700 dark:text-gold-champagne`}>
               MATCH
             </span>
           )}
@@ -180,37 +183,37 @@ export const MatchTelemetryGauge = ({
 
       {/* Interactive Bklit Glassmorphic Tooltip on Hover */}
       {(hovered || showDetails) && (
-        <div className="absolute -bottom-24 sm:-bottom-28 z-30 w-52 sm:w-60 p-3 radius-card glass-card border border-white/10 shadow-2xl space-y-1.5 text-left text-xs pointer-events-none animate-fade-in backdrop-blur-2xl">
-          <div className="flex items-center justify-between pb-1 border-b border-white/10">
-            <span className="font-serif font-bold text-white text-[11px] flex items-center gap-1">
-              <Sparkles className="w-3 h-3 text-gold-400" />
+        <div className="absolute -bottom-24 sm:-bottom-28 z-30 w-52 sm:w-60 p-3 radius-card glass-card border border-zinc-200 dark:border-white/10 shadow-2xl space-y-1.5 text-left text-xs pointer-events-none animate-fade-in backdrop-blur-2xl">
+          <div className="flex items-center justify-between pb-1 border-b border-zinc-200 dark:border-white/10">
+            <span className="font-serif font-bold text-zinc-900 dark:text-white text-[11px] flex items-center gap-1">
+              <Sparkles className="w-3 h-3 text-amber-600 dark:text-gold-400" />
               Telemetry Breakdown
             </span>
-            <span className="font-mono font-bold text-gold-400 text-[11px]">{score}% Overall</span>
+            <span className="font-mono font-bold text-amber-700 dark:text-gold-400 text-[11px]">{score}% Overall</span>
           </div>
 
           <div className="flex items-center justify-between text-[10px]">
-            <span className="text-zinc-400 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-gold-400" />
+            <span className="text-zinc-600 dark:text-zinc-400 flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 dark:bg-gold-400" />
               Values & Lifestyle
             </span>
-            <span className="font-mono font-semibold text-white">{valuesScore}%</span>
+            <span className="font-mono font-semibold text-zinc-900 dark:text-white">{valuesScore}%</span>
           </div>
 
           <div className="flex items-center justify-between text-[10px]">
-            <span className="text-zinc-400 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+            <span className="text-zinc-600 dark:text-zinc-400 flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400" />
               Career & Education
             </span>
-            <span className="font-mono font-semibold text-white">{careerScore}%</span>
+            <span className="font-mono font-semibold text-zinc-900 dark:text-white">{careerScore}%</span>
           </div>
 
           <div className="flex items-center justify-between text-[10px]">
-            <span className="text-zinc-400 flex items-center gap-1">
+            <span className="text-zinc-600 dark:text-zinc-400 flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-crimson-500" />
               Kundali Guna Milan
             </span>
-            <span className="font-mono font-semibold text-crimson-400">{kundaliScore}/36 Gunas</span>
+            <span className="font-mono font-semibold text-crimson-600 dark:text-crimson-400">{kundaliScore}/36 Gunas</span>
           </div>
         </div>
       )}

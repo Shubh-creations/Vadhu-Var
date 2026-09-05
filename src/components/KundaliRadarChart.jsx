@@ -106,7 +106,8 @@ export const KundaliRadarChart = ({
                 key={idx}
                 points={points.join(' ')}
                 fill="none"
-                stroke="rgba(255, 255, 255, 0.08)"
+                stroke="currentColor"
+                className="text-zinc-300/80 dark:text-white/10"
                 strokeWidth={idx === 4 ? 1.5 : 0.75}
                 strokeDasharray={idx < 4 ? '3 3' : 'none'}
               />
@@ -123,7 +124,8 @@ export const KundaliRadarChart = ({
                 y1={center}
                 x2={outer.x}
                 y2={outer.y}
-                stroke="rgba(255, 255, 255, 0.12)"
+                stroke="currentColor"
+                className="text-zinc-300 dark:text-white/15"
                 strokeWidth={1}
               />
             );
@@ -186,7 +188,7 @@ export const KundaliRadarChart = ({
                 textAnchor="middle"
                 dominantBaseline="central"
                 className={`text-[10px] font-sans transition-colors duration-200 cursor-pointer ${
-                  isHovered ? 'fill-gold-300 font-bold' : 'fill-zinc-400 font-medium'
+                  isHovered ? 'fill-amber-600 dark:fill-gold-300 font-bold' : 'fill-zinc-600 dark:fill-zinc-400 font-medium'
                 }`}
                 onMouseEnter={() => setActiveAxis(dim.key)}
                 onMouseLeave={() => setActiveAxis(null)}
@@ -208,31 +210,31 @@ export const KundaliRadarChart = ({
       </div>
 
       {/* Axis Detail & Explanation Banner */}
-      <div className="w-full mt-3 p-3 radius-btn bg-zinc-900/80 border border-white/[0.08] text-xs">
+      <div className="w-full mt-3 p-3 radius-btn bg-zinc-100 dark:bg-zinc-900/80 border border-zinc-200 dark:border-white/[0.08] text-xs">
         {activeAxis ? (
           (() => {
             const active = dimensions.find((d) => d.key === activeAxis);
             return (
               <div className="space-y-1 animate-fade-in">
                 <div className="flex items-center justify-between">
-                  <span className="font-serif font-bold text-white text-xs">{active.label}</span>
-                  <span className="font-mono font-bold text-gold-400">{active.score}% Match</span>
+                  <span className="font-serif font-bold text-zinc-900 dark:text-white text-xs">{active.label}</span>
+                  <span className="font-mono font-bold text-amber-700 dark:text-gold-400">{active.score}% Match</span>
                 </div>
-                <p className="text-[11px] text-zinc-400 leading-snug">{active.detail}</p>
+                <p className="text-[11px] text-zinc-600 dark:text-zinc-400 leading-snug">{active.detail}</p>
               </div>
             );
           })()
         ) : (
-          <div className="flex items-center justify-between text-[11px] text-zinc-400">
+          <div className="flex items-center justify-between text-[11px] text-zinc-600 dark:text-zinc-400">
             <span className="flex items-center gap-1.5">
-              <span className="w-2.5 h-1 bg-gold-400 rounded-full inline-block" />
+              <span className="w-2.5 h-1 bg-amber-500 dark:bg-gold-400 rounded-full inline-block" />
               Your Preferences
             </span>
             <span className="flex items-center gap-1.5">
               <span className="w-2.5 h-1 bg-crimson-500 rounded-full inline-block" />
               Candidate Profile
             </span>
-            <span className="text-[10px] text-zinc-500">Hover points to inspect</span>
+            <span className="text-[10px] text-zinc-500">Hover to inspect</span>
           </div>
         )}
       </div>

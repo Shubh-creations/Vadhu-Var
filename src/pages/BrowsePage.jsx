@@ -332,19 +332,19 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 relative z-10 text-white">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 relative z-10 text-zinc-900 dark:text-white">
       {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="font-serif text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
+            <h1 className="font-serif text-2xl sm:text-4xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
               {showShortlistedOnly ? t('shortlisted') : 'Discover Matches'}
             </h1>
-            <span className="px-2.5 py-0.5 radius-btn text-xs font-mono font-bold bg-gold-500/10 text-gold-400 border border-gold-500/20">
+            <span className="px-2.5 py-0.5 radius-btn text-xs font-mono font-bold bg-amber-500/10 text-amber-700 dark:text-gold-400 border border-amber-500/30 dark:border-gold-500/20">
               {filteredProfiles.length} Candidates
             </span>
           </div>
-          <p className="text-xs sm:text-sm text-zinc-400 mt-1 leading-relaxed">
+          <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 mt-1 leading-relaxed">
             {partnerPreferences
               ? 'Ranked by precision Bklit match compatibility against your saved criteria.'
               : 'Verified matrimonial candidates across Maharashtra and India.'}
@@ -354,28 +354,28 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
         {/* View Switcher, Sort Dropdown & Search Controls */}
         <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
           {/* Sort By Dropdown */}
-          <div className="flex items-center gap-1.5 glass-card border border-white/10 radius-btn px-3 py-2 shadow-sm">
-            <ArrowUpDown className="w-3.5 h-3.5 text-gold-400" />
+          <div className="flex items-center gap-1.5 glass-card border border-zinc-200 dark:border-white/10 radius-btn px-3 py-2 shadow-sm">
+            <ArrowUpDown className="w-3.5 h-3.5 text-amber-600 dark:text-gold-400" />
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="bg-transparent text-xs font-semibold text-zinc-200 outline-none cursor-pointer"
+              className="bg-transparent text-xs font-semibold text-zinc-800 dark:text-zinc-200 outline-none cursor-pointer"
               aria-label={t('sortBestMatch')}
             >
-              <option value="best_match" className="bg-zinc-950 text-white">Best Compatibility Score</option>
-              <option value="newest" className="bg-zinc-950 text-white">Recently Joined</option>
-              <option value="age_asc" className="bg-zinc-950 text-white">Age: Youngest First</option>
-              <option value="age_desc" className="bg-zinc-950 text-white">Age: Oldest First</option>
+              <option value="best_match" className="bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white">Best Compatibility Score</option>
+              <option value="newest" className="bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white">Recently Joined</option>
+              <option value="age_asc" className="bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white">Age: Youngest First</option>
+              <option value="age_desc" className="bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white">Age: Oldest First</option>
             </select>
           </div>
 
-          <div className="flex bg-zinc-900/90 p-1 radius-btn border border-white/10 flex-shrink-0">
+          <div className="flex bg-zinc-100 dark:bg-zinc-900/90 p-1 radius-btn border border-zinc-200 dark:border-white/10 flex-shrink-0">
             <button
               onClick={() => handleSwitchView('grid')}
               className={`flex items-center gap-1 px-3 py-1.5 radius-btn text-xs font-semibold transition-all ${
                 discoveryView === 'grid'
-                  ? 'bg-zinc-800 text-gold-300 shadow-xs'
-                  : 'text-zinc-400 hover:text-white'
+                  ? 'bg-white dark:bg-zinc-800 text-amber-700 dark:text-gold-300 shadow-xs'
+                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
               }`}
               title={t('viewGrid')}
             >
@@ -386,8 +386,8 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
               onClick={() => handleSwitchView('deck')}
               className={`flex items-center gap-1 px-3 py-1.5 radius-btn text-xs font-semibold transition-all ${
                 discoveryView === 'deck'
-                  ? 'bg-zinc-800 text-gold-300 shadow-xs'
-                  : 'text-zinc-400 hover:text-white'
+                  ? 'bg-white dark:bg-zinc-800 text-amber-700 dark:text-gold-300 shadow-xs'
+                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
               }`}
               title={t('viewDeck')}
             >
@@ -398,7 +398,7 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
 
           <button
             onClick={() => setFilterDrawerOpen(true)}
-            className="md:hidden flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2 radius-btn bg-gradient-to-r from-gold-500 to-amber-600 text-zinc-950 text-xs font-bold shadow-sm active:scale-95 transition-transform"
+            className="md:hidden flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2 radius-btn bg-gradient-to-r from-amber-500 to-amber-600 text-zinc-950 text-xs font-bold shadow-sm active:scale-95 transition-transform"
           >
             <SlidersHorizontal className="w-3.5 h-3.5" />
             <span>Filters</span>
@@ -414,12 +414,12 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
           placeholder="Search by candidate name, city, occupation, or education..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-10 pr-4 py-3 radius-btn text-xs sm:text-sm glass-card text-white border border-white/10 outline-none focus:border-gold-400 focus:ring-1 focus:ring-gold-400/30 shadow-md transition-colors placeholder:text-zinc-500"
+          className="w-full pl-10 pr-4 py-3 radius-btn text-xs sm:text-sm bg-white/90 dark:bg-zinc-900/80 text-zinc-900 dark:text-white border border-zinc-200 dark:border-white/10 outline-none focus:border-amber-500 dark:focus:border-gold-400 focus:ring-1 focus:ring-amber-500/30 shadow-sm dark:shadow-md transition-colors placeholder:text-zinc-400 dark:placeholder:text-zinc-500"
         />
         {searchQuery && (
           <button
             onClick={() => setSearchQuery('')}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
           >
             <X className="w-4 h-4" />
           </button>
@@ -431,36 +431,36 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
         /* Interactive Deck Mode */
         <div className="max-w-md mx-auto py-2 sm:py-4 space-y-4">
           {filteredProfiles.length === 0 ? (
-            <div className="glass-card radius-card border border-white/10 p-8 text-center space-y-4 shadow-xl">
-              <div className="w-14 h-14 rounded-full bg-gold-500/10 text-gold-400 flex items-center justify-center mx-auto">
+            <div className="glass-card radius-card border border-zinc-200 dark:border-white/10 p-8 text-center space-y-4 shadow-xl">
+              <div className="w-14 h-14 rounded-full bg-amber-500/10 text-amber-600 dark:text-gold-400 flex items-center justify-center mx-auto">
                 <Sparkles className="w-7 h-7" />
               </div>
-              <h3 className="font-serif font-bold text-white text-lg">No Matching Profiles</h3>
-              <p className="text-xs text-zinc-400">Try adjusting your filter preferences or reset filters.</p>
+              <h3 className="font-serif font-bold text-zinc-900 dark:text-white text-lg">No Matching Profiles</h3>
+              <p className="text-xs text-zinc-600 dark:text-zinc-400">Try adjusting your filter preferences or reset filters.</p>
               <button
                 onClick={handleResetFilters}
-                className="px-6 py-2.5 radius-btn bg-gradient-to-r from-gold-500 to-amber-600 text-zinc-950 font-bold text-xs shadow-md"
+                className="px-6 py-2.5 radius-btn bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-zinc-950 font-bold text-xs shadow-md"
               >
                 Reset All Filters
               </button>
             </div>
           ) : deckIndex >= filteredProfiles.length ? (
-            <div className="glass-card radius-card border border-white/10 p-8 text-center space-y-4 shadow-xl">
-              <div className="w-14 h-14 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center mx-auto">
+            <div className="glass-card radius-card border border-zinc-200 dark:border-white/10 p-8 text-center space-y-4 shadow-xl">
+              <div className="w-14 h-14 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto">
                 <CheckCircle2 className="w-7 h-7" />
               </div>
-              <h3 className="font-serif font-bold text-white text-xl">You're All Caught Up!</h3>
-              <p className="text-xs text-zinc-400">You have reviewed all {filteredProfiles.length} candidates in this batch.</p>
+              <h3 className="font-serif font-bold text-zinc-900 dark:text-white text-xl">You're All Caught Up!</h3>
+              <p className="text-xs text-zinc-600 dark:text-zinc-400">You have reviewed all {filteredProfiles.length} candidates in this batch.</p>
               <div className="flex flex-col sm:flex-row gap-2 justify-center pt-2">
                 <button
                   onClick={() => setDeckIndex(0)}
-                  className="px-5 py-2.5 radius-btn bg-gradient-to-r from-gold-500 to-amber-600 text-zinc-950 font-bold text-xs"
+                  className="px-5 py-2.5 radius-btn bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-zinc-950 font-bold text-xs"
                 >
                   Review From Start
                 </button>
                 <button
                   onClick={() => handleSwitchView('grid')}
-                  className="px-5 py-2.5 radius-btn glass-card text-white border border-white/10 text-xs font-semibold"
+                  className="px-5 py-2.5 radius-btn glass-card text-zinc-800 dark:text-white border border-zinc-200 dark:border-white/10 text-xs font-semibold hover:bg-zinc-100 dark:hover:bg-white/5 transition-colors"
                 >
                   Switch to Grid View
                 </button>
@@ -634,21 +634,21 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
                 ))}
               </div>
             ) : (
-              <div className="glass-card radius-card border border-white/10 p-8 sm:p-14 text-center my-2 space-y-4 shadow-xl">
-                <div className="w-14 h-14 rounded-full bg-gold-500/10 text-gold-400 flex items-center justify-center mx-auto">
+              <div className="glass-card radius-card border border-zinc-200 dark:border-white/10 p-8 sm:p-14 text-center my-2 space-y-4 shadow-xl">
+                <div className="w-14 h-14 rounded-full bg-amber-500/10 text-amber-600 dark:text-gold-400 flex items-center justify-center mx-auto">
                   <UserPlus className="w-7 h-7" />
                 </div>
                 <div className="space-y-1 max-w-md mx-auto">
-                  <h3 className="font-serif font-bold text-white text-lg sm:text-xl">
+                  <h3 className="font-serif font-bold text-zinc-900 dark:text-white text-lg sm:text-xl">
                     No Matching Profiles Found
                   </h3>
-                  <p className="text-xs text-zinc-400 leading-relaxed">
+                  <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
                     Try broadening your age, location, or income filters to view more candidates.
                   </p>
                 </div>
                 <button
                   onClick={handleResetFilters}
-                  className="px-6 py-2.5 radius-btn bg-gradient-to-r from-gold-500 to-amber-600 text-zinc-950 font-bold text-xs shadow-md"
+                  className="px-6 py-2.5 radius-btn bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-zinc-950 font-bold text-xs shadow-md"
                 >
                   Reset All Filters
                 </button>

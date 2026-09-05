@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ShieldCheck, User, Briefcase, GraduationCap, FileText, CheckCircle2, ArrowRight, ArrowLeft, Camera, IndianRupee, Crop, AlertCircle, HeartHandshake, Baby, Clock, Sparkles, Loader2, Image, Trash2, Plus } from 'lucide-react';
+import { ShieldCheck, User, Briefcase, GraduationCap, FileText, CheckCircle2, ArrowRight, ArrowLeft, Camera, IndianRupee, Crop, AlertCircle, HeartHandshake, Baby, Clock, Sparkles, Loader2, Image, Trash2, Plus, Moon, Users } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -9,12 +9,26 @@ import ImageCropperModal from '../components/ImageCropperModal';
 import { compressImage } from '../lib/imageCompressor';
 import { performOcrPreCheck } from '../lib/ocrScanner';
 
-export const ProfileWizardPage = ({ onComplete }) => {
+const VEDIC_RASHIS = [
+  'Mesh (Aries)', 'Vrishabh (Taurus)', 'Mithun (Gemini)', 'Kark (Cancer)',
+  'Simha (Leo)', 'Kanya (Virgo)', 'Tula (Libra)', 'Vrishchik (Scorpio)',
+  'Dhanu (Sagittarius)', 'Makar (Capricorn)', 'Kumbh (Aquarius)', 'Meen (Pisces)'
+];
+
+const VEDIC_NAKSHATRAS = [
+  'Ashwini', 'Bharani', 'Krittika', 'Rohini', 'Mrigashirsha', 'Ardra',
+  'Punarvasu', 'Pushya', 'Ashlesha', 'Magha', 'Purva Phalguni', 'Uttara Phalguni',
+  'Hasta', 'Chitra', 'Swati', 'Vishakha', 'Anuradha', 'Jyeshtha',
+  'Mula', 'Purva Ashadha', 'Uttara Ashadha', 'Shravana', 'Dhanishta', 'Shatabhisha',
+  'Purva Bhadrapada', 'Uttara Bhadrapada', 'Revati'
+];
+
+export const ProfileWizardPage = ({ onComplete, initialStep = 1 }) => {
   const { user, profile: existingProfile, partnerPreferences: existingPref, saveProfile, savePartnerPreferences } = useAuth();
   const { submitVerificationRequest, addOrUpdateProfile, refreshProfiles } = useData();
   const { t } = useLanguage();
 
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(initialStep || 1);
   const [loading, setLoading] = useState(false);
   const [photoUploading, setPhotoUploading] = useState(false);
   const [photoError, setPhotoError] = useState('');
@@ -52,6 +66,17 @@ export const ProfileWizardPage = ({ onComplete }) => {
     bio: '',
     photo_url: '',
     photo_url_2: '',
+    // Astrological & Kundali Alignment
+    rashi: '',
+    nakshatra: '',
+    manglik: 'non_manglik',
+    gana: '',
+    nadi: '',
+    // Family Heritage & Lineage
+    father_occupation: '',
+    mother_occupation: '',
+    native_place: '',
+    family_values: 'moderate',
     id_document_url: '',
     family_consent_document_url: '',
     career_proof_url: '' // Optional
@@ -88,6 +113,15 @@ export const ProfileWizardPage = ({ onComplete }) => {
         bio: existingProfile.bio || '',
         photo_url: existingProfile.photo_url || '',
         photo_url_2: existingProfile.photo_url_2 || existingProfile.secondary_photo_url || '',
+        rashi: existingProfile.rashi || '',
+        nakshatra: existingProfile.nakshatra || '',
+        manglik: existingProfile.manglik || 'non_manglik',
+        gana: existingProfile.gana || '',
+        nadi: existingProfile.nadi || '',
+        father_occupation: existingProfile.father_occupation || '',
+        mother_occupation: existingProfile.mother_occupation || '',
+        native_place: existingProfile.native_place || '',
+        family_values: existingProfile.family_values || 'moderate',
         has_children: existingProfile.has_children || 'no',
         children_count: existingProfile.children_count || '',
         children_living_status: existingProfile.children_living_status || 'living_together'
@@ -961,6 +995,159 @@ export const ProfileWizardPage = ({ onComplete }) => {
                       </p>
                     </div>
                   </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Astrological & Kundali Alignment Matrix */}
+            <div className="p-4 sm:p-5 border border-main radius-card bg-surface-ground space-y-4">
+              <div className="flex items-center justify-between pb-2 border-b border-main/60">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-crimson-500/10 text-crimson-500 dark:text-crimson-400 flex items-center justify-center border border-crimson-500/20">
+                    <Moon className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-main">Astrological & Kundali Alignment</label>
+                    <p className="text-[11px] text-sub">Used to calculate genuine Guna Milan and astrological compatibility.</p>
+                  </div>
+                </div>
+                <span className="text-[10px] text-sub bg-surface-card px-2 py-0.5 rounded border border-main">Optional</span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-main mb-1">Rashi / Moon Sign</label>
+                  <select
+                    value={formData.rashi}
+                    onChange={(e) => handleChange('rashi', e.target.value)}
+                    className="w-full px-3.5 py-2.5 border border-main radius-btn text-sm bg-surface-card text-main outline-none focus:ring-1 focus:ring-sky-blue"
+                  >
+                    <option value="">Select Rashi (Optional)</option>
+                    {VEDIC_RASHIS.map((r) => (
+                      <option key={r} value={r}>{r}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-main mb-1">Nakshatra</label>
+                  <select
+                    value={formData.nakshatra}
+                    onChange={(e) => handleChange('nakshatra', e.target.value)}
+                    className="w-full px-3.5 py-2.5 border border-main radius-btn text-sm bg-surface-card text-main outline-none focus:ring-1 focus:ring-sky-blue"
+                  >
+                    <option value="">Select Nakshatra (Optional)</option>
+                    {VEDIC_NAKSHATRAS.map((n) => (
+                      <option key={n} value={n}>{n}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-main mb-1">Manglik Status</label>
+                  <select
+                    value={formData.manglik}
+                    onChange={(e) => handleChange('manglik', e.target.value)}
+                    className="w-full px-3.5 py-2.5 border border-main radius-btn text-sm bg-surface-card text-main outline-none focus:ring-1 focus:ring-sky-blue"
+                  >
+                    <option value="Non-Manglik">Non-Manglik</option>
+                    <option value="Manglik">Manglik</option>
+                    <option value="Anshik Manglik">Anshik Manglik (Partial)</option>
+                    <option value="Don't Know">Don't Know</option>
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-xs font-semibold text-main mb-1">Gana</label>
+                    <select
+                      value={formData.gana}
+                      onChange={(e) => handleChange('gana', e.target.value)}
+                      className="w-full px-3 py-2.5 border border-main radius-btn text-xs bg-surface-card text-main outline-none focus:ring-1 focus:ring-sky-blue"
+                    >
+                      <option value="">Select Gana</option>
+                      <option value="Deva">Deva</option>
+                      <option value="Manushya">Manushya</option>
+                      <option value="Rakshasa">Rakshasa</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-main mb-1">Nadi</label>
+                    <select
+                      value={formData.nadi}
+                      onChange={(e) => handleChange('nadi', e.target.value)}
+                      className="w-full px-3 py-2.5 border border-main radius-btn text-xs bg-surface-card text-main outline-none focus:ring-1 focus:ring-sky-blue"
+                    >
+                      <option value="">Select Nadi</option>
+                      <option value="Adi">Adi</option>
+                      <option value="Madhya">Madhya</option>
+                      <option value="Antya">Antya</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Family Heritage & Lineage Matrix */}
+            <div className="p-4 sm:p-5 border border-main radius-card bg-surface-ground space-y-4">
+              <div className="flex items-center justify-between pb-2 border-b border-main/60">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 dark:text-gold-400 flex items-center justify-center border border-amber-500/20">
+                    <Users className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-main">Family Heritage & Lineage</label>
+                    <p className="text-[11px] text-sub">Ancestral roots, family occupation, and culture.</p>
+                  </div>
+                </div>
+                <span className="text-[10px] text-sub bg-surface-card px-2 py-0.5 rounded border border-main">Optional</span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-main mb-1">Father's Occupation</label>
+                  <input
+                    type="text"
+                    value={formData.father_occupation}
+                    onChange={(e) => handleChange('father_occupation', e.target.value)}
+                    placeholder="e.g. Business, Government Service, Retired..."
+                    className="w-full px-3.5 py-2.5 border border-main radius-btn text-sm bg-surface-card text-main outline-none focus:ring-1 focus:ring-sky-blue"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-main mb-1">Mother's Occupation</label>
+                  <input
+                    type="text"
+                    value={formData.mother_occupation}
+                    onChange={(e) => handleChange('mother_occupation', e.target.value)}
+                    placeholder="e.g. Homemaker, Professor, Business..."
+                    className="w-full px-3.5 py-2.5 border border-main radius-btn text-sm bg-surface-card text-main outline-none focus:ring-1 focus:ring-sky-blue"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-main mb-1">Native City / District</label>
+                  <input
+                    type="text"
+                    value={formData.native_place}
+                    onChange={(e) => handleChange('native_place', e.target.value)}
+                    placeholder="e.g. Pune, Kolhapur, Bijapur, Nashik..."
+                    className="w-full px-3.5 py-2.5 border border-main radius-btn text-sm bg-surface-card text-main outline-none focus:ring-1 focus:ring-sky-blue"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-main mb-1">Family Values</label>
+                  <select
+                    value={formData.family_values}
+                    onChange={(e) => handleChange('family_values', e.target.value)}
+                    className="w-full px-3.5 py-2.5 border border-main radius-btn text-sm bg-surface-card text-main outline-none focus:ring-1 focus:ring-sky-blue"
+                  >
+                    <option value="traditional">Traditional</option>
+                    <option value="moderate">Moderate</option>
+                    <option value="liberal">Liberal</option>
+                  </select>
                 </div>
               </div>
             </div>

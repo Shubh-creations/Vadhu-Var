@@ -200,45 +200,45 @@ export const ProfileDiscoveryCard = ({
         {/* 2. Content & Telemetry Section */}
         <div className="p-4 sm:p-5 space-y-3.5">
           {/* Profession & Compatibility Row */}
-          <div className="flex items-center justify-between text-xs pb-2 border-b border-white/[0.08]">
-            <div className="flex items-center gap-1.5 text-zinc-200 truncate font-semibold">
-              <Briefcase className="w-3.5 h-3.5 text-gold-400 flex-shrink-0" />
-              <span className="truncate">{profile.occupation || 'Doctor / Professional'}</span>
+          <div className="flex items-center justify-between text-xs pb-2 border-b border-zinc-200 dark:border-white/[0.08]">
+            <div className="flex items-center gap-1.5 text-zinc-800 dark:text-zinc-200 truncate font-semibold">
+              <Briefcase className="w-3.5 h-3.5 text-amber-600 dark:text-gold-400 flex-shrink-0" />
+              <span className="truncate">{profile.occupation || 'Professional'}</span>
             </div>
-            <div className="flex items-center gap-1 font-mono font-bold text-gold-400 flex-shrink-0">
-              <Sparkles className="w-3.5 h-3.5 text-gold-400" />
+            <div className="flex items-center gap-1 font-mono font-bold text-amber-700 dark:text-gold-400 flex-shrink-0">
+              <Sparkles className="w-3.5 h-3.5 text-amber-600 dark:text-gold-400" />
               <span>{matchScore}% Match</span>
             </div>
           </div>
 
           {/* Telemetry Attribute Matrix (4-Grid Pills with Monospace Numerics) */}
           <div className="grid grid-cols-2 gap-2 text-xs">
-            <div className="p-2 radius-btn bg-zinc-900/80 border border-white/[0.06] flex items-center gap-1.5 truncate">
+            <div className="p-2 radius-btn bg-zinc-100 dark:bg-zinc-900/80 border border-zinc-200 dark:border-white/[0.06] flex items-center gap-1.5 truncate">
               <GraduationCap className="w-3.5 h-3.5 text-zinc-400 flex-shrink-0" />
-              <span className="text-zinc-300 truncate">{profile.education_level || 'Post Graduate'}</span>
+              <span className="text-zinc-800 dark:text-zinc-300 truncate">{profile.education_level || 'Not Specified'}</span>
             </div>
 
-            <div className="p-2 radius-btn bg-zinc-900/80 border border-gold-400/20 flex items-center gap-1.5 truncate">
-              <IndianRupee className="w-3.5 h-3.5 text-gold-400 flex-shrink-0" />
-              <span className="font-mono font-bold text-gold-300 truncate">
+            <div className="p-2 radius-btn bg-zinc-100 dark:bg-zinc-900/80 border border-amber-500/20 dark:border-gold-400/20 flex items-center gap-1.5 truncate">
+              <IndianRupee className="w-3.5 h-3.5 text-amber-600 dark:text-gold-400 flex-shrink-0" />
+              <span className="font-mono font-bold text-amber-800 dark:text-gold-300 truncate">
                 {profile.annual_income_lpa ? `${profile.annual_income_lpa} LPA` : 'Confidential'}
               </span>
             </div>
 
-            <div className="p-2 radius-btn bg-zinc-900/80 border border-white/[0.06] flex items-center gap-1.5 truncate">
+            <div className="p-2 radius-btn bg-zinc-100 dark:bg-zinc-900/80 border border-zinc-200 dark:border-white/[0.06] flex items-center gap-1.5 truncate">
               <Ruler className="w-3.5 h-3.5 text-zinc-400 flex-shrink-0" />
-              <span className="font-mono text-zinc-300 truncate">{profile.height_cm ? `${profile.height_cm} cm` : '5 ft 6 in'}</span>
+              <span className="font-mono text-zinc-800 dark:text-zinc-300 truncate">{profile.height_cm ? `${profile.height_cm} cm` : 'Not specified'}</span>
             </div>
 
-            <div className="p-2 radius-btn bg-zinc-900/80 border border-white/[0.06] flex items-center gap-1.5 truncate">
-              <Utensils className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
-              <span className="text-zinc-300 capitalize truncate">{profile.diet || 'Vegetarian'}</span>
+            <div className="p-2 radius-btn bg-zinc-100 dark:bg-zinc-900/80 border border-zinc-200 dark:border-white/[0.06] flex items-center gap-1.5 truncate">
+              <Utensils className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
+              <span className="text-zinc-800 dark:text-zinc-300 capitalize truncate">{profile.diet || 'Not specified'}</span>
             </div>
           </div>
 
           {/* Quick Bio snippet if available in Deck Mode */}
           {isDeckView && profile.bio && (
-            <p className="text-xs text-zinc-400 line-clamp-2 leading-relaxed italic pt-1">
+            <p className="text-xs text-zinc-600 dark:text-zinc-400 line-clamp-2 leading-relaxed italic pt-1">
               "{profile.bio}"
             </p>
           )}
