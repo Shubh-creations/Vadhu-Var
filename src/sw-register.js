@@ -1,16 +1,14 @@
 /**
- * Production Service Worker Registration & Update Event Dispatcher
+ * Production Service Worker Auto-Update & Cache Sync Engine
  */
 export function registerServiceWorker() {
+  if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return;
+
   if (import.meta.env.DEV) {
-    // In local development mode, automatically unregister old service workers & clear caches
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then((registrations) => {
-        for (let registration of registrations) {
-          registration.unregister();
-        }
-      });
-    }
+    // In local dev, always unregister service workers
+    navigator.serviceWorker.getRegistrations().then((registrations) => {
+      for (let reg of registrations) reg.unregister();
+    });
     if ('caches' in window) {
       caches.keys().then((names) => {
         for (let name of names) caches.delete(name);
@@ -19,11 +17,14 @@ export function registerServiceWorker() {
     return;
   }
 
-  if ('serviceWorker' in navigator && import.meta.env.PROD) {
+  if (import.meta.env.PROD) {
     window.addEventListener('load', () => {
       navigator.serviceWorker
         .register('/sw.js')
         .then((registration) => {
+          // Immediately check for updates
+          registration.update();
+
           registration.onupdatefound = () => {
             const installingWorker = registration.installing;
             if (installingWorker == null) return;
@@ -31,7 +32,10 @@ export function registerServiceWorker() {
             installingWorker.onstatechange = () => {
               if (installingWorker.state === 'installed') {
                 if (navigator.serviceWorker.controller) {
-                  // New SW version is ready and waiting
+                  // Automatically activate the latest deployment
+                  if (registration.waiting) {
+                    registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+                  }
                   window.dispatchEvent(new CustomEvent('swUpdateAvailable', { detail: registration }));
                 }
               }
@@ -41,6 +45,15 @@ export function registerServiceWorker() {
         .catch((error) => {
           console.error('Service Worker registration failed:', error);
         });
+    });
+
+    // Auto-reload smoothly when new worker takes control
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!refreshing) {
+        refreshing = true;
+        window.location.reload();
+      }
     });
   }
 }

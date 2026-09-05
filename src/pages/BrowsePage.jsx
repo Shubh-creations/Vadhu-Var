@@ -120,14 +120,10 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
       }
 
       // 6. Education Filter
-      if (appliedFilters.education?.trim() && appliedFilters.education !== 'All Education') {
+      if (appliedFilters.education && appliedFilters.education !== 'All Education') {
         const targetEdu = appliedFilters.education.trim().toLowerCase();
         const pEdu = (p.education_level || '').trim().toLowerCase();
-        const isEduMatch = pEdu.includes(targetEdu) || targetEdu.includes(pEdu) ||
-          (targetEdu.includes('b.tech') && (pEdu.includes('b.e') || pEdu.includes('engineering') || pEdu.includes('tech'))) ||
-          (targetEdu.includes('mbbs') && (pEdu.includes('doctor') || pEdu.includes('medical') || pEdu.includes('md'))) ||
-          (targetEdu.includes('graduate') && pEdu.includes('bachelor'));
-        if (!isEduMatch) return false;
+        if (!pEdu.includes(targetEdu)) return false;
       }
 
       // 7. Diet Filter
@@ -146,23 +142,29 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
 
       // 9. Income Bracket Filter
       if (appliedFilters.incomeBracket && appliedFilters.incomeBracket !== 'all') {
-        const income = Number(p.annual_income_lpa) || 0;
-        if (appliedFilters.incomeBracket === '2.5-5' && (income < 2.5 || income > 5)) return false;
-        if (appliedFilters.incomeBracket === '5-10' && (income < 5 || income > 10)) return false;
-        if (appliedFilters.incomeBracket === '10-15' && (income < 10 || income > 15)) return false;
-        if (appliedFilters.incomeBracket === '15-25' && (income < 15 || income > 25)) return false;
-        if (appliedFilters.incomeBracket === '25-50' && (income < 25 || income > 50)) return false;
-        if (appliedFilters.incomeBracket === '50+' && income < 50) return false;
+        const pIncome = parseFloat(p.annual_income_lpa) || 0;
+        const [minStr, maxStr] = appliedFilters.incomeBracket.split('-');
+        const minVal = parseFloat(minStr) || 0;
+        const maxVal = maxStr ? parseFloat(maxStr) : Infinity;
+
+        if (pIncome < minVal || pIncome > maxVal) {
+          if (!p.annual_income_lpa && appliedFilters.incomeBracket !== 'all') {
+            return false;
+          }
+        }
       }
 
-      // 10. Search Query Filter (Matches Name, City, State, Occupation, Education, Caste, Bio)
+      // 10. Text Search Query
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim();
-        const searchableFields = [
-          p.full_name, p.city, p.state, p.occupation, p.education_level, p.caste, p.sub_caste, p.bio
-        ].filter(Boolean).map(f => String(f).toLowerCase());
-        const matchesAny = searchableFields.some(field => field.includes(q));
-        if (!matchesAny) {
+        const nameMatch = (p.full_name || '').toLowerCase().includes(q);
+        const cityMatch = (p.city || '').toLowerCase().includes(q);
+        const stateMatch = (p.state || '').toLowerCase().includes(q);
+        const occMatch = (p.occupation || '').toLowerCase().includes(q);
+        const eduMatch = (p.education_level || '').toLowerCase().includes(q);
+        const dietMatch = (p.diet || '').toLowerCase().includes(q);
+
+        if (!nameMatch && !cityMatch && !stateMatch && !occMatch && !eduMatch && !dietMatch) {
           return false;
         }
       }
@@ -170,12 +172,18 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
       return true;
     });
 
-    // Ranking & Sorting
-    return [...matching].sort((a, b) => {
+    // Score Calculation & Sorting
+    const scoredProfiles = matching.map(candidate => {
+      const matchScore = calculateCompatibilityEstimate(myProfile, candidate, partnerPreferences);
+      return {
+        ...candidate,
+        _matchScore: matchScore
+      };
+    });
+
+    return scoredProfiles.sort((a, b) => {
       if (sortBy === 'best_match') {
-        const scoreA = calculateCompatibilityEstimate(myProfile, a, partnerPreferences);
-        const scoreB = calculateCompatibilityEstimate(myProfile, b, partnerPreferences);
-        return scoreB - scoreA;
+        return (b._matchScore || 0) - (a._matchScore || 0);
       }
       if (sortBy === 'newest') {
         const timeA = new Date(a.created_at || 0).getTime();
@@ -268,7 +276,7 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
     return tags;
   }, [appliedFilters, searchQuery, t]);
 
-  // 4. Effects (Running after declarations)
+  // 4. Effects
   useEffect(() => {
     if (user && !showShortlistedOnly) {
       const seen = localStorage.getItem('vadhu_var_discover_intro_seen');
@@ -278,19 +286,16 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
     }
   }, [user, showShortlistedOnly]);
 
-  // Reset deckIndex when filters or search change
   useEffect(() => {
     setDeckIndex(0);
   }, [appliedFilters, searchQuery, sortBy]);
 
-  // Clamp deckIndex if candidate list shrinks
   useEffect(() => {
     if (deckIndex > 0 && deckIndex >= filteredProfiles.length) {
       setDeckIndex(Math.max(0, filteredProfiles.length - 1));
     }
   }, [filteredProfiles.length, deckIndex]);
 
-  // Keyboard navigation for Deck mode
   useEffect(() => {
     if (discoveryView !== 'deck') return;
     const handleKeyDown = (e) => {
@@ -304,7 +309,6 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [discoveryView, filteredProfiles.length]);
 
-  // 5. Touch Handlers
   const handleTouchStart = (e) => {
     setTouchEnd(null);
     setTouchStart(e.targetTouches[0].clientX);
@@ -328,94 +332,94 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 relative z-10 text-white">
       {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="font-serif text-2xl sm:text-3xl font-extrabold text-main">
-              {showShortlistedOnly ? t('shortlisted') : t('discoverTitle')}
+          <div className="flex items-center gap-3">
+            <h1 className="font-serif text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
+              {showShortlistedOnly ? t('shortlisted') : 'Discover Matches'}
             </h1>
-            <span className="text-xs text-sub font-normal">
-              ({filteredProfiles.length} {t('candidates')})
+            <span className="px-2.5 py-0.5 radius-btn text-xs font-mono font-bold bg-gold-500/10 text-gold-400 border border-gold-500/20">
+              {filteredProfiles.length} Candidates
             </span>
           </div>
-          <p className="text-xs sm:text-sm text-sub mt-1">
+          <p className="text-xs sm:text-sm text-zinc-400 mt-1 leading-relaxed">
             {partnerPreferences
-              ? t('discoverSubtitleRanked')
-              : t('discoverSubtitle')}
+              ? 'Ranked by precision Bklit match compatibility against your saved criteria.'
+              : 'Verified matrimonial candidates across Maharashtra and India.'}
           </p>
         </div>
 
         {/* View Switcher, Sort Dropdown & Search Controls */}
         <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
           {/* Sort By Dropdown */}
-          <div className="flex items-center gap-1.5 bg-surface-card border border-main radius-btn px-2.5 py-1.5 shadow-xs">
-            <ArrowUpDown className="w-3.5 h-3.5 text-sky-blue" />
+          <div className="flex items-center gap-1.5 glass-card border border-white/10 radius-btn px-3 py-2 shadow-sm">
+            <ArrowUpDown className="w-3.5 h-3.5 text-gold-400" />
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="bg-transparent text-xs font-semibold text-main outline-none cursor-pointer"
+              className="bg-transparent text-xs font-semibold text-zinc-200 outline-none cursor-pointer"
               aria-label={t('sortBestMatch')}
             >
-              <option value="best_match" className="bg-surface-card dark:bg-[#12151c] text-main dark:text-white">{t('sortBestMatch')}</option>
-              <option value="newest" className="bg-surface-card dark:bg-[#12151c] text-main dark:text-white">{t('sortRecentlyJoined')}</option>
-              <option value="age_asc" className="bg-surface-card dark:bg-[#12151c] text-main dark:text-white">{t('sortAgeLowHigh')}</option>
-              <option value="age_desc" className="bg-surface-card dark:bg-[#12151c] text-main dark:text-white">{t('sortAgeHighLow')}</option>
+              <option value="best_match" className="bg-zinc-950 text-white">Best Compatibility Score</option>
+              <option value="newest" className="bg-zinc-950 text-white">Recently Joined</option>
+              <option value="age_asc" className="bg-zinc-950 text-white">Age: Youngest First</option>
+              <option value="age_desc" className="bg-zinc-950 text-white">Age: Oldest First</option>
             </select>
           </div>
 
-          <div className="flex bg-surface-ground p-0.5 sm:p-1 radius-btn border border-main flex-shrink-0">
+          <div className="flex bg-zinc-900/90 p-1 radius-btn border border-white/10 flex-shrink-0">
             <button
               onClick={() => handleSwitchView('grid')}
-              className={`flex items-center gap-1 px-2.5 sm:px-3 py-1.5 radius-btn text-xs font-medium transition-all ${
+              className={`flex items-center gap-1 px-3 py-1.5 radius-btn text-xs font-semibold transition-all ${
                 discoveryView === 'grid'
-                  ? 'bg-surface-card text-main shadow-xs font-bold'
-                  : 'text-sub hover:text-main'
+                  ? 'bg-zinc-800 text-gold-300 shadow-xs'
+                  : 'text-zinc-400 hover:text-white'
               }`}
               title={t('viewGrid')}
             >
               <Grid className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">{t('viewGrid')}</span>
+              <span className="hidden sm:inline">Grid</span>
             </button>
             <button
               onClick={() => handleSwitchView('deck')}
-              className={`flex items-center gap-1 px-2.5 sm:px-3 py-1.5 radius-btn text-xs font-medium transition-all ${
+              className={`flex items-center gap-1 px-3 py-1.5 radius-btn text-xs font-semibold transition-all ${
                 discoveryView === 'deck'
-                  ? 'bg-surface-card text-main shadow-xs font-bold'
-                  : 'text-sub hover:text-main'
+                  ? 'bg-zinc-800 text-gold-300 shadow-xs'
+                  : 'text-zinc-400 hover:text-white'
               }`}
               title={t('viewDeck')}
             >
               <Layers className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">{t('viewDeck')}</span>
+              <span className="hidden sm:inline">Deck</span>
             </button>
           </div>
 
           <button
             onClick={() => setFilterDrawerOpen(true)}
-            className="md:hidden flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2 radius-btn bg-sky-blue text-white text-xs font-bold shadow-xs active:scale-95 transition-transform"
+            className="md:hidden flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2 radius-btn bg-gradient-to-r from-gold-500 to-amber-600 text-zinc-950 text-xs font-bold shadow-sm active:scale-95 transition-transform"
           >
             <SlidersHorizontal className="w-3.5 h-3.5" />
-            <span>{t('filterTitle')}</span>
+            <span>Filters</span>
           </button>
         </div>
       </div>
 
-      {/* Full-Width Search Input */}
+      {/* Search Input */}
       <div className="mb-6 relative">
-        <Search className="w-4 h-4 text-sub absolute left-3.5 top-1/2 -translate-y-1/2" />
+        <Search className="w-4 h-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
         <input
           type="text"
-          placeholder={t('searchPlaceholder')}
+          placeholder="Search by candidate name, city, occupation, or education..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-10 pr-4 py-2.5 radius-btn text-xs sm:text-sm bg-surface-card text-main border border-main outline-none focus:border-sky-blue focus:ring-1 focus:ring-sky-blue shadow-xs transition-colors"
+          className="w-full pl-10 pr-4 py-3 radius-btn text-xs sm:text-sm glass-card text-white border border-white/10 outline-none focus:border-gold-400 focus:ring-1 focus:ring-gold-400/30 shadow-md transition-colors placeholder:text-zinc-500"
         />
         {searchQuery && (
           <button
             onClick={() => setSearchQuery('')}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-sub hover:text-main"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white"
           >
             <X className="w-4 h-4" />
           </button>
@@ -426,102 +430,56 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
       {discoveryView === 'deck' ? (
         /* Interactive Deck Mode */
         <div className="max-w-md mx-auto py-2 sm:py-4 space-y-4">
-          {/* Active Filter Chips Bar */}
-          {activeFilterTags.length > 0 && (
-            <div className="flex flex-wrap items-center gap-1.5 p-2.5 bg-surface-card radius-card border border-main text-xs shadow-2xs animate-fade-in">
-              <span className="text-[11px] font-bold text-sub flex items-center gap-1 mr-1">
-                <Filter className="w-3 h-3 text-sky-blue" />
-                <span>Filters:</span>
-              </span>
-              {activeFilterTags.map((tag) => (
-                <span
-                  key={tag.key}
-                  className="inline-flex items-center gap-1 px-2 py-0.5 radius-btn bg-surface-ground border border-main text-main font-semibold shadow-2xs text-[11px]"
-                >
-                  <span>{tag.label}</span>
-                  <button
-                    type="button"
-                    onClick={tag.onRemove}
-                    className="text-sub hover:text-rose-500 transition-colors p-0.5"
-                    title="Remove filter"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </span>
-              ))}
-              <button
-                type="button"
-                onClick={handleResetFilters}
-                className="text-[11px] font-bold text-rose-600 dark:text-rose-400 hover:underline ml-auto pl-1"
-              >
-                Clear All
-              </button>
-            </div>
-          )}
-
           {filteredProfiles.length === 0 ? (
-            <div className="bg-surface-card radius-card border border-main p-8 text-center space-y-4 shadow-sm">
-              <h3 className="font-serif font-bold text-main text-lg">{t('noMatchingProfiles')}</h3>
-              <p className="text-xs text-sub">{t('noMatchingProfilesDesc')}</p>
+            <div className="glass-card radius-card border border-white/10 p-8 text-center space-y-4 shadow-xl">
+              <div className="w-14 h-14 rounded-full bg-gold-500/10 text-gold-400 flex items-center justify-center mx-auto">
+                <Sparkles className="w-7 h-7" />
+              </div>
+              <h3 className="font-serif font-bold text-white text-lg">No Matching Profiles</h3>
+              <p className="text-xs text-zinc-400">Try adjusting your filter preferences or reset filters.</p>
               <button
                 onClick={handleResetFilters}
-                className="px-6 py-2.5 radius-btn bg-sky-blue text-white text-xs font-bold"
+                className="px-6 py-2.5 radius-btn bg-gradient-to-r from-gold-500 to-amber-600 text-zinc-950 font-bold text-xs shadow-md"
               >
-                {t('resetAllFilters')}
+                Reset All Filters
               </button>
             </div>
           ) : deckIndex >= filteredProfiles.length ? (
-            /* End of Deck State */
-            <div className="bg-surface-card radius-card border border-main p-8 sm:p-10 text-center space-y-5 shadow-sm animate-fade-in">
-              <div className="w-14 h-14 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center mx-auto">
+            <div className="glass-card radius-card border border-white/10 p-8 text-center space-y-4 shadow-xl">
+              <div className="w-14 h-14 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center mx-auto">
                 <CheckCircle2 className="w-7 h-7" />
               </div>
-              <div className="space-y-1">
-                <h3 className="font-serif font-bold text-main text-lg sm:text-xl">
-                  You've Reviewed All Profiles!
-                </h3>
-                <p className="text-xs text-sub max-w-xs mx-auto">
-                  You have reviewed all {filteredProfiles.length} candidates in this deck.
-                </p>
-              </div>
-
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+              <h3 className="font-serif font-bold text-white text-xl">You're All Caught Up!</h3>
+              <p className="text-xs text-zinc-400">You have reviewed all {filteredProfiles.length} candidates in this batch.</p>
+              <div className="flex flex-col sm:flex-row gap-2 justify-center pt-2">
                 <button
-                  type="button"
                   onClick={() => setDeckIndex(0)}
-                  className="w-full sm:w-auto px-5 py-2.5 radius-btn bg-sky-blue text-white font-bold text-xs flex items-center justify-center gap-2 shadow-xs hover:bg-sky-blue/90 transition-colors"
+                  className="px-5 py-2.5 radius-btn bg-gradient-to-r from-gold-500 to-amber-600 text-zinc-950 font-bold text-xs"
                 >
-                  <RotateCcw className="w-4 h-4" />
-                  <span>Review from Start</span>
+                  Review From Start
                 </button>
-
                 <button
-                  type="button"
                   onClick={() => handleSwitchView('grid')}
-                  className="w-full sm:w-auto px-5 py-2.5 radius-btn bg-surface-ground hover:bg-surface-card border border-main text-main font-bold text-xs flex items-center justify-center gap-2 transition-colors"
+                  className="px-5 py-2.5 radius-btn glass-card text-white border border-white/10 text-xs font-semibold"
                 >
-                  <Grid className="w-4 h-4 text-sky-blue" />
-                  <span>Switch to Grid View</span>
+                  Switch to Grid View
                 </button>
               </div>
             </div>
           ) : (
-            /* Active Candidate Card & Controls */
-            <div className="space-y-3">
-              {/* Deck Progress Bar & Counter */}
-              <div className="flex items-center justify-between text-xs px-1 text-sub font-semibold">
-                <span className="flex items-center gap-1.5 text-main">
-                  <span className="w-2 h-2 rounded-full bg-sky-blue animate-pulse" />
+            <div className="space-y-4">
+              {/* Deck Progress Bar */}
+              <div className="flex items-center justify-between text-xs px-1 text-zinc-400 font-semibold font-mono">
+                <span className="flex items-center gap-1.5 text-gold-400">
+                  <span className="w-2 h-2 rounded-full bg-gold-400 animate-pulse" />
                   Profile {deckIndex + 1} of {filteredProfiles.length}
                 </span>
-                <span className="text-[11px] text-sub">
-                  Swipe or use buttons below
-                </span>
+                <span className="text-[11px] text-zinc-500">Swipe or use arrows</span>
               </div>
 
-              <div className="h-1.5 w-full bg-surface-ground radius-btn overflow-hidden border border-main">
+              <div className="h-1.5 w-full bg-zinc-900 radius-btn overflow-hidden border border-white/5">
                 <div
-                  className="h-full bg-sky-blue transition-all duration-300 ease-out"
+                  className="h-full bg-gradient-to-r from-crimson-600 via-gold-500 to-emerald-400 transition-all duration-300"
                   style={{ width: `${((deckIndex + 1) / filteredProfiles.length) * 100}%` }}
                 />
               </div>
@@ -531,7 +489,7 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
-                className="relative transition-all duration-200 select-none animate-fade-in"
+                className="relative select-none animate-fade-in"
               >
                 <ProfileCard
                   profile={filteredProfiles[deckIndex]}
@@ -547,25 +505,21 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
                   type="button"
                   disabled={deckIndex === 0}
                   onClick={() => setDeckIndex(prev => Math.max(0, prev - 1))}
-                  className="py-3 px-4 radius-btn bg-surface-card hover:bg-surface-ground border border-main text-main disabled:opacity-40 disabled:cursor-not-allowed text-xs font-bold flex items-center justify-center gap-2 shadow-xs transition-colors"
+                  className="py-3 px-4 radius-btn glass-card hover:bg-white/[0.05] border border-white/10 text-zinc-300 disabled:opacity-40 disabled:cursor-not-allowed text-xs font-bold flex items-center justify-center gap-2 shadow-xs transition-colors"
                 >
-                  <ChevronLeft className="w-4 h-4 text-sky-blue" />
-                  <span>Previous Profile</span>
+                  <ChevronLeft className="w-4 h-4 text-gold-400" />
+                  <span>Previous</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setDeckIndex(prev => prev + 1)}
-                  className="py-3 px-4 radius-btn bg-sky-blue hover:bg-sky-blue/90 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-xs transition-colors"
+                  className="py-3 px-4 radius-btn bg-gradient-to-r from-gold-500 to-amber-600 hover:from-gold-400 hover:to-amber-500 text-zinc-950 text-xs font-extrabold flex items-center justify-center gap-2 shadow-md transition-all active:scale-95"
                 >
-                  <span>{deckIndex === filteredProfiles.length - 1 ? 'Finish Deck' : 'Next Profile'}</span>
+                  <span>{deckIndex === filteredProfiles.length - 1 ? 'Finish Deck' : 'Next Candidate'}</span>
                   <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
-
-              <p className="text-[11px] text-sub text-center pt-1">
-                Tip: Press <kbd className="px-1.5 py-0.5 rounded bg-surface-ground border border-main text-[10px] font-mono">←</kbd> or <kbd className="px-1.5 py-0.5 rounded bg-surface-ground border border-main text-[10px] font-mono">→</kbd> keys to flip profiles
-              </p>
             </div>
           )}
         </div>
@@ -586,13 +540,13 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
 
           {/* Mobile Filter Drawer */}
           {filterDrawerOpen && (
-            <div className="fixed inset-0 z-50 flex bg-black/60 md:hidden animate-fade-in">
-              <div className="w-4/5 max-w-sm bg-surface-card h-full p-4 overflow-y-auto shadow-2xl animate-slide-in">
-                <div className="flex justify-between items-center pb-3 mb-3 border-b border-main">
-                  <h3 className="font-serif font-bold text-main">{t('filterTitle')}</h3>
+            <div className="fixed inset-0 z-50 flex bg-black/80 backdrop-blur-md md:hidden animate-fade-in">
+              <div className="w-4/5 max-w-sm glass-card h-full p-4 overflow-y-auto shadow-2xl border-r border-white/10 animate-slide-in">
+                <div className="flex justify-between items-center pb-3 mb-3 border-b border-white/10">
+                  <h3 className="font-serif font-bold text-white text-base">Filter Profiles</h3>
                   <button
                     onClick={() => setFilterDrawerOpen(false)}
-                    className="p-1 radius-btn hover:bg-surface-ground text-sub"
+                    className="p-1 radius-btn text-zinc-400 hover:text-white"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -612,21 +566,21 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
           <div className="md:col-span-3 space-y-4">
             {/* Active Filter Chips Bar */}
             {activeFilterTags.length > 0 && (
-              <div className="flex flex-wrap items-center gap-2 p-3 bg-surface-card radius-card border border-main text-xs shadow-2xs animate-fade-in">
-                <span className="text-[11px] font-bold text-sub flex items-center gap-1.5 mr-1">
-                  <Filter className="w-3.5 h-3.5 text-sky-blue" />
+              <div className="flex flex-wrap items-center gap-2 p-3 glass-card radius-card border border-white/[0.08] text-xs shadow-sm animate-fade-in">
+                <span className="text-[11px] font-bold text-zinc-400 flex items-center gap-1.5 mr-1">
+                  <Filter className="w-3.5 h-3.5 text-gold-400" />
                   <span>Applied Filters:</span>
                 </span>
                 {activeFilterTags.map((tag) => (
                   <span
                     key={tag.key}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 radius-btn bg-surface-ground border border-main text-main font-semibold shadow-2xs text-[11px]"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 radius-btn bg-zinc-900 border border-white/10 text-zinc-200 font-semibold text-[11px]"
                   >
                     <span>{tag.label}</span>
                     <button
                       type="button"
                       onClick={tag.onRemove}
-                      className="text-sub hover:text-rose-500 transition-colors p-0.5"
+                      className="text-zinc-400 hover:text-crimson-400 transition-colors p-0.5"
                       title="Remove filter"
                     >
                       <X className="w-3 h-3" />
@@ -637,7 +591,7 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
                   <button
                     type="button"
                     onClick={handleResetFilters}
-                    className="text-[11px] font-bold text-rose-600 dark:text-rose-400 hover:underline ml-auto pl-2"
+                    className="text-[11px] font-bold text-crimson-400 hover:underline ml-auto pl-2"
                   >
                     Clear All
                   </button>
@@ -648,12 +602,12 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
             {isLoadingFeed ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 {[1, 2, 3, 4, 5, 6].map((n) => (
-                  <div key={n} className="bg-surface-card radius-card p-5 border border-main space-y-4">
+                  <div key={n} className="glass-card radius-card p-5 border border-white/[0.08] space-y-4 animate-pulse">
                     <div className="flex gap-4">
-                      <div className="w-16 h-16 rounded-lg bg-surface-ground animate-pulse" />
+                      <div className="w-16 h-16 rounded-xl bg-zinc-800" />
                       <div className="flex-1 space-y-2">
-                        <div className="h-4 w-3/4 bg-surface-ground animate-pulse rounded" />
-                        <div className="h-3 w-1/2 bg-surface-ground animate-pulse rounded" />
+                        <div className="h-4 w-3/4 bg-zinc-800 rounded" />
+                        <div className="h-3 w-1/2 bg-zinc-800 rounded" />
                       </div>
                     </div>
                   </div>
@@ -671,61 +625,32 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
                   />
                 ))}
               </div>
-            ) : showShortlistedOnly ? (
-              /* Shortlisted Empty State */
-              <div className="bg-surface-card radius-card border border-main p-8 sm:p-14 text-center my-2 space-y-4 shadow-xs">
-                <div className="w-14 h-14 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto">
-                  <Star className="w-7 h-7 fill-amber-500/20" />
-                </div>
-                <div className="space-y-1 max-w-md mx-auto">
-                  <h3 className="font-serif font-bold text-main text-lg sm:text-xl">
-                    {t('noShortlistedProfiles')}
-                  </h3>
-                  <p className="text-xs text-sub leading-relaxed">
-                    {t('noShortlistedProfilesDesc')}
-                  </p>
-                </div>
-                {onNavigateToDiscover && (
-                  <div className="pt-2">
-                    <button
-                      onClick={onNavigateToDiscover}
-                      className="px-6 py-2.5 radius-btn bg-sky-blue text-white text-xs font-bold hover:bg-sky-blue/90 transition-colors inline-flex items-center gap-1.5 shadow-xs"
-                    >
-                      <span>{t('exploreAllCandidates')}</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </button>
-                  </div>
-                )}
-              </div>
             ) : (
-              /* Zero Filter Search Results Empty State */
-              <div className="bg-surface-card radius-card border border-main p-8 sm:p-12 text-center my-2 space-y-4 shadow-xs">
-                <div className="w-14 h-14 radius-btn bg-sky-blue/10 text-sky-blue flex items-center justify-center mx-auto">
+              <div className="glass-card radius-card border border-white/10 p-8 sm:p-14 text-center my-2 space-y-4 shadow-xl">
+                <div className="w-14 h-14 rounded-full bg-gold-500/10 text-gold-400 flex items-center justify-center mx-auto">
                   <UserPlus className="w-7 h-7" />
                 </div>
                 <div className="space-y-1 max-w-md mx-auto">
-                  <h3 className="font-serif font-bold text-main text-lg sm:text-xl">
-                    {t('noMatchingProfiles')}
+                  <h3 className="font-serif font-bold text-white text-lg sm:text-xl">
+                    No Matching Profiles Found
                   </h3>
-                  <p className="text-xs text-sub leading-relaxed">
-                    {t('noMatchingProfilesDesc')}
+                  <p className="text-xs text-zinc-400 leading-relaxed">
+                    Try broadening your age, location, or income filters to view more candidates.
                   </p>
                 </div>
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-                  <button
-                    onClick={handleResetFilters}
-                    className="w-full sm:w-auto px-6 py-2.5 radius-btn bg-sky-blue text-white text-xs font-bold hover:bg-sky-blue/90 transition-colors flex items-center justify-center gap-1.5 shadow-xs"
-                  >
-                    <span>{t('resetAllFilters')}</span>
-                  </button>
-                </div>
+                <button
+                  onClick={handleResetFilters}
+                  className="px-6 py-2.5 radius-btn bg-gradient-to-r from-gold-500 to-amber-600 text-zinc-950 font-bold text-xs shadow-md"
+                >
+                  Reset All Filters
+                </button>
               </div>
             )}
           </div>
         </div>
       )}
 
-      {/* First-Time Discover Onboarding Tour */}
+      {/* First-Time Discover Tour */}
       <DiscoverOnboardingModal
         isOpen={showOnboarding}
         onClose={() => setShowOnboarding(false)}
