@@ -20,6 +20,7 @@ const defaultFilters = {
   city: '',
   state: '',
   education: '',
+  profession: '',
   diet: '',
   maritalStatus: '',
   incomeBracket: 'all',
@@ -36,7 +37,7 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
   const [discoveryView, setDiscoveryView] = useState('grid');
   const [isLoadingFeed, setIsLoadingFeed] = useState(false);
-  const [sortBy, setSortBy] = useState('best_match');
+  const [sortBy, setSortBy] = useState('completeness');
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [deckIndex, setDeckIndex] = useState(0);
   const [touchStart, setTouchStart] = useState(null);
@@ -57,7 +58,7 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
     setIsLoadingFeed(true);
     setAppliedFilters(defaultFilters);
     setSearchQuery('');
-    setSortBy('best_match');
+    setSortBy('completeness');
     setFilterDrawerOpen(false);
     setTimeout(() => {
       setIsLoadingFeed(false);
@@ -124,7 +125,19 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
       if (appliedFilters.education && appliedFilters.education !== 'All Education') {
         const targetEdu = appliedFilters.education.trim().toLowerCase();
         const pEdu = (p.education_level || '').trim().toLowerCase();
-        if (!pEdu.includes(targetEdu)) return false;
+        const eduTokens = targetEdu.replace(/[^a-z0-9]/g, ' ').split(' ').filter(w => w.length > 2);
+        const matches = pEdu.includes(targetEdu) || eduTokens.some(tok => pEdu.includes(tok));
+        if (!matches) return false;
+      }
+
+      // 6.1 Profession Filter
+      if (appliedFilters.profession && appliedFilters.profession !== 'All Professions') {
+        const targetProf = appliedFilters.profession.trim().toLowerCase();
+        const pOcc = (p.occupation || '').trim().toLowerCase();
+        const pEdu = (p.education_level || '').trim().toLowerCase();
+        const profTokens = targetProf.replace(/[^a-z0-9]/g, ' ').split(' ').filter(w => w.length > 2);
+        const matches = pOcc.includes(targetProf) || profTokens.some(tok => pOcc.includes(tok) || pEdu.includes(tok));
+        if (!matches) return false;
       }
 
       // 7. Diet Filter
@@ -187,37 +200,25 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
     return scoredProfiles.sort((a, b) => {
       const compDiff = (b._completeness || 0) - (a._completeness || 0);
 
-      if (sortBy === 'completeness') {
-        if (compDiff !== 0) return compDiff;
-        return (b._matchScore || 0) - (a._matchScore || 0);
-      }
-      if (sortBy === 'best_match') {
-        // Priority 1: Profiles that are 100% completed appear first!
-        if (b._completeness === 100 && a._completeness !== 100) return 1;
-        if (a._completeness === 100 && b._completeness !== 100) return -1;
-        // Priority 2: Higher completeness tier difference
-        if (compDiff !== 0 && Math.abs(compDiff) >= 20) return compDiff;
-        // Priority 3: Higher match score
+      // Strict Rule: Higher completeness ALWAYS comes first (100% first, then 90%, 80%, etc.)
+      if (compDiff !== 0) return compDiff;
+
+      // When completeness is identical, tie-break using chosen sorting criteria
+      if (sortBy === 'completeness' || sortBy === 'best_match') {
         return (b._matchScore || 0) - (a._matchScore || 0);
       }
       if (sortBy === 'newest') {
-        if (b._completeness === 100 && a._completeness !== 100) return 1;
-        if (a._completeness === 100 && b._completeness !== 100) return -1;
         const timeA = new Date(a.created_at || 0).getTime();
         const timeB = new Date(b.created_at || 0).getTime();
         return timeB - timeA;
       }
       if (sortBy === 'age_asc') {
-        if (b._completeness === 100 && a._completeness !== 100) return 1;
-        if (a._completeness === 100 && b._completeness !== 100) return -1;
         return (Number(a.age) || 0) - (Number(b.age) || 0);
       }
       if (sortBy === 'age_desc') {
-        if (b._completeness === 100 && a._completeness !== 100) return 1;
-        if (a._completeness === 100 && b._completeness !== 100) return -1;
         return (Number(b.age) || 0) - (Number(a.age) || 0);
       }
-      return compDiff;
+      return (b._matchScore || 0) - (a._matchScore || 0);
     });
   }, [profiles, shortlistedIds, appliedFilters, searchQuery, sortBy, myProfile, user, partnerPreferences, showShortlistedOnly]);
 
@@ -252,11 +253,18 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
         onRemove: () => handleRemoveFilter('city', '')
       });
     }
-    if (appliedFilters.education) {
+    if (appliedFilters.education && appliedFilters.education !== 'All Education') {
       tags.push({
         key: 'education',
         label: `Edu: ${appliedFilters.education}`,
         onRemove: () => handleRemoveFilter('education', '')
+      });
+    }
+    if (appliedFilters.profession && appliedFilters.profession !== 'All Professions') {
+      tags.push({
+        key: 'profession',
+        label: `Job: ${appliedFilters.profession}`,
+        onRemove: () => handleRemoveFilter('profession', '')
       });
     }
     if (appliedFilters.diet) {
@@ -385,8 +393,8 @@ export const BrowsePage = ({ onViewProfile, onOpenCompatibility, onNavigateToPro
               className="bg-transparent text-xs font-semibold text-zinc-800 dark:text-zinc-200 outline-none cursor-pointer"
               aria-label={t('sortBestMatch')}
             >
-              <option value="best_match" className="bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white">100% Complete & Best Match</option>
               <option value="completeness" className="bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white">Profile Completeness (100% First)</option>
+              <option value="best_match" className="bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white">100% Complete & Best Match</option>
               <option value="newest" className="bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white">Recently Joined</option>
               <option value="age_asc" className="bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white">Age: Youngest First</option>
               <option value="age_desc" className="bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white">Age: Oldest First</option>

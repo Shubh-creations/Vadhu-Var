@@ -17,9 +17,14 @@ export const MatchTelemetryGauge = ({
   kundaliMax = 36,
   size = 'md', // 'sm' | 'md' | 'lg'
   showDetails = false,
+  textColor = null, // e.g. 'text-white' when embedded on dark photo scrims
   className = ''
 }) => {
   const [hovered, setHovered] = useState(false);
+
+  const centerTextClass = textColor || 'text-zinc-900 dark:text-white';
+  const trackRingClass = textColor ? 'text-white/20' : 'text-zinc-200 dark:text-white/[0.08]';
+  const labelTextClass = textColor ? 'text-amber-300' : 'text-amber-700 dark:text-gold-champagne';
 
   const isKundaliPending = kundaliScore === null || kundaliScore === undefined;
   // Normalize kundali score to percentage for ring draw (0 if pending)
@@ -87,7 +92,7 @@ export const MatchTelemetryGauge = ({
             cy={center}
             r={r1}
             stroke="currentColor"
-            className="text-zinc-200 dark:text-white/[0.08]"
+            className={trackRingClass}
             strokeWidth={strokeWidth}
             fill="none"
           />
@@ -96,7 +101,7 @@ export const MatchTelemetryGauge = ({
             cy={center}
             r={r2}
             stroke="currentColor"
-            className="text-zinc-200 dark:text-white/[0.08]"
+            className={trackRingClass}
             strokeWidth={strokeWidth}
             fill="none"
           />
@@ -105,7 +110,7 @@ export const MatchTelemetryGauge = ({
             cy={center}
             r={r3}
             stroke="currentColor"
-            className="text-zinc-200 dark:text-white/[0.08]"
+            className={trackRingClass}
             strokeWidth={strokeWidth}
             fill="none"
           />
@@ -144,7 +149,7 @@ export const MatchTelemetryGauge = ({
             cy={center}
             r={r3}
             stroke={isKundaliPending ? 'currentColor' : 'url(#crimsonGradient)'}
-            className={isKundaliPending ? 'text-zinc-300 dark:text-white/10' : ''}
+            className={isKundaliPending ? (textColor ? 'text-white/20' : 'text-zinc-300 dark:text-white/10') : ''}
             strokeWidth={strokeWidth}
             strokeDasharray={isKundaliPending ? '2 3' : c3}
             strokeDashoffset={offset3}
@@ -172,11 +177,11 @@ export const MatchTelemetryGauge = ({
 
         {/* Center Display: Overall Match Score % */}
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-          <span className={`font-mono font-black tracking-tighter ${fontSize} text-zinc-900 dark:text-white drop-shadow-sm`}>
+          <span className={`font-mono font-black tracking-tighter ${fontSize} ${centerTextClass} drop-shadow-sm`}>
             {score}%
           </span>
           {size !== 'sm' && (
-            <span className={`font-sans font-semibold uppercase tracking-widest ${labelSize} text-amber-700 dark:text-gold-champagne`}>
+            <span className={`font-sans font-semibold uppercase tracking-widest ${labelSize} ${labelTextClass}`}>
               MATCH
             </span>
           )}

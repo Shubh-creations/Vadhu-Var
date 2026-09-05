@@ -23,6 +23,39 @@ const VEDIC_NAKSHATRAS = [
   'Purva Bhadrapada', 'Uttara Bhadrapada', 'Revati'
 ];
 
+const POPULAR_OCCUPATIONS = [
+  'Ayurved Doctor (BAMS / MD Ayurved)',
+  'Doctor (MBBS / MD / MS)',
+  'Dentist (BDS / MDS)',
+  'Homeopathy Doctor (BHMS)',
+  'Business / Entrepreneur',
+  'Software Engineer / IT Professional',
+  'Civil Services / Govt Officer',
+  'Chartered Accountant (CA)',
+  'Lawyer / Advocate (LLB / LLM)',
+  'Pharmacist (B.Pharm / M.Pharm)',
+  'Professor / Teacher',
+  'Banking & Finance',
+  'Architect / Interior Designer',
+  'Civil / Mechanical / Electrical Engineer'
+];
+
+const POPULAR_QUALIFICATIONS = [
+  'BAMS / MD (Ayurved)',
+  'MBBS / MD / MS',
+  'BDS / MDS (Dental)',
+  'BHMS (Homeopathy)',
+  'B.Tech / B.E.',
+  'M.Tech / M.E.',
+  'MBA / PGDM',
+  'Chartered Accountant (CA)',
+  'B.Pharm / M.Pharm',
+  'LLB / LLM',
+  'Graduate',
+  'Post Graduate',
+  'Ph.D'
+];
+
 export const ProfileWizardPage = ({ onComplete, initialStep = 1 }) => {
   const { user, profile: existingProfile, partnerPreferences: existingPref, saveProfile, savePartnerPreferences } = useAuth();
   const { submitVerificationRequest, addOrUpdateProfile, refreshProfiles } = useData();
@@ -644,11 +677,34 @@ export const ProfileWizardPage = ({ onComplete, initialStep = 1 }) => {
                 </div>
                 <input
                   type="text"
+                  list="wizard-occupations"
                   value={formData.occupation}
                   onChange={(e) => handleChange('occupation', e.target.value)}
-                  placeholder="e.g. Software Engineer, Doctor, Business..."
+                  placeholder="e.g. Ayurved Doctor, Business, Software Engineer..."
                   className="w-full px-3.5 py-2.5 border border-main radius-btn text-sm bg-surface-ground text-main outline-none focus:ring-1 focus:ring-sky-blue"
                 />
+                <datalist id="wizard-occupations">
+                  {POPULAR_OCCUPATIONS.map(occ => (
+                    <option key={occ} value={occ} />
+                  ))}
+                </datalist>
+                {/* Quick select pills */}
+                <div className="flex flex-wrap gap-1 mt-1.5">
+                  {['Ayurved Doctor (BAMS / MD)', 'Business / Entrepreneur', 'Software Engineer', 'Doctor (MBBS / MD)', 'Civil Services'].map(item => (
+                    <button
+                      key={item}
+                      type="button"
+                      onClick={() => handleChange('occupation', item)}
+                      className={`text-[10px] px-2 py-0.5 radius-btn border transition-all ${
+                        formData.occupation === item
+                          ? 'bg-amber-500/20 text-amber-700 dark:text-gold-300 border-amber-500/40'
+                          : 'bg-surface-card text-sub border-main hover:text-main'
+                      }`}
+                    >
+                      {item}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <div>
@@ -658,11 +714,34 @@ export const ProfileWizardPage = ({ onComplete, initialStep = 1 }) => {
                 </div>
                 <input
                   type="text"
+                  list="wizard-qualifications"
                   value={formData.education_level}
                   onChange={(e) => handleChange('education_level', e.target.value)}
-                  placeholder="e.g. B.Tech, MBA, MBBS..."
+                  placeholder="e.g. BAMS, MD Ayurved, MBBS, B.Tech, MBA..."
                   className="w-full px-3.5 py-2.5 border border-main radius-btn text-sm bg-surface-ground text-main outline-none focus:ring-1 focus:ring-sky-blue"
                 />
+                <datalist id="wizard-qualifications">
+                  {POPULAR_QUALIFICATIONS.map(q => (
+                    <option key={q} value={q} />
+                  ))}
+                </datalist>
+                {/* Quick select pills */}
+                <div className="flex flex-wrap gap-1 mt-1.5">
+                  {['BAMS / MD (Ayurved)', 'MBBS / MD', 'B.Tech / B.E.', 'MBA / PGDM', 'CA', 'BDS (Dental)'].map(item => (
+                    <button
+                      key={item}
+                      type="button"
+                      onClick={() => handleChange('education_level', item)}
+                      className={`text-[10px] px-2 py-0.5 radius-btn border transition-all ${
+                        formData.education_level === item
+                          ? 'bg-amber-500/20 text-amber-700 dark:text-gold-300 border-amber-500/40'
+                          : 'bg-surface-card text-sub border-main hover:text-main'
+                      }`}
+                    >
+                      {item}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 

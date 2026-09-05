@@ -82,7 +82,7 @@ export const ProfileDiscoveryCard = ({
   return (
     <div
       onClick={() => onViewDetails && onViewDetails(profile)}
-      className={`group relative glass-card radius-card border border-white/[0.1] hover:border-gold-400/50 transition-all duration-300 shadow-2xl flex flex-col justify-between cursor-pointer overflow-hidden ${
+      className={`group relative glass-card radius-card border border-zinc-200 dark:border-white/[0.1] hover:border-amber-500/50 dark:hover:border-gold-400/50 transition-all duration-300 shadow-lg hover:shadow-xl flex flex-col justify-between cursor-pointer overflow-hidden bg-white dark:bg-zinc-950/80 ${
         isDeckView ? 'max-w-lg w-full mx-auto' : 'h-full'
       } ${className}`}
     >
@@ -201,6 +201,7 @@ export const ProfileDiscoveryCard = ({
                 careerScore={careerScore}
                 kundaliScore={kundaliGuna}
                 size="sm"
+                textColor="text-white"
               />
             </div>
           </div>
@@ -261,17 +262,17 @@ export const ProfileDiscoveryCard = ({
           onClick={handleExpressInterest}
           disabled={loadingInterest || hasExpressedInterest || isOwnProfile}
           aria-label={`Express interest in ${profile.full_name}`}
-          className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 radius-btn font-extrabold text-xs sm:text-sm transition-all duration-200 shadow-xl ${
+          className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 radius-btn font-extrabold text-xs sm:text-sm transition-all duration-200 shadow-lg ${
             hasExpressedInterest
-              ? 'bg-zinc-800 text-zinc-400 border border-white/5 cursor-default'
+              ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 border border-zinc-200 dark:border-white/5 cursor-default'
               : isOwnProfile
-              ? 'bg-zinc-900 text-zinc-500 cursor-not-allowed opacity-50'
+              ? 'bg-zinc-100 dark:bg-zinc-900 text-zinc-400 dark:text-zinc-500 cursor-not-allowed opacity-50 border border-zinc-200 dark:border-white/5'
               : 'bg-gradient-to-r from-crimson-600 to-rose-700 hover:from-crimson-500 hover:to-rose-600 text-white crimson-glow active:scale-[0.98]'
           }`}
         >
           {hasExpressedInterest ? (
             <>
-              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+              <CheckCircle2 className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
               <span>Interest Sent ✓</span>
             </>
           ) : isOwnProfile ? (
@@ -293,7 +294,7 @@ export const ProfileDiscoveryCard = ({
             e.stopPropagation();
             if (onViewDetails) onViewDetails(profile);
           }}
-          className="p-3 radius-btn bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-gold-400 border border-white/10 transition-colors shadow-sm flex items-center justify-center"
+          className="p-3 radius-btn bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:text-amber-600 dark:hover:text-gold-400 border border-zinc-200 dark:border-white/10 transition-colors shadow-sm flex items-center justify-center cursor-pointer"
           title="View Full Profile & Kundali Match"
           aria-label="View Bio-Data"
         >

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Filter, RotateCcw, ShieldCheck, MapPin, IndianRupee, GraduationCap, Utensils, Heart, Check, Sparkles } from 'lucide-react';
+import { Filter, RotateCcw, ShieldCheck, MapPin, IndianRupee, GraduationCap, Utensils, Heart, Check, Sparkles, Briefcase } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
 export const FilterPanel = ({ appliedFilters, filters, onApply, onReset, totalMatches = 0, isMobileDrawer = false }) => {
@@ -30,9 +30,10 @@ export const FilterPanel = ({ appliedFilters, filters, onApply, onReset, totalMa
   const activeAppliedCount = [
     safeApplied.gender && safeApplied.gender !== 'all',
     safeApplied.incomeBracket && safeApplied.incomeBracket !== 'all',
-    Boolean(safeApplied.state),
+    Boolean(safeApplied.state && safeApplied.state !== 'All States'),
     Boolean(safeApplied.city),
-    Boolean(safeApplied.education),
+    Boolean(safeApplied.education && safeApplied.education !== 'All Education'),
+    Boolean(safeApplied.profession && safeApplied.profession !== 'All Professions'),
     Boolean(safeApplied.diet),
     Boolean(safeApplied.maritalStatus),
     safeApplied.verifiedOnly,
@@ -55,7 +56,40 @@ export const FilterPanel = ({ appliedFilters, filters, onApply, onReset, totalMa
   ];
 
   const educationLevels = [
-    'All Education', 'B.Tech / B.E.', 'MBA', 'MBBS / MD', 'M.Tech', 'Chartered Accountant', 'Graduate', 'Post Graduate', 'Ph.D'
+    'All Education',
+    'Ayurved Doctor (BAMS / MD)',
+    'Doctor (MBBS / MD / MS)',
+    'Dentist (BDS / MDS)',
+    'Homeopathy Doctor (BHMS)',
+    'Business / Entrepreneur',
+    'B.Tech / B.E.',
+    'M.Tech',
+    'MBA / PGDM',
+    'Chartered Accountant (CA)',
+    'Civil Services / Govt Officer',
+    'Lawyer / Advocate (LLB / LLM)',
+    'Pharmacist (B.Pharm / M.Pharm)',
+    'Graduate',
+    'Post Graduate',
+    'Ph.D'
+  ];
+
+  const professionOptions = [
+    'All Professions',
+    'Ayurved Doctor (BAMS / MD)',
+    'Doctor (MBBS / MD / MS)',
+    'Dentist (BDS / MDS)',
+    'Homeopathy Doctor (BHMS)',
+    'Business / Entrepreneur',
+    'Software Engineer / IT Professional',
+    'Civil Services / Govt Officer',
+    'Chartered Accountant (CA)',
+    'Lawyer / Advocate',
+    'Pharmacist',
+    'Teacher / Professor',
+    'Banking / Finance Professional',
+    'Architect / Designer',
+    'Mechanical / Civil / Electrical Engineer'
   ];
 
   const agePresets = [
@@ -296,6 +330,23 @@ export const FilterPanel = ({ appliedFilters, filters, onApply, onReset, totalMa
           >
             {educationLevels.map(ed => (
               <option key={ed} value={ed} className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white">{ed}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Profession / Occupation */}
+        <div className="space-y-1.5">
+          <label className="flex items-center gap-1.5 text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+            <Briefcase className="w-3.5 h-3.5 text-amber-600 dark:text-gold-400" />
+            <span>{t('profession')}</span>
+          </label>
+          <select
+            value={pendingFilters.profession || 'All Professions'}
+            onChange={(e) => handleFieldChange('profession', e.target.value)}
+            className="w-full px-3 py-2 radius-btn text-xs bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white border border-zinc-200 dark:border-white/10 outline-none focus:border-amber-500 dark:focus:border-gold-400 transition-colors cursor-pointer"
+          >
+            {professionOptions.map(prof => (
+              <option key={prof} value={prof} className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white">{prof}</option>
             ))}
           </select>
         </div>
