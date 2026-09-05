@@ -1,5 +1,5 @@
-const CACHE_NAME = 'vadhu-var-v3.0.0';
-const STATIC_ASSETS_CACHE = 'vadhu-var-assets-v3.0.0';
+const CACHE_NAME = 'vadhu-var-v4.0.0-luxury';
+const STATIC_ASSETS_CACHE = 'vadhu-var-assets-v4.0.0-luxury';
 
 const APP_SHELL = [
   '/',
@@ -9,7 +9,8 @@ const APP_SHELL = [
   '/icon-192.png',
   '/icon-512.png',
   '/apple-touch-icon.png',
-  '/favicon.png'
+  '/favicon.png',
+  '/website-icon.png'
 ];
 
 // 1. INSTALL EVENT
@@ -22,7 +23,7 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// 2. ACTIVATE EVENT: Delete obsolete caches & claim clients immediately
+// 2. ACTIVATE EVENT: Delete all obsolete caches & claim clients immediately
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -84,7 +85,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Strategy C: App Shell (index.html, /) -> NETWORK-FIRST with Timeout Fallback
+  // Strategy C: App Shell (index.html, /) -> NETWORK-FIRST
   if (event.request.mode === 'navigate' || url.pathname === '/' || url.pathname === '/index.html') {
     event.respondWith(
       fetch(event.request)
